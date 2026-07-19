@@ -121,8 +121,7 @@ public struct ScrollIndicator95: View {
   private func scrollThumb(trackHeight: CGFloat) -> some View {
     let thumb = thumbGeometry(trackHeight: trackHeight)
 
-    Rectangle()
-      .fill(theme.colors.background)
+    Color.clear
       .frame(height: thumb.height)
       .contentShape(.rect)
       .bevel95(.raised)

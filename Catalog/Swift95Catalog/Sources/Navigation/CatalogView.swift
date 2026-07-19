@@ -1,18 +1,18 @@
 import Swift95
 import SwiftUI
 
-struct TokenCatalogView: View {
+struct CatalogView: View {
   @Environment(\.theme95) private var theme
-  @State private var selection: CatalogElement95?
+  @State private var selection: CatalogDestination?
 
   var body: some View {
     NavigationSplitView {
       List(selection: $selection) {
-        ForEach(CatalogCategory95.allCases) { category in
-          Section(category.title) {
-            ForEach(category.elements) { element in
-              NavigationLink(value: element) {
-                Text(element.title)
+        ForEach(CatalogSection.allCases) { section in
+          Section(section.title) {
+            ForEach(section.destinations) { destination in
+              NavigationLink(value: destination) {
+                Text(destination.title)
                   .font(theme.fonts.body)
               }
             }
@@ -24,7 +24,7 @@ struct TokenCatalogView: View {
       .background(theme.colors.background)
     } detail: {
       if let selection {
-        CatalogElementView95(element: selection)
+        CatalogDestinationView(destination: selection)
       } else {
         ContentUnavailableView(
           "Select an element",
@@ -36,7 +36,7 @@ struct TokenCatalogView: View {
   }
 }
 
-private enum CatalogCategory95: String, CaseIterable, Identifiable {
+private enum CatalogSection: String, CaseIterable, Identifiable {
   case components
   case foundations
 
@@ -49,18 +49,22 @@ private enum CatalogCategory95: String, CaseIterable, Identifiable {
     }
   }
 
-  var elements: [CatalogElement95] {
-    CatalogElement95.allCases.filter { $0.category == self }
+  var destinations: [CatalogDestination] {
+    CatalogDestination.allCases.filter { $0.section == self }
   }
 }
 
-enum CatalogElement95: String, CaseIterable, Identifiable {
+private enum CatalogDestination: String, CaseIterable, Identifiable {
   case text
   case button
   case textField
   case secureField
   case textEditor
   case scrollIndicator
+  case divider
+  case checkbox
+  case radioButton
+  case progressView
   case bevel
   case typography
   case colors
@@ -69,9 +73,10 @@ enum CatalogElement95: String, CaseIterable, Identifiable {
 
   var id: Self { self }
 
-  fileprivate var category: CatalogCategory95 {
+  var section: CatalogSection {
     switch self {
-    case .text, .button, .textField, .secureField, .textEditor, .scrollIndicator:
+    case .text, .button, .textField, .secureField, .textEditor, .scrollIndicator,
+      .divider, .checkbox, .radioButton, .progressView:
       .components
     case .bevel, .typography, .colors, .spacing, .metrics:
       .foundations
@@ -86,6 +91,10 @@ enum CatalogElement95: String, CaseIterable, Identifiable {
     case .secureField: "SecureField95"
     case .textEditor: "TextEditor95"
     case .scrollIndicator: "ScrollIndicator95"
+    case .divider: "Divider95"
+    case .checkbox: "Checkbox95"
+    case .radioButton: "RadioButton95"
+    case .progressView: "ProgressView95"
     case .bevel: "Bevel"
     case .typography: "Typography"
     case .colors: "Colors"
@@ -95,11 +104,11 @@ enum CatalogElement95: String, CaseIterable, Identifiable {
   }
 }
 
-private struct CatalogElementView95: View {
-  let element: CatalogElement95
+private struct CatalogDestinationView: View {
+  let destination: CatalogDestination
 
   var body: some View {
-    switch element {
+    switch destination {
     case .text:
       TextCatalogView95()
     case .button:
@@ -112,6 +121,14 @@ private struct CatalogElementView95: View {
       TextEditorCatalogView95()
     case .scrollIndicator:
       ScrollIndicatorCatalogView95()
+    case .divider:
+      DividerCatalogView95()
+    case .checkbox:
+      CheckboxCatalogView95()
+    case .radioButton:
+      RadioButtonCatalogView95()
+    case .progressView:
+      ProgressViewCatalogView95()
     case .bevel:
       BevelCatalogView95()
     case .typography:
@@ -127,5 +144,5 @@ private struct CatalogElementView95: View {
 }
 
 #Preview("Catalog") {
-  TokenCatalogView()
+  CatalogView()
 }

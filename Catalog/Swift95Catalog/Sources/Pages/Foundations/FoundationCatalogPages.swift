@@ -7,17 +7,39 @@ struct BevelCatalogView95: View {
   var body: some View {
     CatalogPage95("Bevel") {
       CatalogExample95("Raised") {
-        Rectangle()
-          .fill(theme.colors.background)
+        Color.clear
           .frame(width: 160, height: 72)
           .bevel95(.raised)
       }
 
       CatalogExample95("Sunken") {
-        Rectangle()
-          .fill(theme.colors.inputBackground)
+        Color.clear
           .frame(width: 160, height: 72)
           .bevel95(.sunken)
+      }
+
+      CatalogExample95("Input") {
+        Color.clear
+          .frame(width: 160, height: 72)
+          .bevel95(.input)
+      }
+
+      CatalogExample95("Raised with accent background") {
+        Color.clear
+          .frame(width: 160, height: 72)
+          .bevel95(.raised, background: theme.colors.accent)
+      }
+
+      CatalogExample95("Raised + sunken") {
+        Color.clear
+          .frame(width: 152, height: 64)
+          .bevel95(.raisedSunken)
+      }
+
+      CatalogExample95("Raised + input, 8-point spacing") {
+        Color.clear
+          .frame(width: 152, height: 64)
+          .bevel95(.raisedInput, spacing: Spacing95[8])
       }
     }
   }
@@ -36,10 +58,6 @@ struct TypographyCatalogView95: View {
         .font(theme.fonts.title3)
       Text("The quick brown fox jumps over the lazy dog.")
         .font(theme.fonts.body)
-      Text("18-point bold, relative to body")
-        .font(theme.fonts.font(size: 18, weight: .bold, relativeTo: .body))
-      Text("12-point fixed size")
-        .font(theme.fonts.font(size: 12))
     }
   }
 }

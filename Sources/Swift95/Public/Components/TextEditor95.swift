@@ -56,7 +56,6 @@ public struct TextEditor95<Editor: View>: View {
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
         .background(TextEditorScrollProbe95(bridge: scrollBridge))
-        .background(inputBackground)
 
       ScrollIndicator95(
         contentOffset: Binding(
@@ -67,8 +66,7 @@ public struct TextEditor95<Editor: View>: View {
         viewportLength: scrollBridge.metrics.containerHeight
       )
     }
-    .background(inputBackground)
-    .bevel95(.sunken)
+    .bevel95(.input, background: inputBackground)
   }
 
   /// Applies a transformation to the embedded SwiftUI text editor.

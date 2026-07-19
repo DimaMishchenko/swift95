@@ -5,7 +5,7 @@ import SwiftUI
 struct Swift95CatalogApp: App {
   var body: some Scene {
     WindowGroup {
-      TokenCatalogView()
+      CatalogView()
     }
   }
 }

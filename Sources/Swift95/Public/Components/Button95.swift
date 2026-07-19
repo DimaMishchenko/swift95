@@ -142,7 +142,6 @@ private struct ButtonStyleContent95: View {
       .font(theme.fonts.body)
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
       .padding(contentInsets)
-      .background(theme.colors.background)
       .contentShape(.rect)
       .offset(x: isVisuallyPressed ? 1 : 0, y: isVisuallyPressed ? 1 : 0)
       .bevel95(isVisuallyPressed ? .sunken : .raised)

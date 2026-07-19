@@ -57,8 +57,8 @@ public struct Metrics95: Sendable {
   /// The default Windows 95-inspired component measurements.
   public static let classic = Metrics95(
     bevelWidth: 1,
-    checkboxSize: 12,
-    radioButtonSize: 12,
+    checkboxSize: 18,
+    radioButtonSize: 18,
     scrollBarWidth: 17,
     progressBarHeight: 20,
     titleBarHeight: 20,

@@ -53,10 +53,10 @@ public struct SecureField95<Field: View>: View {
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
       .padding(.horizontal, Spacing95[6])
       .padding(.vertical, Spacing95[5])
-      .background(
-        isEnabled ? theme.colors.inputBackground : theme.colors.inputBackgroundDisabled
+      .bevel95(
+        .input,
+        background: isEnabled ? theme.colors.inputBackground : theme.colors.inputBackgroundDisabled
       )
-      .bevel95(.sunken)
   }
 
   /// Applies a transformation to the embedded SwiftUI secure field.

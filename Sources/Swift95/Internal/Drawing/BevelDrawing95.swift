@@ -6,51 +6,70 @@ struct BevelDrawing95: View {
 
   var body: some View {
     Canvas { context, size in
-      let outerTopLeading: Color
-      let innerTopLeading: Color
-      let outerBottomTrailing: Color
-      let innerBottomTrailing: Color
-
       switch style {
       case .raised:
-        outerTopLeading = colors.borderLightest
-        innerTopLeading = colors.borderLight
-        outerBottomTrailing = colors.borderDarkest
-        innerBottomTrailing = colors.borderDark
+        drawEdges(
+          in: &context,
+          size: size,
+          inset: 0.5,
+          topLeading: colors.borderLightest,
+          bottomTrailing: colors.borderDarkest
+        )
+        drawEdges(
+          in: &context,
+          size: size,
+          inset: 1.5,
+          topLeading: colors.borderLight,
+          bottomTrailing: colors.borderDark
+        )
       case .sunken:
-        outerTopLeading = colors.borderDarkest
-        innerTopLeading = colors.borderDark
-        outerBottomTrailing = colors.borderLightest
-        innerBottomTrailing = colors.borderLight
+        drawEdges(
+          in: &context,
+          size: size,
+          inset: 0.5,
+          topLeading: colors.borderDark,
+          bottomTrailing: colors.borderLightest
+        )
+      case .input:
+        drawEdges(
+          in: &context,
+          size: size,
+          inset: 0.5,
+          topLeading: colors.borderDarkest,
+          bottomTrailing: colors.borderLightest
+        )
+        drawEdges(
+          in: &context,
+          size: size,
+          inset: 1.5,
+          topLeading: colors.borderDark,
+          bottomTrailing: colors.borderLight
+        )
       }
-
-      strokeTopLeading(
-        in: &context,
-        size: size,
-        inset: 0.5,
-        color: outerTopLeading
-      )
-      strokeTopLeading(
-        in: &context,
-        size: size,
-        inset: 1.5,
-        color: innerTopLeading
-      )
-      strokeBottomTrailing(
-        in: &context,
-        size: size,
-        inset: 0.5,
-        color: outerBottomTrailing
-      )
-      strokeBottomTrailing(
-        in: &context,
-        size: size,
-        inset: 1.5,
-        color: innerBottomTrailing
-      )
     }
     .allowsHitTesting(false)
     .accessibilityHidden(true)
+  }
+
+  private func drawEdges(
+    in context: inout GraphicsContext,
+    size: CGSize,
+    inset: CGFloat,
+    topLeading: Color,
+    bottomTrailing: Color
+  ) {
+    strokeTopLeading(
+      in: &context,
+      size: size,
+      inset: inset,
+      color: topLeading
+    )
+    strokeBottomTrailing(
+      in: &context,
+      size: size,
+      inset: inset,
+      color: bottomTrailing
+    )
   }
 
   private func strokeTopLeading(
