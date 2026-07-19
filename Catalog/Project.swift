@@ -22,7 +22,7 @@ let project = Project(
           "UILaunchScreen": [:],
           "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false
-          ],
+          ]
         ]
       ),
       sources: ["Swift95Catalog/Sources/**"],

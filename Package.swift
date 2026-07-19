@@ -6,7 +6,7 @@ let package = Package(
   name: "swift-95",
   platforms: [
     .iOS(.v18),
-    .macOS(.v15),
+    .macOS(.v15)
   ],
   products: [
     .library(
@@ -24,6 +24,6 @@ let package = Package(
     .testTarget(
       name: "Swift95Tests",
       dependencies: ["Swift95"]
-    ),
+    )
   ]
 )
