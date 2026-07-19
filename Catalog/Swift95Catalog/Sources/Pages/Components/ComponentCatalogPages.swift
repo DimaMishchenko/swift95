@@ -37,6 +37,32 @@ struct ButtonCatalogView95: View {
   }
 }
 
+struct SliderCatalogView95: View {
+  @State private var volume = 45.0
+  @State private var brightness = 6.0
+
+  var body: some View {
+    CatalogPage95("Slider95") {
+      CatalogExample95("Continuous") {
+        Slider95(value: $volume, in: 0...100) {
+          Text("Volume: \(Int(volume))")
+        }
+      }
+
+      CatalogExample95("Stepped") {
+        Slider95(value: $brightness, in: 0...10, step: 1) {
+          Text("Brightness: \(Int(brightness))")
+        }
+      }
+
+      CatalogExample95("Disabled") {
+        Slider95(value: .constant(35.0), in: 0...100)
+          .disabled(true)
+      }
+    }
+  }
+}
+
 struct TextFieldCatalogView95: View {
   @State private var name = "Jane Doe"
 
@@ -124,6 +150,35 @@ struct ScrollIndicatorCatalogView95: View {
 
       Text("Offset: \(contentOffset.formatted())")
         .font(theme.fonts.body)
+    }
+  }
+}
+
+struct ScrollViewCatalogView95: View {
+  var body: some View {
+    CatalogPage95("ScrollView95") {
+      CatalogExample95("Scrollable") {
+        ScrollView95(lineIncrement: 32) {
+          LazyVStack(alignment: .leading, spacing: 0) {
+            ForEach(1...24, id: \.self) { line in
+              Text95("Line \(line)")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Spacing95[6])
+                .frame(height: 32)
+            }
+          }
+        }
+        .frame(height: 200)
+      }
+
+      CatalogExample95("Content fits") {
+        ScrollView95 {
+          Text95("No scrolling required")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing95[6])
+        }
+        .frame(height: 80)
+      }
     }
   }
 }
@@ -231,6 +286,100 @@ struct ProgressViewCatalogView95: View {
         ProgressView95("Installing", value: 65, total: 100)
           .disabled(true)
       }
+    }
+  }
+}
+
+struct PickerCatalogView95: View {
+  @State private var sortOrder = SortOrder95.name
+
+  var body: some View {
+    CatalogPage95("Picker95") {
+      CatalogExample95("Picker95") {
+        Picker95(
+          "Sort by",
+          selection: $sortOrder,
+          options: SortOrder95.options
+        )
+      }
+
+      CatalogExample95("Disabled") {
+        Picker95(
+          "Disabled",
+          selection: .constant(SortOrder95.name),
+          options: SortOrder95.options
+        )
+        .disabled(true)
+      }
+
+      Text95("Selection: \(sortOrder.title)")
+    }
+  }
+}
+
+struct TabsCatalogView95: View {
+  @State private var selection = SettingsTab95.general
+
+  var body: some View {
+    CatalogPage95("Tabs95") {
+      Tabs95(
+        selection: $selection,
+        tabs: [
+          Tab95("General", value: SettingsTab95.general),
+          Tab95("Display", value: SettingsTab95.display),
+          Tab95("Advanced", value: SettingsTab95.advanced)
+        ]
+      ) { tab in
+        VStack(alignment: .leading, spacing: Spacing95[8]) {
+          Text95(tab.title)
+          Text95(tab.description)
+        }
+        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+      }
+    }
+  }
+}
+
+private enum SortOrder95: Hashable {
+  case name
+  case dateModified
+  case size
+
+  static var options: [PickerOption95<SortOrder95, Text>] {
+    [
+      PickerOption95("Name", value: SortOrder95.name),
+      PickerOption95("Date modified", value: SortOrder95.dateModified),
+      PickerOption95("Size", value: SortOrder95.size)
+    ]
+  }
+
+  var title: String {
+    switch self {
+    case .name: "Name"
+    case .dateModified: "Date modified"
+    case .size: "Size"
+    }
+  }
+}
+
+private enum SettingsTab95: Hashable {
+  case general
+  case display
+  case advanced
+
+  var title: String {
+    switch self {
+    case .general: "General"
+    case .display: "Display"
+    case .advanced: "Advanced"
+    }
+  }
+
+  var description: String {
+    switch self {
+    case .general: "Common application settings."
+    case .display: "Appearance and layout settings."
+    case .advanced: "Settings for experienced users."
     }
   }
 }

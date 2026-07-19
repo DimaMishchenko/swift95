@@ -57,14 +57,18 @@ private enum CatalogSection: String, CaseIterable, Identifiable {
 private enum CatalogDestination: String, CaseIterable, Identifiable {
   case text
   case button
+  case slider
   case textField
   case secureField
   case textEditor
   case scrollIndicator
+  case scrollView
   case divider
   case checkbox
   case radioButton
   case progressView
+  case picker
+  case tabs
   case bevel
   case typography
   case colors
@@ -75,8 +79,9 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
 
   var section: CatalogSection {
     switch self {
-    case .text, .button, .textField, .secureField, .textEditor, .scrollIndicator,
-      .divider, .checkbox, .radioButton, .progressView:
+    case .text, .button, .slider, .textField, .secureField, .textEditor,
+      .scrollIndicator, .scrollView, .divider, .checkbox, .radioButton,
+      .progressView, .picker, .tabs:
       .components
     case .bevel, .typography, .colors, .spacing, .metrics:
       .foundations
@@ -87,14 +92,18 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     switch self {
     case .text: "Text95"
     case .button: "Button95"
+    case .slider: "Slider95"
     case .textField: "TextField95"
     case .secureField: "SecureField95"
     case .textEditor: "TextEditor95"
     case .scrollIndicator: "ScrollIndicator95"
+    case .scrollView: "ScrollView95"
     case .divider: "Divider95"
     case .checkbox: "Checkbox95"
     case .radioButton: "RadioButton95"
     case .progressView: "ProgressView95"
+    case .picker: "Picker95"
+    case .tabs: "Tabs95"
     case .bevel: "Bevel"
     case .typography: "Typography"
     case .colors: "Colors"
@@ -113,6 +122,8 @@ private struct CatalogDestinationView: View {
       TextCatalogView95()
     case .button:
       ButtonCatalogView95()
+    case .slider:
+      SliderCatalogView95()
     case .textField:
       TextFieldCatalogView95()
     case .secureField:
@@ -121,6 +132,8 @@ private struct CatalogDestinationView: View {
       TextEditorCatalogView95()
     case .scrollIndicator:
       ScrollIndicatorCatalogView95()
+    case .scrollView:
+      ScrollViewCatalogView95()
     case .divider:
       DividerCatalogView95()
     case .checkbox:
@@ -129,6 +142,10 @@ private struct CatalogDestinationView: View {
       RadioButtonCatalogView95()
     case .progressView:
       ProgressViewCatalogView95()
+    case .picker:
+      PickerCatalogView95()
+    case .tabs:
+      TabsCatalogView95()
     case .bevel:
       BevelCatalogView95()
     case .typography:

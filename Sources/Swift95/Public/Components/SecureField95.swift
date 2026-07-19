@@ -41,6 +41,34 @@ public struct SecureField95<Field: View>: View {
     field = SecureField(String(title), text: text)
   }
 
+  /// Creates a secure field with separate localized labeling and prompt content.
+  ///
+  /// - Parameters:
+  ///   - titleKey: The localized accessibility label for the field.
+  ///   - text: The private editable text value.
+  ///   - prompt: The content displayed while the field is empty.
+  public init(
+    _ titleKey: LocalizedStringKey,
+    text: Binding<String>,
+    prompt: Text?
+  ) where Field == SecureField<Text> {
+    field = SecureField(titleKey, text: text, prompt: prompt)
+  }
+
+  /// Creates a secure field with separate unlocalized labeling and prompt content.
+  ///
+  /// - Parameters:
+  ///   - title: The unlocalized accessibility label for the field.
+  ///   - text: The private editable text value.
+  ///   - prompt: The content displayed while the field is empty.
+  public init<S>(
+    _ title: S,
+    text: Binding<String>,
+    prompt: Text?
+  ) where Field == SecureField<Text>, S: StringProtocol {
+    field = SecureField(String(title), text: text, prompt: prompt)
+  }
+
   private init(field: Field) {
     self.field = field
   }

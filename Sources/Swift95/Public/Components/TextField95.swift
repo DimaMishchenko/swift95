@@ -41,6 +41,37 @@ public struct TextField95<Field: View>: View {
     field = TextField(String(title), text: text)
   }
 
+  /// Creates a text field with separate localized labeling and prompt content.
+  ///
+  /// Use this initializer when the field's accessible title and its visible
+  /// empty-state prompt should differ.
+  ///
+  /// - Parameters:
+  ///   - titleKey: The localized accessibility label for the field.
+  ///   - text: The editable text value.
+  ///   - prompt: The content displayed while the field is empty.
+  public init(
+    _ titleKey: LocalizedStringKey,
+    text: Binding<String>,
+    prompt: Text?
+  ) where Field == TextField<Text> {
+    field = TextField(titleKey, text: text, prompt: prompt)
+  }
+
+  /// Creates a text field with separate unlocalized labeling and prompt content.
+  ///
+  /// - Parameters:
+  ///   - title: The unlocalized accessibility label for the field.
+  ///   - text: The editable text value.
+  ///   - prompt: The content displayed while the field is empty.
+  public init<S>(
+    _ title: S,
+    text: Binding<String>,
+    prompt: Text?
+  ) where Field == TextField<Text>, S: StringProtocol {
+    field = TextField(String(title), text: text, prompt: prompt)
+  }
+
   private init(field: Field) {
     self.field = field
   }

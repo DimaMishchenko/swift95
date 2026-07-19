@@ -32,16 +32,38 @@ public struct TextEditor95<Editor: View>: View {
   @State private var scrollBridge = TextEditorScrollBridge95()
 
   private let editor: Editor
+  private let indicatorTransform: (AnyView) -> AnyView
 
   /// Creates a multiline editor bound to a string.
   ///
   /// - Parameter text: The editable multiline text value.
   public init(text: Binding<String>) where Editor == TextEditor {
     editor = TextEditor(text: text)
+    indicatorTransform = { $0 }
   }
 
-  private init(editor: Editor) {
+  /// Creates a multiline editor with a bindable native text selection.
+  ///
+  /// Use the selection binding to inspect or change the insertion point and
+  /// selected ranges while preserving the Swift95 surface and scroll indicator.
+  ///
+  /// - Parameters:
+  ///   - text: The editable multiline text value.
+  ///   - selection: The native SwiftUI text selection.
+  public init(
+    text: Binding<String>,
+    selection: Binding<TextSelection?>
+  ) where Editor == TextEditor {
+    editor = TextEditor(text: text, selection: selection)
+    indicatorTransform = { $0 }
+  }
+
+  private init(
+    editor: Editor,
+    indicatorTransform: @escaping (AnyView) -> AnyView
+  ) {
     self.editor = editor
+    self.indicatorTransform = indicatorTransform
   }
 
   /// The styled multiline editor.
@@ -57,13 +79,17 @@ public struct TextEditor95<Editor: View>: View {
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
         .background(TextEditorScrollProbe95(bridge: scrollBridge))
 
-      ScrollIndicator95(
-        contentOffset: Binding(
-          get: { scrollBridge.metrics.contentOffset },
-          set: { scrollBridge.scroll(to: $0) }
-        ),
-        contentLength: scrollBridge.metrics.contentHeight,
-        viewportLength: scrollBridge.metrics.containerHeight
+      indicatorTransform(
+        AnyView(
+          ScrollIndicator95(
+            contentOffset: Binding(
+              get: { scrollBridge.metrics.contentOffset },
+              set: { scrollBridge.scroll(to: $0) }
+            ),
+            contentLength: scrollBridge.metrics.contentHeight,
+            viewportLength: scrollBridge.metrics.containerHeight
+          )
+        )
       )
     }
     .bevel95(.input, background: inputBackground)
@@ -78,6 +104,32 @@ public struct TextEditor95<Editor: View>: View {
   public func swiftUI<ModifiedEditor: View>(
     @ViewBuilder _ transform: (Editor) -> ModifiedEditor
   ) -> TextEditor95<ModifiedEditor> {
-    TextEditor95<ModifiedEditor>(editor: transform(editor))
+    TextEditor95<ModifiedEditor>(
+      editor: transform(editor),
+      indicatorTransform: indicatorTransform
+    )
+  }
+
+  /// Applies SwiftUI modifiers to the connected classic scroll indicator.
+  ///
+  /// ```swift
+  /// TextEditor95(text: $notes)
+  ///   .swiftUIIndicator { indicator in
+  ///     indicator.accessibilityIdentifier("notes-scrollbar")
+  ///   }
+  /// ```
+  ///
+  /// - Parameter transform: A closure that receives ``ScrollIndicator95``
+  ///   after it has been connected to the editor's native scroll position.
+  /// - Returns: An editor that applies the indicator transformation.
+  public func swiftUIIndicator<ModifiedIndicator: View>(
+    @ViewBuilder _ transform: @escaping (AnyView) -> ModifiedIndicator
+  ) -> TextEditor95<Editor> {
+    TextEditor95<Editor>(
+      editor: editor,
+      indicatorTransform: { indicator in
+        AnyView(transform(self.indicatorTransform(indicator)))
+      }
+    )
   }
 }
