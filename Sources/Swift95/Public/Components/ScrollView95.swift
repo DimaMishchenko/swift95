@@ -16,9 +16,6 @@ import SwiftUI
 /// }
 /// ```
 public struct ScrollView95<Content: View, Scroll: View>: View {
-  @State private var position = ScrollPosition(y: 0)
-  @State private var metrics = ScrollMetrics95()
-
   private let scroll: Scroll
   private let showsIndicator: Bool
   private let lineIncrement: CGFloat?
@@ -55,34 +52,13 @@ public struct ScrollView95<Content: View, Scroll: View>: View {
 
   /// The styled scroll view.
   public var body: some View {
-    HStack(alignment: .top, spacing: 0) {
-      scroll
-        .scrollIndicators(.hidden)
-        .scrollPosition($position)
-        .onScrollGeometryChange(for: ScrollMetrics95.self) { geometry in
-          ScrollMetrics95(
-            contentOffset: max(0, geometry.contentOffset.y),
-            contentHeight: geometry.contentSize.height,
-            containerHeight: geometry.containerSize.height
-          )
-        } action: { _, newMetrics in
-          metrics = newMetrics
-        }
-
-      if showsIndicator {
-        indicatorTransform(
-          AnyView(
-            ScrollIndicator95(
-              contentOffset: scrollOffset,
-              contentLength: metrics.contentHeight,
-              viewportLength: metrics.containerHeight,
-              lineIncrement: lineIncrement
-            )
-          )
-        )
-      }
-    }
-    .bevel95(.input)
+    NativeVerticalScrollContainer(
+      scroll: scroll,
+      showsIndicator: showsIndicator,
+      lineIncrement: lineIncrement,
+      bevelStyle: .input,
+      indicatorTransform: indicatorTransform
+    )
   }
 
   /// Applies a transformation to the embedded SwiftUI scroll view.
@@ -123,16 +99,6 @@ public struct ScrollView95<Content: View, Scroll: View>: View {
       lineIncrement: lineIncrement,
       indicatorTransform: { indicator in
         AnyView(transform(self.indicatorTransform(indicator)))
-      }
-    )
-  }
-
-  private var scrollOffset: Binding<CGFloat> {
-    Binding(
-      get: { metrics.contentOffset },
-      set: { newOffset in
-        metrics.contentOffset = newOffset
-        position.scrollTo(y: newOffset)
       }
     )
   }

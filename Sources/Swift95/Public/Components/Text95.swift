@@ -21,6 +21,7 @@ import SwiftUI
 ///   }
 /// ```
 public struct Text95<Content: View>: View {
+  @Environment(\.foregroundColor95) private var foregroundColor
   @Environment(\.isEnabled) private var isEnabled
   @Environment(\.theme95) private var theme
 
@@ -55,7 +56,9 @@ public struct Text95<Content: View>: View {
   public var body: some View {
     content
       .font(theme.fonts.body)
-      .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
+      .foregroundStyle(
+        foregroundColor ?? (isEnabled ? theme.colors.text : theme.colors.textDisabled)
+      )
   }
 
   /// Applies a transformation to the embedded SwiftUI text.

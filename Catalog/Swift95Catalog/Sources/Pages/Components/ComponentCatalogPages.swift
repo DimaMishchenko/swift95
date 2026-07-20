@@ -183,6 +183,143 @@ struct ScrollViewCatalogView95: View {
   }
 }
 
+struct ListCatalogView: View {
+  @Environment(\.theme95) private var theme
+  @State private var example = ListCatalogExample.largeIcon
+  @State private var selectedItem: CatalogListItem.ID? = CatalogListItem.documents.id
+  @State private var selectedActions: Set<CatalogListItem.ID> = [
+    CatalogListItem.view.id,
+    CatalogListItem.refresh.id
+  ]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing95[16]) {
+      Picker("Example", selection: $example) {
+        ForEach(ListCatalogExample.allCases) { example in
+          Text(example.title).tag(example)
+        }
+      }
+      .pickerStyle(.menu)
+
+      CatalogExample95(example.title) {
+        exampleContent
+      }
+    }
+    .frame(maxWidth: 720, maxHeight: .infinity, alignment: .topLeading)
+    .padding(Spacing95[16])
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .navigationTitle("List95")
+    .background(theme.colors.background.ignoresSafeArea())
+  }
+
+  @ViewBuilder
+  private var exampleContent: some View {
+    switch example {
+    case .largeIcon:
+      List95(CatalogListItem.largeItems, style: .largeIcon) { item in
+        Row95 {
+          Image(systemName: item.symbol)
+            .resizable()
+            .scaledToFit()
+        } label: {
+          Text95(item.title)
+        } accessory: {
+          item.hasChildren
+        }
+      }
+      .frame(height: 400)
+
+    case .compact:
+      List95(CatalogListItem.actions, style: .compact) { item in
+        Row95 { Text95(item.title) }
+      }
+      .frame(height: 260)
+
+    case .selected:
+      VStack(alignment: .leading, spacing: Spacing95[8]) {
+        List95(
+          CatalogListItem.largeItems,
+          selection: $selectedItem,
+          style: .largeIcon
+        ) { item in
+          Row95 {
+            Image(systemName: item.symbol)
+              .resizable()
+              .scaledToFit()
+          } label: {
+            Text95(item.title)
+          }
+        }
+        .frame(height: 360)
+
+        Text95("Selected: \(selectedItem?.rawValue ?? "None")")
+      }
+
+    case .multipleSelection:
+      List95(
+        CatalogListItem.actions,
+        selection: $selectedActions,
+        style: .compact
+      ) { item in
+        Row95 { Text95(item.title) }
+      }
+      .frame(height: 300)
+
+    case .disabled:
+      List95(CatalogListItem.largeItems, style: .largeIcon) { item in
+        Row95 {
+          Image(systemName: item.symbol)
+            .resizable()
+            .scaledToFit()
+        } label: {
+          Text95(item.title)
+        }
+      }
+      .disabled(true)
+      .frame(height: 360)
+
+    case .separators:
+      List95(CatalogListItem.actions, style: .compact) { item in
+        Row95 { Text95(item.title) }
+          .separator(item.hasSeparatorAfter)
+      }
+      .frame(height: 260)
+
+    case .childrenAndAccessories:
+      List95(CatalogListItem.accessoryItems, style: .largeIcon) { item in
+        if item.hasChildren {
+          Row95 {
+            Image(systemName: item.symbol)
+              .resizable()
+              .scaledToFit()
+          } label: {
+            Text95(item.title)
+          } accessory: {
+            true
+          }
+        } else {
+          Row95 {
+            Image(systemName: item.symbol)
+              .resizable()
+              .scaledToFit()
+          } label: {
+            Text95(item.title)
+          } accessory: {
+            Image(systemName: "checkmark")
+          }
+        }
+      }
+      .frame(height: 280)
+
+    case .overflowing:
+      List95(CatalogListItem.overflowItems, style: .compact) { item in
+        Row95 { Text95(item.title) }
+      }
+      .frame(height: 400)
+    }
+  }
+}
+
 struct DividerCatalogView95: View {
   var body: some View {
     CatalogPage95("Divider95") {
@@ -397,5 +534,91 @@ private enum RadioSelection95: Hashable {
     case .custom: "Custom"
     case .unavailable: "Unavailable"
     }
+  }
+}
+
+private enum ListCatalogExample: String, CaseIterable, Identifiable {
+  case largeIcon
+  case compact
+  case selected
+  case multipleSelection
+  case disabled
+  case separators
+  case childrenAndAccessories
+  case overflowing
+
+  var id: Self { self }
+
+  var title: String {
+    switch self {
+    case .largeIcon: "Large icon"
+    case .compact: "Compact"
+    case .selected: "Selected"
+    case .multipleSelection: "Multiple selection"
+    case .disabled: "Disabled"
+    case .separators: "Separators"
+    case .childrenAndAccessories: "Children and accessories"
+    case .overflowing: "Overflowing"
+    }
+  }
+}
+
+private struct CatalogListItem: Identifiable {
+  struct ID: Hashable, RawRepresentable {
+    let rawValue: String
+  }
+
+  let id: ID
+  let title: String
+  let symbol: String
+  let hasChildren: Bool
+  let hasSeparatorAfter: Bool
+
+  static let programs = item("Programs", symbol: "folder", hasChildren: true)
+  static let documents = item("Documents", symbol: "doc.on.doc", hasChildren: true)
+  static let settings = item("Settings", symbol: "gearshape", hasChildren: true)
+  static let find = item("Find", symbol: "magnifyingglass")
+  static let help = item("Help", symbol: "questionmark.square")
+  static let run = item("Run", symbol: "terminal")
+  static let view = item("View", hasSeparatorAfter: true)
+  static let customize = item("Customize this folder", hasSeparatorAfter: true)
+  static let arrange = item("Arrange Icons")
+  static let lineUp = item("Line Up Icons")
+  static let refresh = item("Refresh", hasSeparatorAfter: true)
+  static let paste = item("Paste")
+  static let pasteShortcut = item("Paste shortcut")
+  static let undoCopy = item("Undo Copy")
+  static let new = item("New", hasSeparatorAfter: true)
+  static let properties = item("Properties")
+
+  static let largeItems = [programs, documents, settings, find, help, run]
+  static let actions = [
+    view,
+    customize,
+    arrange,
+    lineUp,
+    refresh,
+    paste,
+    pasteShortcut,
+    undoCopy,
+    new,
+    properties
+  ]
+  static let accessoryItems = [programs, settings, refresh]
+  static let overflowItems = (1...40).map { item("List item \($0)") }
+
+  private static func item(
+    _ title: String,
+    symbol: String = "doc",
+    hasChildren: Bool = false,
+    hasSeparatorAfter: Bool = false
+  ) -> CatalogListItem {
+    CatalogListItem(
+      id: ID(rawValue: title),
+      title: title,
+      symbol: symbol,
+      hasChildren: hasChildren,
+      hasSeparatorAfter: hasSeparatorAfter
+    )
   }
 }
