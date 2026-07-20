@@ -339,6 +339,36 @@ public struct Picker95<
 
   @ViewBuilder
   private var optionList: some View {
+    PickerOptionList95(
+      options: options,
+      selection: $selection,
+      pressedOption: $pressedOption,
+      theme: theme
+    ) {
+      isPresented = false
+    }
+  }
+
+  func snapshotOptionList95(selection: SelectionValue, theme: Theme95) -> some View {
+    PickerOptionList95(
+      options: options,
+      selection: .constant(selection),
+      pressedOption: .constant(nil),
+      theme: theme,
+      dismiss: {}
+    )
+  }
+}
+
+private struct PickerOptionList95<Value: Hashable, OptionLabel: View>: View {
+  let options: [PickerOption95<Value, OptionLabel>]
+  @Binding var selection: Value
+  @Binding var pressedOption: Value?
+  let theme: Theme95
+  let dismiss: () -> Void
+
+  @ViewBuilder
+  var body: some View {
     if options.count > 7 {
       ScrollView95 {
         optionRows
@@ -359,13 +389,13 @@ public struct Picker95<
   }
 
   private func optionRow(
-    _ option: PickerOption95<SelectionValue, OptionLabel>
+    _ option: PickerOption95<Value, OptionLabel>
   ) -> some View {
     let isSelected = selection == option.value
     let button = Button {
       selection = option.value
       pressedOption = nil
-      isPresented = false
+      dismiss()
     } label: {
       option.label
     }
@@ -383,18 +413,19 @@ public struct Picker95<
   }
 }
 
-private struct PickerOptionButtonStyle95<Value: Hashable>: ButtonStyle {
+struct PickerOptionButtonStyle95<Value: Hashable>: ButtonStyle {
   @Environment(\.isEnabled) private var isEnabled
   @Binding var pressedOption: Value?
 
   let isSelected: Bool
   let value: Value
   let theme: Theme95
+  var forcedPressed = false
 
   func makeBody(configuration: Configuration) -> some View {
     let isHighlighted =
       isEnabled
-      && (configuration.isPressed || (isSelected && pressedOption == nil))
+      && (forcedPressed || configuration.isPressed || (isSelected && pressedOption == nil))
 
     configuration.label
       .font(theme.fonts.body)
@@ -422,7 +453,7 @@ private struct PickerOptionButtonStyle95<Value: Hashable>: ButtonStyle {
   }
 }
 
-private struct PickerOptionPresentationLayout95: Layout {
+struct PickerOptionPresentationLayout95: Layout {
   let triggerFrame: CGRect
   let overlap: CGFloat
 
@@ -468,31 +499,33 @@ private struct PickerOptionPresentationLayout95: Layout {
   }
 }
 
-private struct PickerTriggerButtonStyle95: ButtonStyle {
+struct PickerTriggerButtonStyle95: ButtonStyle {
   @Environment(\.isEnabled) private var isEnabled
 
   let theme: Theme95
+  var forcedPressed = false
 
   func makeBody(configuration: Configuration) -> some View {
+    let isPressed = forcedPressed || configuration.isPressed
+
     HStack(spacing: 0) {
       configuration.label
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
         .padding(.horizontal, Spacing95[6])
         .padding(.vertical, Spacing95[5])
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
 
       Color.clear
-        .frame(width: 24)
-        .frame(maxHeight: .infinity)
-        .bevel95(configuration.isPressed ? .sunken : .raised)
+        .frame(width: 24, height: 24)
+        .bevel95(isPressed ? .sunken : .raised)
         .overlay {
           PixelCaret95(
             color: isEnabled ? theme.colors.text : theme.colors.textDisabled
           )
           .offset(
-            x: configuration.isPressed ? 1 : 0,
-            y: configuration.isPressed ? 1 : 0
+            x: isPressed ? 1 : 0,
+            y: isPressed ? 1 : 0
           )
         }
         .padding(Spacing95[2])

@@ -88,8 +88,8 @@
 
     private func imageSnapshot<V: View>(height: CGFloat) -> Snapshotting<V, UIImage> {
       .image(
-        precision: 0.99,
-        perceptualPrecision: 0.99,
+        precision: 1,
+        perceptualPrecision: 0.98,
         layout: .fixed(width: 390, height: height),
         traits: UITraitCollection(traitsFrom: [
           UITraitCollection(displayScale: 1),

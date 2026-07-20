@@ -184,7 +184,9 @@ private struct ProgressViewRenderingStyle95: ProgressViewStyle {
 }
 
 private struct ProgressBar95: View {
-  @ScaledMetric(relativeTo: .body) private var dynamicTypeScale = CGFloat(1)
+  #if !os(macOS)
+    @ScaledMetric(relativeTo: .body) private var dynamicTypeScale = CGFloat(1)
+  #endif
 
   let progress: ProgressFraction95
   let style: ProgressView95BarStyle
@@ -211,7 +213,7 @@ private struct ProgressBar95: View {
         .padding(2)
       }
     }
-    .frame(minHeight: theme.metrics.progressBarHeight * dynamicTypeScale)
+    .frame(height: scaledProgressBarHeight)
     .bevel95(
       .input,
       background: isEnabled ? theme.colors.inputBackground : theme.colors.inputBackgroundDisabled
@@ -220,6 +222,14 @@ private struct ProgressBar95: View {
 
   private var progressColor: Color {
     isEnabled ? theme.colors.accent : theme.colors.textDisabled
+  }
+
+  private var scaledProgressBarHeight: CGFloat {
+    #if os(macOS)
+      theme.metrics.progressBarHeight
+    #else
+      theme.metrics.progressBarHeight * dynamicTypeScale
+    #endif
   }
 
   private func continuousProgress(fraction: CGFloat, size: CGSize) -> some View {
@@ -283,10 +293,16 @@ private struct SegmentedProgressDrawing95: View {
   }
 }
 
-private struct IndeterminateProgressDrawing95: View {
+struct IndeterminateProgressDrawing95: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   let color: Color
+  var phase: CGFloat?
+
+  init(color: Color, phase: CGFloat? = nil) {
+    self.color = color
+    self.phase = phase
+  }
 
   var body: some View {
     TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
@@ -295,10 +311,12 @@ private struct IndeterminateProgressDrawing95: View {
         let gap = CGFloat(2)
         let cycle = size.width + blockWidth * 3 + gap * 2
         let phase =
-          reduceMotion
-          ? CGFloat(0.35)
-          : CGFloat(
-            timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.2) / 1.2)
+          phase
+          ?? (reduceMotion
+            ? CGFloat(0.35)
+            : CGFloat(
+              timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.2)
+                / 1.2))
         let leading = phase * cycle - blockWidth * 3 - gap * 2
 
         for index in 0..<3 {

@@ -162,17 +162,31 @@ public struct Tabs95<Value: Hashable, Label: View, Content: View>: View {
   }
 }
 
-private struct TabButtonStyle95: ButtonStyle {
+struct TabButtonStyle95: ButtonStyle {
   let isSelected: Bool
   let theme: Theme95
   let contentInsets: EdgeInsets
+  var forcedPressed: Bool?
+
+  init(
+    isSelected: Bool,
+    theme: Theme95,
+    contentInsets: EdgeInsets,
+    forcedPressed: Bool? = nil
+  ) {
+    self.isSelected = isSelected
+    self.theme = theme
+    self.contentInsets = contentInsets
+    self.forcedPressed = forcedPressed
+  }
 
   func makeBody(configuration: Configuration) -> some View {
     TabButtonStyleContent95(
       configuration: configuration,
       isSelected: isSelected,
       theme: theme,
-      contentInsets: contentInsets
+      contentInsets: contentInsets,
+      forcedPressed: forcedPressed
     )
   }
 }
@@ -184,17 +198,20 @@ private struct TabButtonStyleContent95: View {
   let isSelected: Bool
   let theme: Theme95
   let contentInsets: EdgeInsets
+  let forcedPressed: Bool?
 
   var body: some View {
+    let isPressed = forcedPressed ?? configuration.isPressed
+
     configuration.label
       .font(theme.fonts.body)
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
       .padding(contentInsets)
       .background(theme.colors.background)
       .contentShape(.rect)
-      .offset(x: configuration.isPressed ? 1 : 0, y: configuration.isPressed ? 1 : 0)
+      .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
       .overlay {
-        if configuration.isPressed {
+        if isPressed {
           BevelDrawing95(colors: theme.colors, style: .sunken)
         } else if isSelected {
           ConnectedTabBevel95(colors: theme.colors)

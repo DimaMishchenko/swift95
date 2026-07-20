@@ -230,6 +230,310 @@
       )
     }
 
+    @Test func sliderBoundaryStates() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 16) {
+            Slider95(value: .constant(0.0), in: 0...1) { Text("Minimum") }
+            Slider95(value: .constant(1.0), in: 0...1) { Text("Maximum") }
+            Slider95(value: .constant(0.0), in: 0...0) { Text("Zero-length range") }
+          }
+        },
+        as: image(height: 230)
+      )
+    }
+
+    @Test func textEditorContentFitAndOverflow() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 12) {
+            TextEditor95(text: .constant("Content fits without scrolling"))
+              .frame(height: 90)
+            TextEditor95(
+              text: .constant((1...20).map { "Overflow line \($0)" }.joined(separator: "\n"))
+            )
+            .frame(height: 130)
+          }
+        },
+        as: image(height: 290)
+      )
+    }
+
+    @Test func list95LargeIconAndAccessories() {
+      let items = SnapshotCatalogListItem.largeItems
+      assertSnapshot(
+        of: canvas {
+          List95(items, style: .largeIcon) { item in
+            Row95 {
+              Image(systemName: item.symbol)
+                .resizable()
+                .scaledToFit()
+            } label: {
+              Text95(item.title)
+            } accessory: {
+              item.hasChildren
+            }
+          }
+          .frame(height: 220)
+        },
+        as: image(height: 280)
+      )
+    }
+
+    @Test func list95SingleSelectionAndSections() {
+      let actions = SnapshotCatalogListItem.actions
+      let sections = [
+        List95.Section(id: "File", items: Array(actions.prefix(2))),
+        List95.Section(id: "View", items: Array(actions.suffix(2)))
+      ]
+
+      assertSnapshot(
+        of: canvas {
+          List95(
+            sections,
+            selection: .constant(Optional(actions[1].id)),
+            style: .compact
+          ) { section in
+            Text95(section.id)
+          } rowContent: { item in
+            Row95 { Text95(item.title) }
+          }
+          .frame(height: 220)
+        },
+        as: image(height: 280)
+      )
+    }
+
+    @Test func list95DisabledAndOverflowing() {
+      assertSnapshot(
+        of: canvas {
+          HStack(alignment: .top, spacing: 12) {
+            List95(SnapshotCatalogListItem.largeItems, style: .largeIcon) { item in
+              Row95 { Text95(item.title) }
+            }
+            .disabled(true)
+
+            List95(SnapshotCatalogListItem.overflowItems, style: .compact) { item in
+              Row95 { Text95(item.title) }
+            }
+          }
+          .frame(height: 190)
+        },
+        as: image(height: 250)
+      )
+    }
+
+    @Test func list95RowRenderingBranches() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 8) {
+            Row95 { Text95("Normal compact row") }
+              .snapshotState95(style: .compact)
+            Row95 { Text95("Highlighted selected row") }
+              .snapshotState95(style: .compact, isHighlighted: true, isSelected: true)
+            Row95 { Text95("Pressed row") }
+              .snapshotState95(style: .compact, isPressed: true)
+            Row95 { Text95("Checked multiple row") }
+              .snapshotState95(
+                style: .compact,
+                isSelected: true,
+                showsSelectionMark: true
+              )
+            Row95 { Text95("Unchecked multiple row") }
+              .snapshotState95(style: .compact, showsSelectionMark: true)
+          }
+        },
+        as: image(height: 230)
+      )
+    }
+
+    @Test func pickerDisabledAndOptionStates() {
+      let picker = snapshotPicker(selection: .name)
+      let longPicker = Picker95(
+        "Long picker",
+        selection: .constant(SnapshotPickerChoice.option1),
+        options: SnapshotPickerChoice.longOptions
+      )
+
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 16) {
+            picker.disabled(true)
+            picker.snapshotOptionList95(selection: .name, theme: .classic)
+              .frame(width: 240)
+            longPicker.snapshotOptionList95(selection: .option1, theme: .classic)
+              .frame(width: 240, height: 280)
+          }
+        },
+        as: image(height: 500)
+      )
+    }
+
+    @Test func pickerPresentationBelowAndAbove() {
+      let options = snapshotPicker(selection: .dateModified)
+        .snapshotOptionList95(selection: .dateModified, theme: .classic)
+
+      assertSnapshot(
+        of: canvas {
+          ZStack(alignment: .topLeading) {
+            PickerOptionPresentationLayout95(
+              triggerFrame: CGRect(x: 20, y: 30, width: 220, height: 32),
+              overlap: 2
+            ) {
+              options
+            }
+          }
+          .frame(width: 342, height: 360)
+        },
+        as: image(height: 420),
+        named: "below"
+      )
+
+      assertSnapshot(
+        of: canvas {
+          ZStack(alignment: .topLeading) {
+            PickerOptionPresentationLayout95(
+              triggerFrame: CGRect(x: 20, y: 310, width: 220, height: 32),
+              overlap: 2
+            ) {
+              options
+            }
+          }
+          .frame(width: 342, height: 360)
+        },
+        as: image(height: 420),
+        named: "above"
+      )
+    }
+
+    @Test func deterministicPressedStates() {
+      let theme = Theme95.classic
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 14) {
+            Button("Pressed button") {}
+              .buttonStyle(
+                ButtonStyle95(
+                  theme: theme,
+                  contentInsets: EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12),
+                  forcedPressed: true
+                )
+              )
+
+            Button("Pressed picker") {}
+              .buttonStyle(PickerTriggerButtonStyle95(theme: theme, forcedPressed: true))
+
+            Button("Pressed option") {}
+              .buttonStyle(
+                PickerOptionButtonStyle95(
+                  pressedOption: .constant(Optional<Int>.none),
+                  isSelected: false,
+                  value: 1,
+                  theme: theme,
+                  forcedPressed: true
+                )
+              )
+
+            Button("Pressed tab") {}
+              .buttonStyle(
+                TabButtonStyle95(
+                  isSelected: false,
+                  theme: theme,
+                  contentInsets: EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12),
+                  forcedPressed: true
+                )
+              )
+          }
+        },
+        as: image(height: 280)
+      )
+    }
+
+    @Test func tabsDisabledAndOverflowing() {
+      let tabs = (1...8).map { Tab95("Tab \($0)", value: $0) }
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 16) {
+            Tabs95(selection: .constant(1), tabs: tabs) { value in
+              Text95("Selected tab \(value)")
+                .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+            }
+            Tabs95(selection: .constant(2), tabs: Array(tabs.prefix(3))) { value in
+              Text95("Disabled tab \(value)")
+                .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+            }
+            .disabled(true)
+          }
+        },
+        as: image(height: 330)
+      )
+    }
+
+    @Test func indeterminateProgressFixedPhase() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 12) {
+            Text95("Indeterminate — fixed phase")
+            IndeterminateProgressDrawing95(
+              color: Theme95.classic.colors.accent,
+              phase: 0.35
+            )
+            .frame(height: Theme95.classic.metrics.progressBarHeight)
+            .bevel95(.input)
+          }
+        },
+        as: image(height: 130)
+      )
+    }
+
+    @Test func accessibilityDynamicTypeMatrix() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 18) {
+            Text95("Accessibility text")
+            Button95("Accessibility button") {}
+            Checkbox95("Accessibility checkbox", isOn: .constant(true))
+            RadioButton95("Accessibility radio", value: 1, selection: .constant(1))
+            Slider95(value: .constant(0.5)) { Text("Accessibility slider") }
+            TextField95("Field", text: .constant("Accessibility field"))
+            snapshotPicker(selection: .name)
+            Tabs95(
+              selection: .constant(SnapshotTab.general),
+              tabs: [
+                Tab95("General", value: .general),
+                Tab95("Advanced settings", value: .advanced)
+              ]
+            ) { value in
+              Text95(value.title)
+                .frame(maxWidth: .infinity, minHeight: 50, alignment: .topLeading)
+            }
+          }
+          .dynamicTypeSize(.accessibility5)
+        },
+        as: image(height: 1000)
+      )
+    }
+
+    @Test func rightToLeftAndLongContent() {
+      assertSnapshot(
+        of: canvas {
+          VStack(alignment: .leading, spacing: 14) {
+            Button95("A long localized button title") {}
+            Checkbox95("A long localized checkbox label", isOn: .constant(true))
+            RadioButton95(
+              "A long localized radio-button label",
+              value: 1,
+              selection: .constant(1)
+            )
+            snapshotPicker(selection: .dateModified)
+            TextField95("Localized field", text: .constant("Long localized content"))
+          }
+          .environment(\.layoutDirection, .rightToLeft)
+        },
+        as: image(height: 330)
+      )
+    }
+
     @Test func bevelFoundation() {
       assertSnapshot(
         of: canvas {
@@ -243,9 +547,15 @@
               foundationBox("Raised + sunken", style: .raisedSunken)
               foundationBox("Raised + input", style: .raisedInput)
             }
+            Text95("Accent background")
+              .frame(maxWidth: .infinity, minHeight: 54)
+              .bevel95(.raised, background: Theme95.classic.colors.accent)
+            Text95("Raised + input, custom spacing")
+              .frame(maxWidth: .infinity, minHeight: 54)
+              .bevel95(.raisedInput, spacing: Spacing95[8])
           }
         },
-        as: image(height: 230)
+        as: image(height: 370)
       )
     }
 
@@ -302,6 +612,16 @@
       )
     }
 
+    private func snapshotPicker(
+      selection: SnapshotPickerChoice
+    ) -> Picker95<SnapshotPickerChoice, Text, AnyView> {
+      Picker95(
+        "Sort by",
+        selection: .constant(selection),
+        options: SnapshotPickerChoice.options
+      )
+    }
+
     private func canvas<Content: View>(
       @ViewBuilder content: () -> Content
     ) -> some View {
@@ -318,8 +638,8 @@
 
     private func image<V: View>(height: CGFloat) -> Snapshotting<V, UIImage> {
       .image(
-        precision: 0.99,
-        perceptualPrecision: 0.99,
+        precision: 1,
+        perceptualPrecision: 0.98,
         layout: .fixed(width: 390, height: height),
         traits: UITraitCollection(traitsFrom: [
           UITraitCollection(displayScale: 1),
@@ -355,6 +675,69 @@
       case .advanced: "Advanced"
       }
     }
+  }
+
+  private enum SnapshotPickerChoice: Int, Hashable, CaseIterable {
+    case name
+    case dateModified
+    case size
+    case option1
+    case option2
+    case option3
+    case option4
+    case option5
+    case option6
+    case option7
+    case option8
+    case option9
+
+    static var options: [PickerOption95<SnapshotPickerChoice, Text>] {
+      [
+        PickerOption95("Name", value: .name),
+        PickerOption95("Date modified", value: .dateModified),
+        PickerOption95("Size", value: .size)
+      ]
+    }
+
+    static var longOptions: [PickerOption95<SnapshotPickerChoice, Text>] {
+      (option1.rawValue...option9.rawValue).compactMap(Self.init(rawValue:))
+        .enumerated()
+        .map { offset, value in
+          PickerOption95("Option \(offset + 1)", value: value)
+        }
+    }
+  }
+
+  private struct SnapshotCatalogListItem: Identifiable {
+    let id: Int
+    let title: String
+    let symbol: String
+    let hasChildren: Bool
+
+    static let largeItems = [
+      SnapshotCatalogListItem(id: 1, title: "Programs", symbol: "folder", hasChildren: true),
+      SnapshotCatalogListItem(id: 2, title: "Documents", symbol: "doc", hasChildren: true),
+      SnapshotCatalogListItem(id: 3, title: "Settings", symbol: "gearshape", hasChildren: false)
+    ]
+
+    static let actions = [
+      SnapshotCatalogListItem(id: 10, title: "Open", symbol: "folder", hasChildren: false),
+      SnapshotCatalogListItem(
+        id: 11, title: "Refresh", symbol: "arrow.clockwise", hasChildren: false),
+      SnapshotCatalogListItem(
+        id: 12, title: "Properties", symbol: "info.circle", hasChildren: false),
+      SnapshotCatalogListItem(id: 13, title: "Close", symbol: "xmark", hasChildren: false)
+    ]
+
+    static let overflowItems = (1...18)
+      .map {
+        SnapshotCatalogListItem(
+          id: 100 + $0,
+          title: "Overflow item \($0)",
+          symbol: "doc",
+          hasChildren: false
+        )
+      }
   }
 
   private struct ThemedFontSample: View {
@@ -395,6 +778,7 @@
         ("text", "#000000", colors.text),
         ("textInverted", "#FFFFFF", colors.textInverted),
         ("textDisabled", "#868A8E", colors.textDisabled),
+        ("disabledHighlight", "#D2D2D2", colors.textDisabledHighlight),
         ("accent", "#000E7A", colors.accent),
         ("accentText", "#FEFEFE", colors.accentText),
         ("link", "#000E7A", colors.link),

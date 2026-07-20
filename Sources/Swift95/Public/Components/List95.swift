@@ -443,10 +443,18 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
   private func styled<Content: View>(_ list: Content) -> some View {
     list
       .listStyle(.plain)
-      .environment(\.defaultMinListRowHeight, 0)
+      .environment(\.defaultMinListRowHeight, minimumListRowHeight)
       .scrollContentBackground(.hidden)
       .scrollIndicators(.hidden)
       .background(theme.colors.background)
+  }
+
+  private var minimumListRowHeight: CGFloat {
+    #if os(macOS)
+      1
+    #else
+      0
+    #endif
   }
 
   @ViewBuilder
@@ -917,6 +925,22 @@ private extension EnvironmentValues {
   var list95ShowsSelectionMark: Bool {
     get { self[ListShowsSelectionMarkKey.self] }
     set { self[ListShowsSelectionMarkKey.self] = newValue }
+  }
+}
+
+extension Row95 {
+  func snapshotState95(
+    style: List95.Style,
+    isHighlighted: Bool = false,
+    isSelected: Bool = false,
+    isPressed: Bool = false,
+    showsSelectionMark: Bool = false
+  ) -> some View {
+    environment(\.list95Style, style)
+      .environment(\.list95IsHighlighted, isHighlighted)
+      .environment(\.list95IsSelected, isSelected)
+      .environment(\.list95IsPressed, isPressed)
+      .environment(\.list95ShowsSelectionMark, showsSelectionMark)
   }
 }
 

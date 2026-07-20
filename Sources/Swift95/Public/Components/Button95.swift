@@ -115,15 +115,27 @@ extension Button95 where Label == Text, Control == Button<Text> {
   }
 }
 
-private struct ButtonStyle95: ButtonStyle {
+struct ButtonStyle95: ButtonStyle {
   let theme: Theme95
   let contentInsets: EdgeInsets
+  var forcedPressed: Bool?
+
+  init(
+    theme: Theme95,
+    contentInsets: EdgeInsets,
+    forcedPressed: Bool? = nil
+  ) {
+    self.theme = theme
+    self.contentInsets = contentInsets
+    self.forcedPressed = forcedPressed
+  }
 
   func makeBody(configuration: Configuration) -> some View {
     ButtonStyleContent95(
       configuration: configuration,
       theme: theme,
-      contentInsets: contentInsets
+      contentInsets: contentInsets,
+      forcedPressed: forcedPressed
     )
   }
 }
@@ -136,15 +148,18 @@ private struct ButtonStyleContent95: View {
   let configuration: ButtonStyle95.Configuration
   let theme: Theme95
   let contentInsets: EdgeInsets
+  let forcedPressed: Bool?
 
   var body: some View {
+    let isPressed = forcedPressed ?? isVisuallyPressed
+
     configuration.label
       .font(theme.fonts.body)
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
       .padding(contentInsets)
       .contentShape(.rect)
-      .offset(x: isVisuallyPressed ? 1 : 0, y: isVisuallyPressed ? 1 : 0)
-      .bevel95(isVisuallyPressed ? .sunken : .raised)
+      .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
+      .bevel95(isPressed ? .sunken : .raised)
       .onChange(of: configuration.isPressed, initial: true, updateVisualPressState)
       .onDisappear {
         releaseTask?.cancel()
