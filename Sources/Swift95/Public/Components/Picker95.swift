@@ -12,25 +12,34 @@ public struct PickerOption95<Value: Hashable, Label: View>: Identifiable {
   public var id: Value { value }
 
   private let transform: (AnyView) -> AnyView
+  let accessibilityValue: Text?
 
   /// Creates an option with a custom SwiftUI label.
   ///
   /// - Parameters:
   ///   - value: The value represented by this option.
+  ///   - accessibilityValue: Text that describes the option when it is selected.
   ///   - label: The content displayed in the option list.
-  public init(value: Value, @ViewBuilder label: () -> Label) {
+  public init(
+    value: Value,
+    accessibilityValue: Text? = nil,
+    @ViewBuilder label: () -> Label
+  ) {
     self.value = value
     self.label = label()
+    self.accessibilityValue = accessibilityValue
     transform = { $0 }
   }
 
   private init(
     value: Value,
     label: Label,
+    accessibilityValue: Text?,
     transform: @escaping (AnyView) -> AnyView
   ) {
     self.value = value
     self.label = label
+    self.accessibilityValue = accessibilityValue
     self.transform = transform
   }
 
@@ -54,6 +63,7 @@ public struct PickerOption95<Value: Hashable, Label: View>: Identifiable {
     PickerOption95<Value, Label>(
       value: value,
       label: label,
+      accessibilityValue: accessibilityValue,
       transform: { option in
         AnyView(transform(self.transform(option)))
       }
@@ -68,14 +78,14 @@ public struct PickerOption95<Value: Hashable, Label: View>: Identifiable {
 extension PickerOption95 where Label == Text {
   /// Creates an option with a localized text label.
   public init(_ titleKey: LocalizedStringKey, value: Value) {
-    self.init(value: value) {
+    self.init(value: value, accessibilityValue: Text(titleKey)) {
       Text(titleKey)
     }
   }
 
   /// Creates an option with an unlocalized text label.
   public init<S>(_ title: S, value: Value) where S: StringProtocol {
-    self.init(value: value) {
+    self.init(value: value, accessibilityValue: Text(verbatim: String(title))) {
       Text(verbatim: String(title))
     }
   }
@@ -110,6 +120,7 @@ public struct Picker95<
   private let title: Text
   private let options: [PickerOption95<SelectionValue, OptionLabel>]
   private let currentValueLabel: (SelectionValue) -> CurrentValueLabel
+  private let accessibilityValue: (SelectionValue) -> Text
   private let triggerTransform: (AnyView) -> AnyView
 
   /// Creates a picker whose closed field reuses the selected option label.
@@ -122,13 +133,20 @@ public struct Picker95<
     _ titleKey: LocalizedStringKey,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>]
-  ) where CurrentValueLabel == OptionLabel {
+  ) where CurrentValueLabel == AnyView {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
     title = Text(titleKey)
     _selection = selection
     self.options = options
     currentValueLabel = { value in
-      options.first(where: { $0.value == value })?.label ?? options[0].label
+      guard let option = options.first(where: { $0.value == value }) else {
+        return AnyView(EmptyView())
+      }
+      return AnyView(option.label)
+    }
+    accessibilityValue = { value in
+      options.first(where: { $0.value == value })?.accessibilityValue
+        ?? Text(verbatim: String(describing: value))
     }
     triggerTransform = { $0 }
   }
@@ -143,13 +161,20 @@ public struct Picker95<
     _ title: S,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>]
-  ) where S: StringProtocol, CurrentValueLabel == OptionLabel {
+  ) where S: StringProtocol, CurrentValueLabel == AnyView {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
     self.title = Text(verbatim: String(title))
     _selection = selection
     self.options = options
     currentValueLabel = { value in
-      options.first(where: { $0.value == value })?.label ?? options[0].label
+      guard let option = options.first(where: { $0.value == value }) else {
+        return AnyView(EmptyView())
+      }
+      return AnyView(option.label)
+    }
+    accessibilityValue = { value in
+      options.first(where: { $0.value == value })?.accessibilityValue
+        ?? Text(verbatim: String(describing: value))
     }
     triggerTransform = { $0 }
   }
@@ -160,11 +185,15 @@ public struct Picker95<
   ///   - titleKey: The localized accessibility label for the picker.
   ///   - selection: The currently selected value.
   ///   - options: The nonempty ordered collection of available options.
+  ///   - accessibilityValue: Accessible text generated for the current selection.
   ///   - currentValueLabel: Content generated for the current selection.
   public init(
     _ titleKey: LocalizedStringKey,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
+    accessibilityValue: @escaping (SelectionValue) -> Text = {
+      Text(verbatim: String(describing: $0))
+    },
     @ViewBuilder currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel
   ) {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
@@ -172,6 +201,7 @@ public struct Picker95<
     _selection = selection
     self.options = options
     self.currentValueLabel = currentValueLabel
+    self.accessibilityValue = accessibilityValue
     triggerTransform = { $0 }
   }
 
@@ -181,11 +211,15 @@ public struct Picker95<
   ///   - title: The unlocalized accessibility label for the picker.
   ///   - selection: The currently selected value.
   ///   - options: The nonempty ordered collection of available options.
+  ///   - accessibilityValue: Accessible text generated for the current selection.
   ///   - currentValueLabel: Content generated for the current selection.
   public init<S>(
     _ title: S,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
+    accessibilityValue: @escaping (SelectionValue) -> Text = {
+      Text(verbatim: String(describing: $0))
+    },
     @ViewBuilder currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel
   ) where S: StringProtocol {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
@@ -193,6 +227,7 @@ public struct Picker95<
     _selection = selection
     self.options = options
     self.currentValueLabel = currentValueLabel
+    self.accessibilityValue = accessibilityValue
     triggerTransform = { $0 }
   }
 
@@ -201,12 +236,14 @@ public struct Picker95<
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
     currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel,
+    accessibilityValue: @escaping (SelectionValue) -> Text,
     triggerTransform: @escaping (AnyView) -> AnyView
   ) {
     self.title = title
     _selection = selection
     self.options = options
     self.currentValueLabel = currentValueLabel
+    self.accessibilityValue = accessibilityValue
     self.triggerTransform = triggerTransform
   }
 
@@ -258,6 +295,7 @@ public struct Picker95<
       selection: $selection,
       options: options,
       currentValueLabel: currentValueLabel,
+      accessibilityValue: accessibilityValue,
       triggerTransform: { trigger in
         AnyView(transform(self.triggerTransform(trigger)))
       }
@@ -273,6 +311,7 @@ public struct Picker95<
     }
     .buttonStyle(PickerTriggerButtonStyle95(theme: theme))
     .accessibilityLabel(title)
+    .accessibilityValue(accessibilityValue(selection))
   }
 
   private func optionPresentation(triggerFrame: CGRect) -> some View {

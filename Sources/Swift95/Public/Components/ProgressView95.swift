@@ -184,6 +184,8 @@ private struct ProgressViewRenderingStyle95: ProgressViewStyle {
 }
 
 private struct ProgressBar95: View {
+  @ScaledMetric(relativeTo: .body) private var dynamicTypeScale = CGFloat(1)
+
   let progress: ProgressFraction95
   let style: ProgressView95BarStyle
   let isEnabled: Bool
@@ -209,7 +211,7 @@ private struct ProgressBar95: View {
         .padding(2)
       }
     }
-    .frame(minHeight: theme.metrics.progressBarHeight)
+    .frame(minHeight: theme.metrics.progressBarHeight * dynamicTypeScale)
     .bevel95(
       .input,
       background: isEnabled ? theme.colors.inputBackground : theme.colors.inputBackgroundDisabled
@@ -229,6 +231,7 @@ private struct ProgressBar95: View {
       Text(percentage)
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
+        .frame(width: size.width, height: size.height)
 
       Rectangle()
         .fill(progressColor)
@@ -246,6 +249,7 @@ private struct ProgressBar95: View {
             .padding(.leading, inset)
         }
     }
+    .frame(width: size.width, height: size.height)
   }
 }
 

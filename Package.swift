@@ -14,6 +14,12 @@ let package = Package(
       targets: ["Swift95"]
     )
   ],
+  dependencies: [
+    .package(
+      url: "https://github.com/pointfreeco/swift-snapshot-testing",
+      exact: "1.19.2"
+    )
+  ],
   targets: [
     .target(
       name: "Swift95",
@@ -23,7 +29,11 @@ let package = Package(
     ),
     .testTarget(
       name: "Swift95Tests",
-      dependencies: ["Swift95"]
+      dependencies: [
+        "Swift95",
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+      ],
+      exclude: ["__Snapshots__"]
     )
   ]
 )

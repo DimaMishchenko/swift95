@@ -1,6 +1,8 @@
 # swift-95
 
-An opinionated Windows 95-inspired component kit for SwiftUI on iOS and iPadOS 18 and later.
+An opinionated Windows 95-inspired component kit for SwiftUI on iOS and iPadOS 18 and later, and
+macOS 15 and later. The macOS UI has not received the same visual validation yet and may need
+platform-specific polish.
 
 ## Inspired by
 

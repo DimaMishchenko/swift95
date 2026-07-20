@@ -3,9 +3,10 @@ import SwiftUI
 /// A native SwiftUI list with Windows 95-inspired rows and scroll indicator.
 ///
 /// `List95` is backed by `SwiftUI.List`, retaining lazy row creation, native
-/// selection, keyboard and pointer behavior, sections, and accessibility. It
-/// replaces the native background, separators, and scroll indicator with
-/// Swift95 styling.
+/// single selection, sections, and accessibility. Multiple-selection rows use
+/// bound toggles so their checked state remains available without exposing
+/// modern edit-mode chrome. The list replaces the native background,
+/// separators, and scroll indicator with Swift95 styling.
 ///
 /// ```swift
 ///   List95(items, selection: $selection, style: .largeIcon) { item in
@@ -144,7 +145,7 @@ public struct List95: View {
     indicatorTransform = { $0 }
   }
 
-  /// Creates a list with native multiple selection.
+  /// Creates a list with accessible, always-available multiple selection.
   ///
   /// - Parameters:
   ///   - items: The identifiable items displayed by the list.
@@ -295,7 +296,7 @@ public struct List95: View {
     indicatorTransform = { $0 }
   }
 
-  /// Creates a sectioned list with native multiple selection.
+  /// Creates a sectioned list with accessible, always-available multiple selection.
   ///
   /// - Parameters:
   ///   - sections: The typed sections and their items.
@@ -480,8 +481,8 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
 
   @ViewBuilder
   private func rows(in section: ListSectionStorage<Item>) -> some View {
-    ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
-      let isLast = index == section.items.index(before: section.items.endIndex)
+    ForEach(section.items) { item in
+      let isLast = item.id == section.items.last?.id
       switch selection {
       case .none:
         configuredRow(item, isLast: isLast)
@@ -497,12 +498,10 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
           .listRowBackground(Color.clear)
           .tag(item.id)
       case .multiple:
-        Button {
-          selection.activate(item.id)
-        } label: {
+        Toggle(isOn: selection.binding(for: item.id)) {
           configuredRow(item, isLast: isLast)
         }
-        .buttonStyle(ListRowInteractionButtonStyle(id: item.id, pressedID: $pressedID))
+        .toggleStyle(ListRowSelectionToggleStyle(id: item.id, pressedID: $pressedID))
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
@@ -789,15 +788,55 @@ enum ListSelection<ID: Hashable> {
     }
   }
 
-  func activate(_ id: ID) {
-    guard case let .multiple(selection) = self else { return }
-    if selection.wrappedValue.contains(id) {
-      selection.wrappedValue.remove(id)
-    } else {
-      selection.wrappedValue.insert(id)
+  func binding(for id: ID) -> Binding<Bool> {
+    guard case let .multiple(selection) = self else {
+      return .constant(false)
+    }
+
+    let box = ListSelectionBindingBox(selection: selection, id: id)
+
+    return Binding(
+      get: { box.value },
+      set: { box.value = $0 }
+    )
+  }
+}
+
+private final class ListSelectionBindingBox: @unchecked Sendable {
+  private let getValue: () -> Bool
+  private let setValue: (Bool) -> Void
+
+  init<ID: Hashable>(selection: Binding<Set<ID>>, id: ID) {
+    getValue = { selection.wrappedValue.contains(id) }
+    setValue = { isSelected in
+      var values = selection.wrappedValue
+      if isSelected {
+        values.insert(id)
+      } else {
+        values.remove(id)
+      }
+      selection.wrappedValue = values
     }
   }
 
+  var value: Bool {
+    get { getValue() }
+    set { setValue(newValue) }
+  }
+}
+
+private struct ListRowSelectionToggleStyle<ID: Hashable>: ToggleStyle {
+  let id: ID
+  @Binding var pressedID: ID?
+
+  func makeBody(configuration: Configuration) -> some View {
+    Button {
+      configuration.isOn.toggle()
+    } label: {
+      configuration.label
+    }
+    .buttonStyle(ListRowInteractionButtonStyle(id: id, pressedID: $pressedID))
+  }
 }
 
 private struct ListRowInteractionButtonStyle<ID: Hashable>: ButtonStyle {

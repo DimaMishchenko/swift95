@@ -71,15 +71,15 @@ import Testing
   #expect(!multiple.contains(1))
 }
 
-@Test func multipleSelectionActivationTogglesOnlyTheRequestedItem() {
+@Test func multipleSelectionBindingUpdatesOnlyTheRequestedItem() {
   let values = TestValueBox<Set<Int>>([1, 2])
   let selection = ListSelection<Int>
     .multiple(
       Binding(get: { values.value }, set: { values.value = $0 })
     )
 
-  selection.activate(1)
-  selection.activate(3)
+  selection.binding(for: 1).wrappedValue = false
+  selection.binding(for: 3).wrappedValue = true
 
   #expect(values.value == [2, 3])
 }
