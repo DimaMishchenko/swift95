@@ -70,6 +70,7 @@ private enum CatalogSection: String, CaseIterable, Identifiable {
 private enum CatalogDestination: String, CaseIterable, Identifiable {
   case text
   case button
+  case image
   case slider
   case textField
   case secureField
@@ -93,7 +94,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
 
   var section: CatalogSection {
     switch self {
-    case .text, .button, .slider, .textField, .secureField, .textEditor,
+    case .text, .button, .image, .slider, .textField, .secureField, .textEditor,
       .scrollIndicator, .scrollView, .list, .divider, .checkbox, .radioButton,
       .progressView, .picker, .tabs:
       .components
@@ -106,6 +107,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     switch self {
     case .text: "Text95"
     case .button: "Button95"
+    case .image: "Image95"
     case .slider: "Slider95"
     case .textField: "TextField95"
     case .secureField: "SecureField95"
@@ -131,6 +133,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     switch self {
     case .text: "textformat"
     case .button: "capsule"
+    case .image: "photo"
     case .slider: "slider.horizontal.3"
     case .textField: "character.cursor.ibeam"
     case .secureField: "lock"
@@ -162,6 +165,8 @@ private struct CatalogDestinationView: View {
       TextCatalogView95()
     case .button:
       ButtonCatalogView95()
+    case .image:
+      ImageCatalogView95()
     case .slider:
       SliderCatalogView95()
     case .textField:

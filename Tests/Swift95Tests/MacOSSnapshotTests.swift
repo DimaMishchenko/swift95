@@ -9,6 +9,27 @@
   @MainActor
   @Suite(.serialized)
   struct MacOSSnapshotTests {
+    @Test func images() {
+      let view = hostingView(width: 420, height: 210) {
+        HStack(spacing: 20) {
+          Image95(Image(systemName: "photo").resizable())
+            .foregroundStyle(.blue)
+            .frame(width: 140, height: 140)
+
+          AsyncImage95(url: nil, isPixelated: false) { _ in
+            LinearGradient(
+              colors: [.orange, .purple],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            )
+          }
+          .frame(width: 140, height: 140)
+        }
+      }
+
+      assertSnapshot(of: view, as: macImage(size: view.frame.size))
+    }
+
     @Test func controls() {
       let view = hostingView(width: 700, height: 700) {
         VStack(alignment: .leading, spacing: 14) {

@@ -37,6 +37,131 @@ struct ButtonCatalogView95: View {
   }
 }
 
+struct ImageCatalogView95: View {
+  private let remoteImageURL = URL(
+    string: "https://picsum.photos/id/119/640/480"
+  )
+
+  var body: some View {
+    CatalogPage95("Image95") {
+      CatalogExample95("Metal pixelation") {
+        HStack(alignment: .top, spacing: Spacing95[12]) {
+          shaderExample("Enabled", isPixelated: true)
+          shaderExample("Disabled", isPixelated: false)
+        }
+      }
+
+      Text95(
+        "Pixelation is enabled by default. Set isPixelated to false to preserve the original image."
+      )
+
+      CatalogExample95("Async image") {
+        AsyncImage95(url: remoteImageURL) { phase in
+          AsyncImageCatalogContent95(phase: phase)
+        }
+        .swiftUI { image in
+          image
+            .frame(maxWidth: .infinity)
+            .frame(height: 220)
+            .clipped()
+        }
+        .frame(maxWidth: 360)
+      }
+    }
+  }
+
+  private func shaderExample(
+    _ title: String,
+    isPixelated: Bool
+  ) -> some View {
+    VStack(alignment: .leading, spacing: Spacing95[6]) {
+      Text95(title)
+
+      Image95(isPixelated: isPixelated) {
+        ImageShaderSample95()
+      }
+      .frame(maxWidth: .infinity)
+      .aspectRatio(4 / 3, contentMode: .fit)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
+private struct ImageShaderSample95: View {
+  var body: some View {
+    Canvas { context, size in
+      context.fill(
+        Path(CGRect(origin: .zero, size: size)),
+        with: .linearGradient(
+          Gradient(colors: [.cyan, .blue, .purple, .orange]),
+          startPoint: .zero,
+          endPoint: CGPoint(x: size.width, y: size.height)
+        )
+      )
+
+      let stripeWidth = max(size.width / 48, 1)
+      for index in 0..<24 {
+        let x = CGFloat(index) * stripeWidth * 2
+        var stripe = Path()
+        stripe.move(to: CGPoint(x: x, y: 0))
+        stripe.addLine(to: CGPoint(x: x + size.height * 0.55, y: size.height))
+        context.stroke(
+          stripe,
+          with: .color(index.isMultiple(of: 2) ? .white : .black),
+          lineWidth: stripeWidth
+        )
+      }
+
+      let inset = min(size.width, size.height) * 0.18
+      context.fill(
+        Path(
+          ellipseIn: CGRect(
+            x: inset,
+            y: inset,
+            width: size.width - inset * 2,
+            height: size.height - inset * 2
+          )),
+        with: .color(.yellow.opacity(0.82))
+      )
+
+      context.draw(
+        Text("95")
+          .font(.system(size: min(size.width, size.height) * 0.38, weight: .black))
+          .foregroundStyle(.black),
+        at: CGPoint(x: size.width / 2, y: size.height / 2)
+      )
+    }
+  }
+}
+
+private struct AsyncImageCatalogContent95: View {
+  let phase: AsyncImagePhase
+
+  var body: some View {
+    if let image = phase.image {
+      image
+        .resizable()
+        .scaledToFill()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+    } else if phase.error != nil {
+      placeholder(symbol: "exclamationmark.triangle", label: "Image unavailable")
+    } else {
+      placeholder(symbol: "hourglass", label: "Loading image")
+    }
+  }
+
+  private func placeholder(symbol: String, label: String) -> some View {
+    VStack(spacing: Spacing95[8]) {
+      Image(systemName: symbol)
+        .font(.largeTitle)
+      Text95(label)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Theme95.classic.colors.background)
+  }
+}
+
 struct SliderCatalogView95: View {
   @State private var volume = 45.0
   @State private var brightness = 6.0
