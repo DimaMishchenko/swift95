@@ -195,7 +195,11 @@ struct TextFieldCatalogView95: View {
     CatalogPage95("TextField95") {
       TextField95("Name", text: $name)
         .swiftUI { field in
-          field.textInputAutocapitalization(.words)
+          #if os(iOS)
+            field.textInputAutocapitalization(.words)
+          #else
+            field
+          #endif
         }
 
       TextField95("Disabled field", text: .constant("Read only"))
@@ -319,12 +323,11 @@ struct ListCatalogView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing95[16]) {
-      Picker("Example", selection: $example) {
-        ForEach(ListCatalogExample.allCases) { example in
-          Text(example.title).tag(example)
-        }
-      }
-      .pickerStyle(.menu)
+      Picker95(
+        "Example",
+        selection: $example,
+        options: ListCatalogExample.options
+      )
 
       CatalogExample95(example.title) {
         exampleContent
@@ -333,7 +336,7 @@ struct ListCatalogView: View {
     .frame(maxWidth: 720, maxHeight: .infinity, alignment: .topLeading)
     .padding(Spacing95[16])
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .navigationTitle("List95")
+    .catalogNavigationTitle("List95")
     .background(theme.colors.background.ignoresSafeArea())
   }
 
@@ -673,6 +676,10 @@ private enum ListCatalogExample: String, CaseIterable, Identifiable {
   case overflowing
 
   var id: Self { self }
+
+  static var options: [PickerOption95<Self, Text>] {
+    allCases.map { PickerOption95($0.title, value: $0) }
+  }
 
   var title: String {
     switch self {

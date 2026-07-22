@@ -13,12 +13,17 @@ let project = Project(
   targets: [
     .target(
       name: "Swift95Catalog",
-      destinations: .iOS,
+      destinations: [.iPhone, .iPad, .mac],
       product: .app,
       bundleId: "com.swift95.catalog",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .multiplatform(
+        iOS: "18.0",
+        macOS: "15.0"
+      ),
       infoPlist: .extendingDefault(
         with: [
+          "CFBundleDisplayName": "Swift95 Catalog",
+          "CFBundleName": "Swift95 Catalog",
           "UILaunchScreen": [:],
           "UIApplicationSceneManifest": [
             "UIApplicationSupportsMultipleScenes": false

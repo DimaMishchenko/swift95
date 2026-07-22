@@ -3,53 +3,90 @@ import SwiftUI
 
 struct CatalogView: View {
   @Environment(\.theme95) private var theme
-  @State private var selection: CatalogDestination?
+  @State private var workspaceState = WorkspaceState95<CatalogRoute>()
 
   var body: some View {
-    NavigationSplitView {
-      List95(catalogSections, selection: $selection, style: .largeIcon) { section in
-        Text95(section.id.title)
-      } rowContent: { destination in
-        NavigationLink {
-          CatalogDestinationView(destination: destination)
-            .onAppear {
-              selection = destination
-            }
-        } label: {
-          Row95 {
-            Image(systemName: destination.symbol)
-              .resizable()
-              .scaledToFit()
-          } label: {
-            Text95(destination.title)
-          } accessory: {
-            true
-          }
+    Workspace95(
+      for: CatalogRoute.self,
+      state: $workspaceState,
+      catalogWindow
+    ) {
+      Desktop95 {
+        DesktopShortcut95("Components", value: CatalogRoute.browser(.components)) {
+          catalogIcon("shippingbox.fill")
         }
-        .navigationLinkIndicatorVisibility(.hidden)
+
+        DesktopShortcut95("Foundations", value: CatalogRoute.browser(.foundations)) {
+          catalogIcon("square.3.layers.3d")
+        }
+
+        DesktopShortcut95("Workspace95", value: CatalogRoute.destination(.workspace)) {
+          catalogIcon("macwindow.on.rectangle")
+        }
       }
-      .navigationTitle("Swift95")
-    } detail: {
-      if let selection {
-        CatalogDestinationView(destination: selection)
-      } else {
-        ContentUnavailableView(
-          "Select an element",
-          systemImage: "rectangle.grid.1x2"
-        )
+      .desktopState95(CatalogRoute.self, storageKey: "Swift95Catalog.MainDesktop")
+    } taskBar: {
+      TaskBar95("Start") {
+        catalogTaskBarIcon("flag.fill")
+      } menu: {
+        StartMenu95 {
+          WorkspaceLink95("Components", value: CatalogRoute.browser(.components))
+          WorkspaceLink95("Foundations", value: CatalogRoute.browser(.foundations))
+
+          Divider95()
+
+          WorkspaceLink95("Workspace95", value: CatalogRoute.destination(.workspace))
+        }
+      } tray: {
+        Text95(Date.now.formatted(date: .omitted, time: .shortened))
       }
     }
-    .tint(theme.colors.accent)
+    .background(theme.colors.background.ignoresSafeArea())
   }
 
-  private var catalogSections: [List95.Section<CatalogSection, CatalogDestination>] {
-    CatalogSection.allCases.map { section in
-      List95.Section(id: section, items: section.destinations)
+  private func catalogWindow(_ route: CatalogRoute) -> WorkspaceWindow95 {
+    switch route {
+    case let .browser(section):
+      WorkspaceWindow95(section.title) {
+        catalogIcon(section.symbol)
+      } taskBarIcon: {
+        catalogTaskBarIcon(section.symbol)
+      } content: {
+        CatalogBrowserView(section: section)
+      }
+    case let .destination(destination):
+      WorkspaceWindow95(destination.title) {
+        catalogIcon(destination.symbol)
+      } taskBarIcon: {
+        catalogTaskBarIcon(destination.symbol)
+      } content: {
+        CatalogDestinationView(destination: destination)
+      }
     }
+  }
+
+  private func catalogIcon(_ systemName: String) -> some View {
+    Image(systemName: systemName)
+      .resizable()
+      .scaledToFit()
+      .foregroundStyle(.white)
+      .padding(2)
+  }
+
+  private func catalogTaskBarIcon(_ systemName: String) -> some View {
+    Image(systemName: systemName)
+      .resizable()
+      .scaledToFit()
+      .padding(2)
   }
 }
 
-private enum CatalogSection: String, CaseIterable, Identifiable {
+private enum CatalogRoute: Hashable, Codable {
+  case browser(CatalogSection)
+  case destination(CatalogDestination)
+}
+
+private enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
   case components
   case foundations
 
@@ -62,12 +99,19 @@ private enum CatalogSection: String, CaseIterable, Identifiable {
     }
   }
 
+  var symbol: String {
+    switch self {
+    case .components: "shippingbox.fill"
+    case .foundations: "square.3.layers.3d"
+    }
+  }
+
   var destinations: [CatalogDestination] {
     CatalogDestination.allCases.filter { $0.section == self }
   }
 }
 
-private enum CatalogDestination: String, CaseIterable, Identifiable {
+private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case text
   case button
   case image
@@ -84,6 +128,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
   case progressView
   case picker
   case tabs
+  case workspace
   case bevel
   case typography
   case colors
@@ -96,7 +141,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     switch self {
     case .text, .button, .image, .slider, .textField, .secureField, .textEditor,
       .scrollIndicator, .scrollView, .list, .divider, .checkbox, .radioButton,
-      .progressView, .picker, .tabs:
+      .progressView, .picker, .tabs, .workspace:
       .components
     case .bevel, .typography, .colors, .spacing, .metrics:
       .foundations
@@ -121,6 +166,7 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     case .progressView: "ProgressView95"
     case .picker: "Picker95"
     case .tabs: "Tabs95"
+    case .workspace: "Workspace95"
     case .bevel: "Bevel"
     case .typography: "Typography"
     case .colors: "Colors"
@@ -147,11 +193,33 @@ private enum CatalogDestination: String, CaseIterable, Identifiable {
     case .progressView: "chart.bar.fill"
     case .picker: "list.bullet.rectangle"
     case .tabs: "square.on.square"
+    case .workspace: "macwindow.on.rectangle"
     case .bevel: "square.3.layers.3d"
     case .typography: "textformat.size"
     case .colors: "paintpalette"
     case .spacing: "arrow.left.and.right"
     case .metrics: "ruler"
+    }
+  }
+}
+
+private struct CatalogBrowserView: View {
+  let section: CatalogSection
+
+  var body: some View {
+    List95(section.destinations, style: .largeIcon) { destination in
+      WorkspaceLink95(value: CatalogRoute.destination(destination)) {
+        Row95 {
+          Image(systemName: destination.symbol)
+            .resizable()
+            .scaledToFit()
+        } label: {
+          Text95(destination.title)
+        } accessory: {
+          true
+        }
+      }
+      .buttonStyle(.plain)
     }
   }
 }
@@ -193,6 +261,8 @@ private struct CatalogDestinationView: View {
       PickerCatalogView95()
     case .tabs:
       TabsCatalogView95()
+    case .workspace:
+      WorkspaceCatalogView()
     case .bevel:
       BevelCatalogView95()
     case .typography:

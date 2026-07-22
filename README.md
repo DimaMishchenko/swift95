@@ -1,8 +1,14 @@
 # swift-95
 
-An opinionated Windows 95-inspired component kit for SwiftUI on iOS and iPadOS 18 and later, and
-macOS 15 and later. The macOS UI has not received the same visual validation yet and may need
-platform-specific polish.
+An opinionated Windows 95-inspired component kit for SwiftUI on Apple platforms.
+
+## Supported platforms
+
+- iOS and iPadOS 18 or later
+- macOS 15 or later
+
+Swift95 adapts interaction and layout behavior to each platform. The catalog is a native
+multiplatform app and the component set is built and visually tested on iPhone, iPad, and Mac.
 
 ## Inspired by
 
@@ -15,6 +21,9 @@ platform-specific polish.
 tuist generate --path Catalog
 open Catalog/Swift95Catalog.xcworkspace
 ```
+
+Run the `Swift95Catalog` scheme using a Mac, iPhone Simulator, or iPad Simulator destination to
+inspect the platform-specific behavior.
 
 ## Disclaimer
 

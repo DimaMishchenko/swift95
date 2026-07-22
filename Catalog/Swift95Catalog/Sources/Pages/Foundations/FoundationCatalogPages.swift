@@ -82,6 +82,7 @@ struct ColorsCatalogView95: View {
     let colors = theme.colors
     return [
       .init("background", "#C3C7CB", colors.background),
+      .init("workspaceBackground", "#008080", colors.workspaceBackground),
       .init("text", "#000000", colors.text),
       .init("textInverted", "#FFFFFF", colors.textInverted),
       .init("textDisabled", "#868A8E", colors.textDisabled),

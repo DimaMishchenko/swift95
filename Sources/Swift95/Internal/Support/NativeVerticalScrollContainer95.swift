@@ -2,6 +2,8 @@ import SwiftUI
 
 #if canImport(UIKit)
   import UIKit
+#elseif canImport(AppKit)
+  import AppKit
 #endif
 
 struct NativeVerticalScrollContainer<Scroll: View>: View {
@@ -33,6 +35,8 @@ struct NativeVerticalScrollContainer<Scroll: View>: View {
         .scrollPosition($position)
         .background {
           #if canImport(UIKit)
+            NativeScrollOffsetWriter(targetOffset: $requestedOffset)
+          #elseif canImport(AppKit)
             NativeScrollOffsetWriter(targetOffset: $requestedOffset)
           #endif
         }
@@ -150,7 +154,94 @@ private extension Bevel95Style {
       }
     }
   }
+#elseif canImport(AppKit)
+  private struct NativeScrollOffsetWriter: NSViewRepresentable {
+    @Binding var targetOffset: CGFloat?
+
+    func makeNSView(context: Context) -> NSView {
+      NSView(frame: .zero)
+    }
+
+    func updateNSView(_ view: NSView, context: Context) {
+      guard let targetOffset else { return }
+
+      DispatchQueue.main.async {
+        guard let scrollView = view.connectedScrollView,
+          let documentView = scrollView.documentView
+        else { return }
+
+        let clipView = scrollView.contentView
+        let documentHeight = max(documentView.bounds.height, documentView.frame.height)
+        let originY = NativeVerticalScrollOffset95.originY(
+          targetOffset: targetOffset,
+          documentHeight: documentHeight,
+          viewportHeight: clipView.bounds.height,
+          isFlipped: documentView.isFlipped
+        )
+
+        clipView.scroll(
+          to: CGPoint(x: clipView.bounds.minX, y: originY)
+        )
+        scrollView.reflectScrolledClipView(clipView)
+        self.targetOffset = nil
+      }
+    }
+  }
+
+  private extension NSView {
+    var connectedScrollView: NSScrollView? {
+      var ancestor = superview
+      while let view = ancestor {
+        if let scrollView = view as? NSScrollView {
+          return scrollView
+        }
+        ancestor = view.superview
+      }
+
+      guard let window, let contentView = window.contentView else { return nil }
+      let probePoint = convert(
+        CGPoint(x: bounds.midX, y: bounds.midY),
+        to: nil
+      )
+      return contentView.descendantScrollViews
+        .filter { scrollView in
+          let frame = scrollView.convert(scrollView.bounds, to: nil)
+          let documentHeight = max(
+            scrollView.documentView?.bounds.height ?? 0,
+            scrollView.documentView?.frame.height ?? 0
+          )
+          return frame.contains(probePoint)
+            && documentHeight > scrollView.contentView.bounds.height
+        }
+        .min { lhs, rhs in
+          lhs.bounds.width * lhs.bounds.height < rhs.bounds.width * rhs.bounds.height
+        }
+    }
+
+    var descendantScrollViews: [NSScrollView] {
+      var scrollViews: [NSScrollView] = []
+      if let scrollView = self as? NSScrollView {
+        scrollViews.append(scrollView)
+      }
+      return subviews.reduce(into: scrollViews) { result, subview in
+        result.append(contentsOf: subview.descendantScrollViews)
+      }
+    }
+  }
 #endif
+
+enum NativeVerticalScrollOffset95 {
+  static func originY(
+    targetOffset: CGFloat,
+    documentHeight: CGFloat,
+    viewportHeight: CGFloat,
+    isFlipped: Bool
+  ) -> CGFloat {
+    let maximumOffset = max(0, documentHeight - viewportHeight)
+    let offset = min(max(targetOffset, 0), maximumOffset)
+    return isFlipped ? offset : maximumOffset - offset
+  }
+}
 
 struct ScrollSynchronization: Equatable {
   private(set) var metrics = ScrollMetrics95()

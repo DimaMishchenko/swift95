@@ -19,6 +19,8 @@ import SwiftUI
 public struct Colors95: Sendable {
   /// The primary surface color.
   public var background: Color
+  /// The background of a workspace or desktop surface.
+  public var workspaceBackground: Color
   /// The primary text color.
   public var text: Color
   /// Text displayed on an inverted surface.
@@ -58,6 +60,7 @@ public struct Colors95: Sendable {
   ///
   /// - Parameters:
   ///   - background: The primary control and panel surface.
+  ///   - workspaceBackground: The background of workspace and desktop surfaces.
   ///   - text: The primary foreground color.
   ///   - textInverted: Text shown on an inverted surface.
   ///   - textDisabled: Text used by disabled controls.
@@ -77,6 +80,7 @@ public struct Colors95: Sendable {
   ///   - borderLightest: The lightest bevel or border edge.
   public init(
     background: Color,
+    workspaceBackground: Color,
     text: Color,
     textInverted: Color,
     textDisabled: Color,
@@ -96,6 +100,7 @@ public struct Colors95: Sendable {
     borderLightest: Color
   ) {
     self.background = background
+    self.workspaceBackground = workspaceBackground
     self.text = text
     self.textInverted = textInverted
     self.textDisabled = textDisabled
@@ -121,6 +126,7 @@ public struct Colors95: Sendable {
   /// semantic roles.
   public static let classic = Colors95(
     background: .rgb95(0xC3, 0xC7, 0xCB),
+    workspaceBackground: .rgb95(0x00, 0x80, 0x80),
     text: .rgb95(0x00, 0x00, 0x00),
     textInverted: .rgb95(0xFF, 0xFF, 0xFF),
     textDisabled: .rgb95(0x86, 0x8A, 0x8E),

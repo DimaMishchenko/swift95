@@ -21,9 +21,20 @@ struct CatalogPage95<Content: View>: View {
       .padding(Spacing95[16])
       .frame(maxWidth: .infinity, alignment: .topLeading)
     }
-    .navigationTitle(title)
+    .catalogNavigationTitle(title)
     .background(theme.colors.background.ignoresSafeArea())
     .foregroundStyle(theme.colors.text)
+  }
+}
+
+extension View {
+  @ViewBuilder
+  func catalogNavigationTitle(_ title: String) -> some View {
+    #if os(macOS)
+      self
+    #else
+      navigationTitle(title)
+    #endif
   }
 }
 
