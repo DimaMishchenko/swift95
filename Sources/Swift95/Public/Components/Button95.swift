@@ -28,7 +28,7 @@ public struct Button95<Label: View, Control: View>: View {
   @Environment(\.theme95) private var theme
 
   private let control: Control
-  private let contentInsets: EdgeInsets
+  private let contentInsets: EdgeInsets?
 
   /// Creates a button with a custom SwiftUI label.
   ///
@@ -42,7 +42,7 @@ public struct Button95<Label: View, Control: View>: View {
     @ViewBuilder label: () -> Label
   ) where Control == Button<Label> {
     control = Button(role: role, action: action, label: label)
-    contentInsets = .button95
+    contentInsets = nil
   }
 
   init(
@@ -54,14 +54,19 @@ public struct Button95<Label: View, Control: View>: View {
     self.contentInsets = contentInsets
   }
 
-  private init(control: Control, contentInsets: EdgeInsets) {
+  private init(control: Control, contentInsets: EdgeInsets?) {
     self.control = control
     self.contentInsets = contentInsets
   }
 
   /// The styled button control.
   public var body: some View {
-    control.buttonStyle(ButtonStyle95(theme: theme, contentInsets: contentInsets))
+    control.buttonStyle(
+      ButtonStyle95(
+        theme: theme,
+        contentInsets: contentInsets ?? .button95(theme.spacing)
+      )
+    )
   }
 
   /// Applies a transformation to the embedded SwiftUI button.
@@ -94,7 +99,7 @@ extension Button95 where Label == Text, Control == Button<Text> {
     action: @escaping () -> Void
   ) {
     control = Button(titleKey, role: role, action: action)
-    contentInsets = .button95
+    contentInsets = nil
   }
 
   /// Creates a button with an unlocalized text label.
@@ -111,7 +116,7 @@ extension Button95 where Label == Text, Control == Button<Text> {
     control = Button(role: role, action: action) {
       Text(verbatim: String(title))
     }
-    contentInsets = .button95
+    contentInsets = nil
   }
 }
 
@@ -158,7 +163,10 @@ private struct ButtonStyleContent95: View {
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
       .padding(contentInsets)
       .contentShape(.rect)
-      .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
+      .offset(
+        x: isPressed ? theme.metrics.pressedContentOffset : 0,
+        y: isPressed ? theme.metrics.pressedContentOffset : 0
+      )
       .bevel95(isPressed ? .sunken : .raised)
       .onChange(of: configuration.isPressed, initial: true, updateVisualPressState)
       .onDisappear {
@@ -189,10 +197,12 @@ private struct ButtonStyleContent95: View {
 }
 
 private extension EdgeInsets {
-  static let button95 = EdgeInsets(
-    top: Spacing95[6],
-    leading: Spacing95[12],
-    bottom: Spacing95[6],
-    trailing: Spacing95[12]
-  )
+  static func button95(_ spacing: Spacing95) -> EdgeInsets {
+    EdgeInsets(
+      top: spacing.s,
+      leading: spacing.xl,
+      bottom: spacing.s,
+      trailing: spacing.xl
+    )
+  }
 }

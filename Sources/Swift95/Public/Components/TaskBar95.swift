@@ -21,6 +21,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
   @Environment(\.workspaceContext) private var workspace
   @Environment(\.theme95) private var theme
   @State private var isMenuPresented = false
+  @State private var renderedHeight = CGFloat.zero
 
   private let startTitle: Text
   private let startIcon: StartIcon
@@ -77,11 +78,11 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
 
   /// The Start button, task strip, and tray.
   public var body: some View {
-    HStack(spacing: Spacing95[4]) {
+    HStack(spacing: theme.spacing.xxs) {
       startButtonTransform(AnyView(startButton))
 
       ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: Spacing95[4]) {
+        HStack(spacing: theme.spacing.xxs) {
           ForEach(workspace.tasks) { task in
             taskButtonTransform(AnyView(taskButton(for: task)))
           }
@@ -90,15 +91,20 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
 
       if !(Tray.self == EmptyView.self) {
         tray
-          .padding(.horizontal, Spacing95[6])
-          .frame(minHeight: 34)
+          .padding(.horizontal, theme.spacing.s)
+          .frame(minHeight: theme.metrics.taskbarItemHeight)
           .bevel95(.sunken)
       }
     }
-    .padding(.horizontal, horizontalSizeClass == .compact ? Spacing95[10] : Spacing95[4])
-    .padding(.top, Spacing95[4])
-    .padding(.bottom, horizontalSizeClass == .compact ? Spacing95[8] : Spacing95[4])
-    .frame(minHeight: 44)
+    .padding(.horizontal, horizontalSizeClass == .compact ? theme.spacing.l : theme.spacing.xxs)
+    .padding(.top, theme.spacing.xxs)
+    .padding(.bottom, horizontalSizeClass == .compact ? theme.spacing.m : theme.spacing.xxs)
+    .frame(minHeight: minimumHeight)
+    .onGeometryChange(for: CGFloat.self) { geometry in
+      geometry.size.height
+    } action: { height in
+      renderedHeight = height
+    }
     .background(theme.colors.background.ignoresSafeArea(edges: .bottom))
     .overlay(alignment: .top) {
       Rectangle()
@@ -109,7 +115,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       if isMenuPresented {
         menu
           .environment(\.dismissStartMenu, { isMenuPresented = false })
-          .offset(y: -44)
+          .offset(y: -resolvedHeight)
           .transition(.opacity)
           .zIndex(1000)
       }
@@ -162,14 +168,14 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
     Button {
       isMenuPresented.toggle()
     } label: {
-      HStack(spacing: Spacing95[4]) {
+      HStack(spacing: theme.spacing.xxs) {
         startIcon
           .frame(width: 22, height: 22)
         startTitle
           .font(theme.fonts.body.weight(.bold))
       }
-      .padding(.horizontal, Spacing95[6])
-      .frame(height: 34)
+      .padding(.horizontal, theme.spacing.s)
+      .frame(height: theme.metrics.taskbarItemHeight)
     }
     .buttonStyle(
       TaskBarButtonStyle(
@@ -186,7 +192,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       isMenuPresented = false
       workspace.toggleTask(task.id)
     } label: {
-      HStack(spacing: Spacing95[4]) {
+      HStack(spacing: theme.spacing.xxs) {
         task.icon
           .frame(width: 20, height: 20)
           .accessibilityHidden(true)
@@ -194,8 +200,13 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
           .font(theme.fonts.body.weight(task.isActive ? .bold : .regular))
           .lineLimit(1)
       }
-      .padding(.horizontal, Spacing95[6])
-      .frame(minWidth: 96, maxWidth: 190, minHeight: 34, alignment: .leading)
+      .padding(.horizontal, theme.spacing.s)
+      .frame(
+        minWidth: 96,
+        maxWidth: 190,
+        minHeight: theme.metrics.taskbarItemHeight,
+        alignment: .leading
+      )
     }
     .buttonStyle(
       TaskBarButtonStyle(
@@ -206,6 +217,30 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
     )
     .accessibilityAddTraits(task.isActive ? .isSelected : [])
     .opacity(task.isMinimized ? 0.82 : 1)
+  }
+
+  private var minimumHeight: CGFloat {
+    TaskBarGeometry95.height(
+      minimumHeight: theme.metrics.taskbarHeight,
+      itemHeight: theme.metrics.taskbarItemHeight,
+      topPadding: theme.spacing.xxs,
+      bottomPadding: horizontalSizeClass == .compact ? theme.spacing.m : theme.spacing.xxs
+    )
+  }
+
+  private var resolvedHeight: CGFloat {
+    renderedHeight > 0 ? renderedHeight : minimumHeight
+  }
+}
+
+enum TaskBarGeometry95 {
+  static func height(
+    minimumHeight: CGFloat,
+    itemHeight: CGFloat,
+    topPadding: CGFloat,
+    bottomPadding: CGFloat
+  ) -> CGFloat {
+    max(minimumHeight, itemHeight + topPadding + bottomPadding)
   }
 }
 
@@ -247,7 +282,10 @@ private struct TaskBarButtonStyle: ButtonStyle {
           theme.colors.background
         }
       }
-      .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
+      .offset(
+        x: isPressed ? theme.metrics.pressedContentOffset : 0,
+        y: isPressed ? theme.metrics.pressedContentOffset : 0
+      )
       .bevel95(isPressed ? .sunken : .raised)
       .contentShape(.rect)
   }

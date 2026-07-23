@@ -73,7 +73,7 @@ struct WorkspaceWindowHost: View {
   }
 
   private var titleBarInset: CGFloat {
-    presentation == .windowed ? Spacing95[4] : 0
+    presentation == .windowed ? theme.spacing.xxs : 0
   }
 
   private var displayedFrame: CGRect {
@@ -258,7 +258,12 @@ private struct WorkspaceTitleBar: View {
   let close: () -> Void
 
   var body: some View {
-    HStack(spacing: Spacing95[6]) {
+    let height =
+      isCompact
+      ? theme.metrics.compactTitleBarHeight
+      : theme.metrics.titleBarHeight
+
+    HStack(spacing: theme.spacing.s) {
       icon
         .frame(width: isCompact ? 24 : 18, height: isCompact ? 24 : 18)
         .accessibilityHidden(true)
@@ -269,18 +274,29 @@ private struct WorkspaceTitleBar: View {
         .foregroundStyle(isActive ? theme.colors.accentText : theme.colors.inactiveText)
         .frame(maxWidth: .infinity, alignment: .leading)
 
-      WindowControlButton(label: "Minimize", glyph: .minimize, action: minimize)
+      WindowControlButton(
+        label: "Minimize",
+        glyph: .minimize,
+        height: height,
+        action: minimize
+      )
       if let maximize {
         WindowControlButton(
           label: isMaximized ? "Restore" : "Maximize",
           glyph: isMaximized ? .restore : .maximize,
+          height: height,
           action: maximize
         )
       }
-      WindowControlButton(label: "Close", glyph: .close, action: close)
+      WindowControlButton(
+        label: "Close",
+        glyph: .close,
+        height: height,
+        action: close
+      )
     }
-    .padding(.horizontal, Spacing95[4])
-    .frame(height: isCompact ? 44 : 30)
+    .padding(.horizontal, theme.spacing.xxs)
+    .frame(height: height)
     .background(isActive ? theme.colors.accent : theme.colors.inactiveBackground)
   }
 }
@@ -288,6 +304,7 @@ private struct WorkspaceTitleBar: View {
 private struct WindowControlButton: View {
   let label: LocalizedStringKey
   let glyph: WindowControlGlyph
+  let height: CGFloat
   let action: () -> Void
 
   var body: some View {
@@ -296,7 +313,7 @@ private struct WindowControlButton: View {
         .frame(width: 24, height: 22)
         .bevel95(.raised)
     }
-    .buttonStyle(WindowControlButtonStyle())
+    .buttonStyle(WindowControlButtonStyle(height: height))
     .accessibilityLabel(Text(label))
   }
 }
@@ -348,15 +365,22 @@ private struct WindowControlGlyphDrawing: View {
 }
 
 private struct WindowControlButtonStyle: ButtonStyle {
+  @Environment(\.theme95) private var theme
+  let height: CGFloat
+
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .offset(x: configuration.isPressed ? 1 : 0, y: configuration.isPressed ? 1 : 0)
+      .offset(
+        x: configuration.isPressed ? theme.metrics.pressedContentOffset : 0,
+        y: configuration.isPressed ? theme.metrics.pressedContentOffset : 0
+      )
       .overlay {
         if configuration.isPressed {
           Color.clear.bevel95(.sunken, background: Color.clear)
         }
       }
-      .frame(minWidth: 32, minHeight: 30)
+      .frame(minWidth: 32)
+      .frame(height: height)
       .contentShape(.rect)
   }
 }
@@ -368,7 +392,7 @@ private struct WorkspaceWindowStatusBar: View {
   let resizeHandle: AnyView?
 
   var body: some View {
-    HStack(spacing: Spacing95[2]) {
+    HStack(spacing: theme.spacing.xxxs) {
       Group {
         if let content {
           content
@@ -376,7 +400,7 @@ private struct WorkspaceWindowStatusBar: View {
           Color.clear
         }
       }
-      .padding(.horizontal, Spacing95[4])
+      .padding(.horizontal, theme.spacing.xxs)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       .bevel95(.sunken)
 
@@ -384,7 +408,7 @@ private struct WorkspaceWindowStatusBar: View {
         resizeHandle
       }
     }
-    .padding(Spacing95[2])
+    .padding(theme.spacing.xxxs)
     .frame(height: 28)
     .background(theme.colors.background)
   }

@@ -19,6 +19,7 @@ import SwiftUI
 public struct Desktop95<Content: View, Background: View>: View {
   @Environment(\.desktopPositionStore) private var positionStore
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  @Environment(\.theme95) private var theme
   @State private var selectedShortcut: AnyHashable?
   @State private var shortcutFrames: [AnyHashable: CGRect] = [:]
   @State private var shortcutOffsets: [AnyHashable: CGSize] = [:]
@@ -68,7 +69,7 @@ public struct Desktop95<Content: View, Background: View>: View {
         baseFrames: shortcutFrames,
         offsets: storedOffsets,
         desktopSize: geometry.size,
-        clearance: Spacing95[4]
+        clearance: theme.spacing.xxs
       )
       let positionedFrames = DesktopPlacement.positionedFrames(
         baseFrames: shortcutFrames,
@@ -106,7 +107,7 @@ public struct Desktop95<Content: View, Background: View>: View {
             proposed: translation,
             frames: positionedFrames,
             desktopSize: geometry.size,
-            clearance: Spacing95[4]
+            clearance: theme.spacing.xxs
           )
         }
       )
@@ -121,10 +122,10 @@ public struct Desktop95<Content: View, Background: View>: View {
           .contentShape(.rect)
           .onTapGesture { selectedShortcut = nil }
 
-        VStack(alignment: .leading, spacing: Spacing95[12]) {
+        VStack(alignment: .leading, spacing: theme.spacing.xl) {
           content
         }
-        .padding(Spacing95[12])
+        .padding(theme.spacing.xl)
         .environment(\.desktopContext, context)
       }
       .coordinateSpace(name: DesktopCoordinateSpace.name)

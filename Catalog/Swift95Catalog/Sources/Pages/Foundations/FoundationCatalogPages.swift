@@ -39,7 +39,7 @@ struct BevelCatalogView95: View {
       CatalogExample95("Raised + input, 8-point spacing") {
         Color.clear
           .frame(width: 152, height: 64)
-          .bevel95(.raisedInput, spacing: Spacing95[8])
+          .bevel95(.raisedInput, spacing: theme.spacing.m)
       }
     }
   }
@@ -68,8 +68,8 @@ struct ColorsCatalogView95: View {
   var body: some View {
     CatalogPage95("Colors") {
       LazyVGrid(
-        columns: [GridItem(.adaptive(minimum: 150), spacing: Spacing95[8])],
-        spacing: Spacing95[8]
+        columns: [GridItem(.adaptive(minimum: 150), spacing: theme.spacing.m)],
+        spacing: theme.spacing.m
       ) {
         ForEach(colorTokens) { token in
           ColorTokenView95(token: token)
@@ -109,17 +109,32 @@ struct SpacingCatalogView95: View {
 
   var body: some View {
     CatalogPage95("Spacing") {
-      ForEach(Array(Spacing95.initialRange), id: \.self) { value in
-        HStack(spacing: Spacing95[8]) {
-          Text("\(value)")
-            .font(theme.fonts.body)
-            .frame(width: 24, alignment: .trailing)
-
-          Rectangle()
-            .fill(theme.colors.accent)
-            .frame(width: max(1, Spacing95[value] * 5), height: 8)
-        }
+      Grid(
+        alignment: .leading,
+        horizontalSpacing: theme.spacing.xl,
+        verticalSpacing: theme.spacing.s
+      ) {
+        spacingRow("xxxs", theme.spacing.xxxs)
+        spacingRow("xxs", theme.spacing.xxs)
+        spacingRow("xs", theme.spacing.xs)
+        spacingRow("s", theme.spacing.s)
+        spacingRow("m", theme.spacing.m)
+        spacingRow("l", theme.spacing.l)
+        spacingRow("xl", theme.spacing.xl)
+        spacingRow("xxl", theme.spacing.xxl)
       }
+      .font(theme.fonts.body)
+    }
+  }
+
+  private func spacingRow(_ name: String, _ value: CGFloat) -> some View {
+    GridRow {
+      Text(name)
+      Text(value.formatted())
+        .frame(width: 32, alignment: .trailing)
+      Rectangle()
+        .fill(theme.colors.accent)
+        .frame(width: max(1, value * 5), height: theme.spacing.m)
     }
   }
 }
@@ -129,14 +144,25 @@ struct MetricsCatalogView95: View {
 
   var body: some View {
     CatalogPage95("Metrics") {
-      Grid(alignment: .leading, horizontalSpacing: Spacing95[12], verticalSpacing: Spacing95[6]) {
+      Grid(
+        alignment: .leading,
+        horizontalSpacing: theme.spacing.xl,
+        verticalSpacing: theme.spacing.s
+      ) {
         metricRow("bevelWidth", theme.metrics.bevelWidth)
         metricRow("checkboxSize", theme.metrics.checkboxSize)
         metricRow("radioButtonSize", theme.metrics.radioButtonSize)
         metricRow("scrollBarWidth", theme.metrics.scrollBarWidth)
+        metricRow("scrollThumbMinimumLength", theme.metrics.scrollThumbMinimumLength)
+        metricRow("scrollLineIncrementMinimum", theme.metrics.scrollLineIncrementMinimum)
         metricRow("progressBarHeight", theme.metrics.progressBarHeight)
         metricRow("titleBarHeight", theme.metrics.titleBarHeight)
+        metricRow("compactTitleBarHeight", theme.metrics.compactTitleBarHeight)
         metricRow("taskbarHeight", theme.metrics.taskbarHeight)
+        metricRow("taskbarItemHeight", theme.metrics.taskbarItemHeight)
+        metricRow("pressedContentOffset", theme.metrics.pressedContentOffset)
+        metricRow("progressContentInset", theme.metrics.progressContentInset)
+        metricRow("tabStripOverlap", theme.metrics.tabStripOverlap)
       }
       .font(theme.fonts.body)
     }

@@ -13,7 +13,8 @@ import SwiftUI
 /// let theme = Theme95(
 ///   colors: colors,
 ///   metrics: .classic,
-///   fonts: .classic
+///   fonts: .classic,
+///   spacing: .classic
 /// )
 /// ```
 public struct Theme95: Sendable {
@@ -23,6 +24,8 @@ public struct Theme95: Sendable {
   public var metrics: Metrics95
   /// The theme's typography.
   public var fonts: Fonts95
+  /// The theme's shared spacing scale.
+  public var spacing: Spacing95
 
   /// Creates a theme from its token groups.
   ///
@@ -30,17 +33,25 @@ public struct Theme95: Sendable {
   ///   - colors: The semantic colors used by components.
   ///   - metrics: The component measurements used by components.
   ///   - fonts: The typography roles and font factory used by components.
-  public init(colors: Colors95, metrics: Metrics95, fonts: Fonts95) {
+  ///   - spacing: The spacing scale used by components and app layouts.
+  public init(
+    colors: Colors95,
+    metrics: Metrics95,
+    fonts: Fonts95,
+    spacing: Spacing95 = .classic
+  ) {
     self.colors = colors
     self.metrics = metrics
     self.fonts = fonts
+    self.spacing = spacing
   }
 
   /// The default Windows 95-inspired theme.
   public static let classic = Theme95(
     colors: .classic,
     metrics: .classic,
-    fonts: .classic
+    fonts: .classic,
+    spacing: .classic
   )
 }
 

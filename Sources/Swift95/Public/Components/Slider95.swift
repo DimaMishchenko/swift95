@@ -104,7 +104,7 @@ where
 
   /// The styled slider control.
   public var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[4]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xxs) {
       label
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)

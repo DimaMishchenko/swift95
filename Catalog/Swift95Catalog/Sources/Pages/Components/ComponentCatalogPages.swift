@@ -38,6 +38,8 @@ struct ButtonCatalogView95: View {
 }
 
 struct ImageCatalogView95: View {
+  @Environment(\.theme95) private var theme
+
   private let remoteImageURL = URL(
     string: "https://picsum.photos/id/119/640/480"
   )
@@ -45,7 +47,7 @@ struct ImageCatalogView95: View {
   var body: some View {
     CatalogPage95("Image95") {
       CatalogExample95("Metal pixelation") {
-        HStack(alignment: .top, spacing: Spacing95[12]) {
+        HStack(alignment: .top, spacing: theme.spacing.xl) {
           shaderExample("Enabled", isPixelated: true)
           shaderExample("Disabled", isPixelated: false)
         }
@@ -74,7 +76,7 @@ struct ImageCatalogView95: View {
     _ title: String,
     isPixelated: Bool
   ) -> some View {
-    VStack(alignment: .leading, spacing: Spacing95[6]) {
+    VStack(alignment: .leading, spacing: theme.spacing.s) {
       Text95(title)
 
       Image95(isPixelated: isPixelated) {
@@ -135,6 +137,8 @@ private struct ImageShaderSample95: View {
 }
 
 private struct AsyncImageCatalogContent95: View {
+  @Environment(\.theme95) private var theme
+
   let phase: AsyncImagePhase
 
   var body: some View {
@@ -152,7 +156,7 @@ private struct AsyncImageCatalogContent95: View {
   }
 
   private func placeholder(symbol: String, label: String) -> some View {
-    VStack(spacing: Spacing95[8]) {
+    VStack(spacing: theme.spacing.m) {
       Image(systemName: symbol)
         .font(.largeTitle)
       Text95(label)
@@ -284,6 +288,8 @@ struct ScrollIndicatorCatalogView95: View {
 }
 
 struct ScrollViewCatalogView95: View {
+  @Environment(\.theme95) private var theme
+
   var body: some View {
     CatalogPage95("ScrollView95") {
       CatalogExample95("Scrollable") {
@@ -292,7 +298,7 @@ struct ScrollViewCatalogView95: View {
             ForEach(1...24, id: \.self) { line in
               Text95("Line \(line)")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Spacing95[6])
+                .padding(.horizontal, theme.spacing.s)
                 .frame(height: 32)
             }
           }
@@ -304,7 +310,7 @@ struct ScrollViewCatalogView95: View {
         ScrollView95 {
           Text95("No scrolling required")
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Spacing95[6])
+            .padding(theme.spacing.s)
         }
         .frame(height: 80)
       }
@@ -322,7 +328,7 @@ struct ListCatalogView: View {
   ]
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[16]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xxl) {
       Picker95(
         "Example",
         selection: $example,
@@ -334,7 +340,7 @@ struct ListCatalogView: View {
       }
     }
     .frame(maxWidth: 720, maxHeight: .infinity, alignment: .topLeading)
-    .padding(Spacing95[16])
+    .padding(theme.spacing.xxl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .catalogNavigationTitle("List95")
     .background(theme.colors.background.ignoresSafeArea())
@@ -364,7 +370,7 @@ struct ListCatalogView: View {
       .frame(height: 260)
 
     case .selected:
-      VStack(alignment: .leading, spacing: Spacing95[8]) {
+      VStack(alignment: .leading, spacing: theme.spacing.m) {
         List95(
           CatalogListItem.largeItems,
           selection: $selectedItem,
@@ -449,10 +455,12 @@ struct ListCatalogView: View {
 }
 
 struct DividerCatalogView95: View {
+  @Environment(\.theme95) private var theme
+
   var body: some View {
     CatalogPage95("Divider95") {
       CatalogExample95("Horizontal") {
-        VStack(alignment: .leading, spacing: Spacing95[8]) {
+        VStack(alignment: .leading, spacing: theme.spacing.m) {
           Text95("Above")
           Divider95()
           Text95("Below")
@@ -460,7 +468,7 @@ struct DividerCatalogView95: View {
       }
 
       CatalogExample95("Vertical") {
-        HStack(spacing: Spacing95[8]) {
+        HStack(spacing: theme.spacing.m) {
           Text95("Leading")
           Divider95(.vertical)
           Text95("Trailing")
@@ -494,11 +502,13 @@ struct CheckboxCatalogView95: View {
 }
 
 struct RadioButtonCatalogView95: View {
+  @Environment(\.theme95) private var theme
+
   @State private var selection = RadioSelection95.automatic
 
   var body: some View {
     CatalogPage95("RadioButton95") {
-      VStack(alignment: .leading, spacing: Spacing95[10]) {
+      VStack(alignment: .leading, spacing: theme.spacing.l) {
         RadioButton95("Automatic", value: .automatic, selection: $selection)
         RadioButton95("Manual", value: .manual, selection: $selection)
         RadioButton95("Custom", value: .custom, selection: $selection)
@@ -583,6 +593,8 @@ struct PickerCatalogView95: View {
 }
 
 struct TabsCatalogView95: View {
+  @Environment(\.theme95) private var theme
+
   @State private var selection = SettingsTab95.general
 
   var body: some View {
@@ -595,7 +607,7 @@ struct TabsCatalogView95: View {
           Tab95("Advanced", value: SettingsTab95.advanced)
         ]
       ) { tab in
-        VStack(alignment: .leading, spacing: Spacing95[8]) {
+        VStack(alignment: .leading, spacing: theme.spacing.m) {
           Text95(tab.title)
           Text95(tab.description)
         }

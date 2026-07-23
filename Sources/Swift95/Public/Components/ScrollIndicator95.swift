@@ -97,7 +97,7 @@ public struct ScrollIndicator95: View {
 
   private var lineIncrement: CGFloat {
     configuredLineIncrement
-      ?? max(theme.metrics.titleBarHeight, metrics.containerHeight * 0.1)
+      ?? max(theme.metrics.scrollLineIncrementMinimum, metrics.containerHeight * 0.1)
   }
 
   private func pageScroll(at location: CGFloat, trackHeight: CGFloat) {
@@ -171,7 +171,7 @@ public struct ScrollIndicator95: View {
   private func thumbGeometry(trackHeight: CGFloat) -> (height: CGFloat, offset: CGFloat) {
     let height = min(
       trackHeight,
-      max(theme.metrics.scrollBarWidth, trackHeight * metrics.visibleFraction)
+      max(theme.metrics.scrollThumbMinimumLength, trackHeight * metrics.visibleFraction)
     )
     let offset = max(0, trackHeight - height) * metrics.progress
     return (height, offset)

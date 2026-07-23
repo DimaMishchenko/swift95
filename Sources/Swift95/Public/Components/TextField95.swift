@@ -82,8 +82,8 @@ public struct TextField95<Field: View>: View {
       .textFieldStyle(.plain)
       .font(theme.fonts.body)
       .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
-      .padding(.horizontal, Spacing95[6])
-      .padding(.vertical, Spacing95[5])
+      .padding(.horizontal, theme.spacing.s)
+      .padding(.vertical, theme.spacing.xs)
       .bevel95(
         .input,
         background: isEnabled ? theme.colors.inputBackground : theme.colors.inputBackgroundDisabled

@@ -478,8 +478,8 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
       .font(theme.fonts.body)
       .foregroundStyle(theme.colors.text)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, style == .largeIcon ? Spacing95[8] : Spacing95[6])
-      .padding(.vertical, Spacing95[8])
+      .padding(.horizontal, style == .largeIcon ? theme.spacing.m : theme.spacing.s)
+      .padding(.vertical, theme.spacing.m)
       .background(theme.colors.background)
       .accessibilityAddTraits(.isHeader)
       .listRowInsets(EdgeInsets())
@@ -721,7 +721,7 @@ public struct Row95<Label: View>: View {
   }
 
   private var styledRow: some View {
-    HStack(spacing: style == .largeIcon ? Spacing95[8] : Spacing95[6]) {
+    HStack(spacing: style == .largeIcon ? theme.spacing.m : theme.spacing.s) {
       if showsSelectionMark {
         CheckmarkDrawing95(
           color: foregroundColor,
@@ -749,8 +749,8 @@ public struct Row95<Label: View>: View {
     .font(theme.fonts.body)
     .foregroundStyle(foregroundColor)
     .environment(\.foregroundColor95, foregroundColor)
-    .padding(.horizontal, style == .largeIcon ? Spacing95[8] : Spacing95[6])
-    .padding(.vertical, style == .largeIcon ? Spacing95[6] : Spacing95[2])
+    .padding(.horizontal, style == .largeIcon ? theme.spacing.m : theme.spacing.s)
+    .padding(.vertical, style == .largeIcon ? theme.spacing.s : theme.spacing.xxxs)
     .frame(minHeight: style == .largeIcon ? 48 : 24)
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(isHighlighted ? theme.colors.accent : theme.colors.background)

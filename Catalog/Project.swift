@@ -34,6 +34,34 @@ let project = Project(
       dependencies: [
         .package(product: "Swift95")
       ]
+    ),
+    .target(
+      name: "Swift95TestHost",
+      destinations: [.iPhone, .iPad],
+      product: .app,
+      bundleId: "com.swift95.test-host",
+      deploymentTargets: .iOS("18.0"),
+      infoPlist: .extendingDefault(
+        with: [
+          "CFBundleDisplayName": "Swift95 Tests",
+          "UILaunchScreen": [:]
+        ]
+      ),
+      sources: ["Swift95TestHost/Sources/**"]
+    ),
+    .target(
+      name: "Swift95Tests",
+      destinations: [.iPhone, .iPad],
+      product: .unitTests,
+      bundleId: "com.swift95.tests",
+      deploymentTargets: .iOS("18.0"),
+      infoPlist: .default,
+      sources: ["../Tests/Swift95Tests/**/*.swift"],
+      dependencies: [
+        .target(name: "Swift95TestHost"),
+        .package(product: "Swift95"),
+        .package(product: "SnapshotTesting")
+      ]
     )
   ]
 )

@@ -1,32 +1,62 @@
 import CoreGraphics
 
-/// Direct point spacing used while the component system is still taking shape.
+/// A theme-owned spacing scale shared by Swift95 components and app layouts.
 ///
-/// The subscript maps a nonnegative integer directly to the same number of
-/// points, making literal spacing values explicit at call sites.
+/// Read the scale from the closest ``Theme95`` so changing a theme preserves a
+/// consistent layout rhythm across both library controls and consumer views.
 ///
 /// ```swift
-/// VStack(spacing: Spacing95[8]) {
-///   Text95("Name")
-///   TextField95("Name", text: $name)
-/// }
-/// .padding(Spacing95[12])
+/// var spacing = Spacing95.classic
+/// spacing.m = 10
 /// ```
-///
-/// - Todo: Once real component usage reveals stable roles, replace direct
-///   values in public component defaults with semantic spacing tokens stored in
-///   `Theme95` while retaining this helper for literal measurements.
-public enum Spacing95 {
-  /// The direct spacing range displayed by the catalog and related tooling.
-  public static let initialRange = 0...24
+public struct Spacing95: Sendable {
+  /// Extra-extra-extra-small spacing.
+  public var xxxs: CGFloat
+  /// Extra-extra-small spacing.
+  public var xxs: CGFloat
+  /// Extra-small spacing.
+  public var xs: CGFloat
+  /// Small spacing.
+  public var s: CGFloat
+  /// Medium spacing.
+  public var m: CGFloat
+  /// Large spacing.
+  public var l: CGFloat
+  /// Extra-large spacing.
+  public var xl: CGFloat
+  /// Extra-extra-large spacing.
+  public var xxl: CGFloat
 
-  /// Returns a direct point value for a nonnegative integer.
-  ///
-  /// - Parameter points: The requested spacing in points. Passing a negative
-  ///   value triggers a precondition failure.
-  /// - Returns: The supplied integer converted to `CGFloat`.
-  public static subscript(points: Int) -> CGFloat {
-    precondition(points >= 0, "Spacing95 only accepts nonnegative point values")
-    return CGFloat(points)
+  /// Creates a spacing scale.
+  public init(
+    xxxs: CGFloat,
+    xxs: CGFloat,
+    xs: CGFloat,
+    s: CGFloat,
+    m: CGFloat,
+    l: CGFloat,
+    xl: CGFloat,
+    xxl: CGFloat
+  ) {
+    self.xxxs = xxxs
+    self.xxs = xxs
+    self.xs = xs
+    self.s = s
+    self.m = m
+    self.l = l
+    self.xl = xl
+    self.xxl = xxl
   }
+
+  /// The default Windows 95-inspired component spacing.
+  public static let classic = Spacing95(
+    xxxs: 2,
+    xxs: 4,
+    xs: 5,
+    s: 6,
+    m: 8,
+    l: 10,
+    xl: 12,
+    xxl: 16
+  )
 }

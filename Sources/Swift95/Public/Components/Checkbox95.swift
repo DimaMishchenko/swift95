@@ -85,7 +85,7 @@ private struct CheckboxToggleStyle95: ToggleStyle {
     Button {
       configuration.isOn.toggle()
     } label: {
-      HStack(spacing: Spacing95[6]) {
+      HStack(spacing: theme.spacing.s) {
         CheckboxIndicator95(
           isChecked: configuration.isOn,
           isEnabled: isEnabled,

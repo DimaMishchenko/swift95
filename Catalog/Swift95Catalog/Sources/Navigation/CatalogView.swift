@@ -70,14 +70,14 @@ struct CatalogView: View {
       .resizable()
       .scaledToFit()
       .foregroundStyle(.white)
-      .padding(2)
+      .padding(theme.spacing.xxxs)
   }
 
   private func catalogTaskBarIcon(_ systemName: String) -> some View {
     Image(systemName: systemName)
       .resizable()
       .scaledToFit()
-      .padding(2)
+      .padding(theme.spacing.xxxs)
   }
 }
 

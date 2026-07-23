@@ -125,7 +125,7 @@ private struct RadioButtonStyle95: ButtonStyle {
   let theme: Theme95
 
   func makeBody(configuration: Configuration) -> some View {
-    HStack(spacing: Spacing95[6]) {
+    HStack(spacing: theme.spacing.s) {
       RadioIndicatorDrawing95(
         isSelected: isSelected,
         isEnabled: isEnabled,

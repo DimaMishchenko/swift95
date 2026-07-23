@@ -434,8 +434,8 @@ struct PickerOptionButtonStyle95<Value: Hashable>: ButtonStyle {
           ? theme.colors.accentText
           : isEnabled ? theme.colors.text : theme.colors.textDisabled
       )
-      .padding(.horizontal, Spacing95[8])
-      .padding(.vertical, Spacing95[6])
+      .padding(.horizontal, theme.spacing.m)
+      .padding(.vertical, theme.spacing.s)
       .frame(maxWidth: .infinity, alignment: .leading)
       .contentShape(.rect)
       .background(
@@ -512,8 +512,8 @@ struct PickerTriggerButtonStyle95: ButtonStyle {
       configuration.label
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
-        .padding(.horizontal, Spacing95[6])
-        .padding(.vertical, Spacing95[5])
+        .padding(.horizontal, theme.spacing.s)
+        .padding(.vertical, theme.spacing.xs)
         .frame(maxWidth: .infinity, alignment: .leading)
 
       Color.clear
@@ -524,11 +524,11 @@ struct PickerTriggerButtonStyle95: ButtonStyle {
             color: isEnabled ? theme.colors.text : theme.colors.textDisabled
           )
           .offset(
-            x: isPressed ? 1 : 0,
-            y: isPressed ? 1 : 0
+            x: isPressed ? theme.metrics.pressedContentOffset : 0,
+            y: isPressed ? theme.metrics.pressedContentOffset : 0
           )
         }
-        .padding(Spacing95[2])
+        .padding(theme.spacing.xxxs)
     }
     .contentShape(.rect)
     .bevel95(

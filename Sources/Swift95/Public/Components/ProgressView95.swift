@@ -168,7 +168,7 @@ private struct ProgressViewRenderingStyle95: ProgressViewStyle {
   let theme: Theme95
 
   func makeBody(configuration: Configuration) -> some View {
-    VStack(alignment: .leading, spacing: Spacing95[4]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xxs) {
       configuration.label
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
@@ -204,13 +204,13 @@ private struct ProgressBar95: View {
             fraction: fraction,
             color: progressColor
           )
-          .padding(2)
+          .padding(theme.metrics.progressContentInset)
         }
       } else {
         IndeterminateProgressDrawing95(
           color: progressColor
         )
-        .padding(2)
+        .padding(theme.metrics.progressContentInset)
       }
     }
     .frame(height: scaledProgressBarHeight)
@@ -233,7 +233,7 @@ private struct ProgressBar95: View {
   }
 
   private func continuousProgress(fraction: CGFloat, size: CGSize) -> some View {
-    let inset = CGFloat(2)
+    let inset = theme.metrics.progressContentInset
     let fillWidth = max(0, size.width - inset * 2) * fraction
     let percentage = "\(progress.percentage ?? 0)%"
 

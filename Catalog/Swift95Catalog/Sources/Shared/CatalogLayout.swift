@@ -14,11 +14,11 @@ struct CatalogPage95<Content: View>: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: Spacing95[16]) {
+      VStack(alignment: .leading, spacing: theme.spacing.xxl) {
         content
       }
       .frame(maxWidth: 720, alignment: .leading)
-      .padding(Spacing95[16])
+      .padding(theme.spacing.xxl)
       .frame(maxWidth: .infinity, alignment: .topLeading)
     }
     .catalogNavigationTitle(title)
@@ -50,7 +50,7 @@ struct CatalogExample95<Content: View>: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[8]) {
+    VStack(alignment: .leading, spacing: theme.spacing.m) {
       Text(title)
         .font(theme.fonts.title3)
       content

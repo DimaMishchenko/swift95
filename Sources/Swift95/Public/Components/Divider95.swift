@@ -7,7 +7,7 @@ import SwiftUI
 /// The divider is decorative and hidden from accessibility technologies.
 ///
 /// ```swift
-/// VStack(spacing: Spacing95[8]) {
+/// VStack(spacing: theme.spacing.m) {
 ///   Text95("General")
 ///   Divider95()
 ///   settings

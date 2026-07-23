@@ -22,12 +22,12 @@ public struct StartMenu95<Content: View>: View {
 
   /// The raised menu panel.
   public var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[2]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xxxs) {
       content
     }
     .font(theme.fonts.body)
     .foregroundStyle(theme.colors.text)
-    .padding(Spacing95[4])
+    .padding(theme.spacing.xxs)
     .frame(width: 280, alignment: .leading)
     .background(theme.colors.background)
     .bevel95(.raised)
@@ -42,7 +42,7 @@ private struct StartMenuButtonStyle: ButtonStyle {
     configuration.label
       .font(theme.fonts.body)
       .foregroundStyle(configuration.isPressed ? theme.colors.accentText : theme.colors.text)
-      .padding(.horizontal, Spacing95[8])
+      .padding(.horizontal, theme.spacing.m)
       .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
       .background(configuration.isPressed ? theme.colors.accent : Color.clear)
       .contentShape(.rect)

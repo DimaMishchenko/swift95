@@ -115,21 +115,21 @@ public struct Tabs95<Value: Hashable, Label: View, Content: View>: View {
 
   /// The classic tab strip and selected content.
   public var body: some View {
-    VStack(alignment: .leading, spacing: -2) {
+    VStack(alignment: .leading, spacing: -theme.metrics.tabStripOverlap) {
       ScrollView(.horizontal, showsIndicators: false) {
-        HStack(alignment: .bottom, spacing: Spacing95[2]) {
+        HStack(alignment: .bottom, spacing: theme.spacing.xxxs) {
           ForEach(tabs) { tab in
             tabButton(tab)
           }
         }
-        .padding(.horizontal, Spacing95[4])
-        .padding(.top, Spacing95[2])
+        .padding(.horizontal, theme.spacing.xxs)
+        .padding(.top, theme.spacing.xxxs)
       }
       .scrollClipDisabled()
       .zIndex(1)
 
       content(selection)
-        .padding(Spacing95[12])
+        .padding(theme.spacing.xl)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .bevel95(.raised)
         .zIndex(0)
@@ -147,10 +147,10 @@ public struct Tabs95<Value: Hashable, Label: View, Content: View>: View {
         isSelected: isSelected,
         theme: theme,
         contentInsets: EdgeInsets(
-          top: isSelected ? Spacing95[8] : Spacing95[6],
-          leading: Spacing95[12],
-          bottom: Spacing95[6],
-          trailing: Spacing95[12]
+          top: isSelected ? theme.spacing.m : theme.spacing.s,
+          leading: theme.spacing.xl,
+          bottom: theme.spacing.s,
+          trailing: theme.spacing.xl
         )
       )
     )
@@ -209,7 +209,10 @@ private struct TabButtonStyleContent95: View {
       .padding(contentInsets)
       .background(theme.colors.background)
       .contentShape(.rect)
-      .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
+      .offset(
+        x: isPressed ? theme.metrics.pressedContentOffset : 0,
+        y: isPressed ? theme.metrics.pressedContentOffset : 0
+      )
       .overlay {
         if isPressed {
           BevelDrawing95(colors: theme.colors, style: .sunken)

@@ -21,7 +21,7 @@ struct ColorTokenView95: View {
   let token: ColorToken95
 
   var body: some View {
-    HStack(spacing: Spacing95[8]) {
+    HStack(spacing: theme.spacing.m) {
       token.color
         .frame(width: 36, height: 36)
         .overlay {
@@ -29,7 +29,7 @@ struct ColorTokenView95: View {
             .stroke(theme.colors.borderDarkest, lineWidth: 1)
         }
 
-      VStack(alignment: .leading, spacing: Spacing95[2]) {
+      VStack(alignment: .leading, spacing: theme.spacing.xxxs) {
         Text(token.name)
           .font(theme.fonts.body)
           .lineLimit(1)

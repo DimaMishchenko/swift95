@@ -100,7 +100,7 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
   }
 
   private func shortcutLabel(isSelected: Bool) -> some View {
-    VStack(spacing: Spacing95[4]) {
+    VStack(spacing: theme.spacing.xxs) {
       icon
         .frame(width: 42, height: 42)
         .overlay {
@@ -115,7 +115,7 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
         .multilineTextAlignment(.center)
         .lineLimit(2)
         .foregroundStyle(theme.colors.accentText)
-        .padding(.horizontal, Spacing95[2])
+        .padding(.horizontal, theme.spacing.xxxs)
         .background(isSelected ? theme.colors.accent : Color.clear)
         .overlay {
           if isSelected { DesktopSelectionOutline() }
@@ -128,7 +128,7 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
         )
     }
     .frame(width: 88)
-    .padding(.vertical, Spacing95[4])
+    .padding(.vertical, theme.spacing.xxs)
     .contentShape(.rect)
   }
 

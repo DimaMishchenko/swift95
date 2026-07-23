@@ -9,7 +9,7 @@ struct WorkspaceCatalogView: View {
   )
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[12]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xl) {
       Text95(
         "Open windows from the desktop or Start menu. Narrow layouts switch full-size tasks; wide layouts support overlapping, movable windows."
       )
@@ -56,7 +56,7 @@ struct WorkspaceCatalogView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .bevel95(.sunken)
     }
-    .padding(Spacing95[16])
+    .padding(theme.spacing.xxl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .catalogNavigationTitle("Workspace95")
     .background(theme.colors.background.ignoresSafeArea())
@@ -100,14 +100,14 @@ struct WorkspaceCatalogView: View {
       .resizable()
       .scaledToFit()
       .foregroundStyle(.white)
-      .padding(2)
+      .padding(theme.spacing.xxxs)
   }
 
   private func workspaceTaskBarIcon(_ systemName: String) -> some View {
     Image(systemName: systemName)
       .resizable()
       .scaledToFit()
-      .padding(2)
+      .padding(theme.spacing.xxxs)
   }
 }
 
@@ -118,11 +118,12 @@ private enum CatalogWorkspaceRoute: Hashable, Codable {
 }
 
 private struct MyComputerWindow: View {
+  @Environment(\.theme95) private var theme
   @Environment(\.openWorkspaceWindow95) private var openWindow
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[12]) {
-      HStack(spacing: Spacing95[8]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xl) {
+      HStack(spacing: theme.spacing.m) {
         Button95("Notepad") {
           openWindow(CatalogWorkspaceRoute.notepad)
         }
@@ -139,19 +140,20 @@ private struct MyComputerWindow: View {
       Text95("Local Disk (C:)")
       Text95("Control Panel")
     }
-    .padding(Spacing95[12])
+    .padding(theme.spacing.xl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
 }
 
 private struct NotepadWindow: View {
+  @Environment(\.theme95) private var theme
   @Environment(\.openWorkspaceWindow95) private var openWindow
   @State private var text =
     "Welcome to Swift95.\n\nThis window keeps its text when another task opens."
 
   var body: some View {
     VStack(spacing: 0) {
-      HStack(spacing: Spacing95[8]) {
+      HStack(spacing: theme.spacing.m) {
         Button("Settings") {
           openWindow(CatalogWorkspaceRoute.settings)
         }
@@ -159,23 +161,24 @@ private struct NotepadWindow: View {
 
         Spacer()
       }
-      .padding(.horizontal, Spacing95[8])
+      .padding(.horizontal, theme.spacing.m)
       .frame(height: 30)
 
       Divider95()
 
       TextEditor95(text: $text)
-        .padding(Spacing95[6])
+        .padding(theme.spacing.s)
     }
   }
 }
 
 private struct SettingsWindow: View {
+  @Environment(\.theme95) private var theme
   @State private var soundsEnabled = true
   @State private var animationsEnabled = true
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Spacing95[12]) {
+    VStack(alignment: .leading, spacing: theme.spacing.xl) {
       Text95("Workspace settings")
         .swiftUI { $0.fontWeight(.bold) }
 
@@ -184,7 +187,7 @@ private struct SettingsWindow: View {
 
       Spacer()
     }
-    .padding(Spacing95[12])
+    .padding(theme.spacing.xl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
 }

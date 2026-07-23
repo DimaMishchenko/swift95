@@ -39,7 +39,6 @@ public extension View {
   ///
   /// ```swift
   /// Text("Status")
-  ///   .padding(Spacing95[8])
   ///   .bevel95(.raised)
   /// ```
   ///
@@ -75,18 +74,24 @@ public extension View {
     )
   }
 
-  /// Applies a nested Swift95 bevel with configurable space between its edges.
+  /// Applies a nested Swift95 bevel using the theme's bevel spacing.
   ///
-  /// The modifier adds layout space between the inner and outer bevels. Its
-  /// default spacing is four points.
+  /// The modifier adds ``Spacing95/xxs`` space between the inner and outer
+  /// bevels.
   ///
   /// ```swift
   /// content
   ///   .bevel95(.raisedSunken)
   ///
-  /// editor
-  ///   .bevel95(.raisedInput, spacing: Spacing95[6])
   /// ```
+  ///
+  /// - Parameter style: The nested surface treatment to apply.
+  /// - Returns: A view with nested inner and outer bevels.
+  func bevel95(_ style: ComposedBevel95Style) -> some View {
+    modifier(ComposedBevelModifier95(style: style, spacing: nil))
+  }
+
+  /// Applies a nested Swift95 bevel with explicit space between its edges.
   ///
   /// - Parameters:
   ///   - style: The nested surface treatment to apply.
@@ -94,7 +99,7 @@ public extension View {
   /// - Returns: A view with nested inner and outer bevels.
   func bevel95(
     _ style: ComposedBevel95Style,
-    spacing: CGFloat = Spacing95[4]
+    spacing: CGFloat
   ) -> some View {
     precondition(spacing >= 0, "Composed bevel spacing must be nonnegative")
     return modifier(ComposedBevelModifier95(style: style, spacing: spacing))
@@ -102,10 +107,14 @@ public extension View {
 }
 
 private struct ComposedBevelModifier95: ViewModifier {
+  @Environment(\.theme95) private var theme
+
   let style: ComposedBevel95Style
-  let spacing: CGFloat
+  let spacing: CGFloat?
 
   func body(content: Content) -> some View {
+    let spacing = spacing ?? theme.spacing.xxs
+
     switch style {
     case .raisedSunken:
       content
