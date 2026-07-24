@@ -10,7 +10,7 @@
   struct PressedControlSnapshotTests {
     @Test func deterministicPressedStates() {
       let theme = Theme95.classic
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 14) {
             Button("Pressed button") {}

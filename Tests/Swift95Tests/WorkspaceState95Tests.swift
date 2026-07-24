@@ -79,6 +79,15 @@ struct WorkspaceState95Tests {
     #expect(state.minimizedWindows.isEmpty)
   }
 
+  @Test func taskActivationRespectsDisabledMinimization() {
+    var state = WorkspaceState95<TestRoute>(openWindows: [.notes])
+
+    state.activateTask(.notes, allowsMinimization: false)
+
+    #expect(state.activeWindow == .notes)
+    #expect(state.minimizedWindows.isEmpty)
+  }
+
   @Test func closingTheActiveWindowRemovesRuntimeStateAndFocusesTheNextWindow() {
     var state = WorkspaceState95<TestRoute>(
       openWindows: [.notes, .settings],

@@ -20,6 +20,8 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Environment(\.workspaceContext) private var workspace
   @Environment(\.theme95) private var theme
+  @Environment(\.strings95) private var strings
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var isMenuPresented = false
   @State private var renderedHeight = CGFloat.zero
 
@@ -120,7 +122,15 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
           .zIndex(1000)
       }
     }
-    .animation(.easeOut(duration: 0.1), value: isMenuPresented)
+    .animation(
+      reduceMotion ? nil : .easeOut(duration: theme.motion.quick),
+      value: isMenuPresented
+    )
+    .onKeyPress(.escape) {
+      guard isMenuPresented else { return .ignored }
+      isMenuPresented = false
+      return .handled
+    }
   }
 
   /// Applies SwiftUI modifiers to the completed Start button.
@@ -170,7 +180,10 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
     } label: {
       HStack(spacing: theme.spacing.xxs) {
         startIcon
-          .frame(width: 22, height: 22)
+          .frame(
+            width: theme.metrics.taskbarStartIconSize,
+            height: theme.metrics.taskbarStartIconSize
+          )
         startTitle
           .font(theme.fonts.body.weight(.bold))
       }
@@ -185,6 +198,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       )
     )
     .accessibilityAddTraits(isMenuPresented ? .isSelected : [])
+    .accessibilityValue(isMenuPresented ? strings.expanded : strings.collapsed)
   }
 
   private func taskButton(for task: WorkspaceTaskContext) -> some View {
@@ -194,7 +208,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
     } label: {
       HStack(spacing: theme.spacing.xxs) {
         task.icon
-          .frame(width: 20, height: 20)
+          .frame(width: theme.metrics.taskbarIconSize, height: theme.metrics.taskbarIconSize)
           .accessibilityHidden(true)
         task.title
           .font(theme.fonts.body.weight(task.isActive ? .bold : .regular))
@@ -202,8 +216,8 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       }
       .padding(.horizontal, theme.spacing.s)
       .frame(
-        minWidth: 96,
-        maxWidth: 190,
+        minWidth: theme.metrics.taskbarButtonMinimumWidth,
+        maxWidth: theme.metrics.taskbarButtonMaximumWidth,
         minHeight: theme.metrics.taskbarItemHeight,
         alignment: .leading
       )
@@ -216,7 +230,12 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       )
     )
     .accessibilityAddTraits(task.isActive ? .isSelected : [])
-    .opacity(task.isMinimized ? 0.82 : 1)
+    .modifier(
+      TaskAccessibilityValue95(
+        value: task.isMinimized ? strings.minimized : task.isActive ? strings.active : nil
+      )
+    )
+    .opacity(task.isMinimized ? theme.metrics.taskbarMinimizedOpacity : 1)
   }
 
   private var minimumHeight: CGFloat {
@@ -230,6 +249,19 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
 
   private var resolvedHeight: CGFloat {
     renderedHeight > 0 ? renderedHeight : minimumHeight
+  }
+}
+
+private struct TaskAccessibilityValue95: ViewModifier {
+  let value: LocalizedStringResource?
+
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    if let value {
+      content.accessibilityValue(value)
+    } else {
+      content
+    }
   }
 }
 

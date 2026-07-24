@@ -17,10 +17,15 @@ public enum WorkspacePresentation95: Sendable, Equatable {
   /// Displays movable and resizable overlapping windows.
   case windowed
 
-  func resolved(for workspaceSize: CGSize) -> WorkspacePresentation95 {
+  func resolved(
+    for workspaceSize: CGSize,
+    configuration: WorkspaceConfiguration95 = .default
+  ) -> WorkspacePresentation95 {
     switch self {
     case .automatic:
-      workspaceSize.width >= 600 && workspaceSize.height >= 480 ? .windowed : .compact
+      workspaceSize.width >= configuration.automaticWindowedMinimumSize.width
+        && workspaceSize.height >= configuration.automaticWindowedMinimumSize.height
+        ? .windowed : .compact
     case .compact, .windowed:
       self
     }

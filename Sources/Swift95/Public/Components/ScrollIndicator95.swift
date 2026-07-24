@@ -26,7 +26,10 @@ import SwiftUI
 /// .frame(height: 180)
 /// ```
 public struct ScrollIndicator95: View {
+  @Environment(\.locale) private var locale
+  @Environment(\.strings95) private var strings
   @Environment(\.theme95) private var theme
+  @Environment(\.valueFormatters95) private var valueFormatters
   @State private var dragStartOffset: CGFloat?
   @Binding private var contentOffset: CGFloat
 
@@ -121,32 +124,41 @@ public struct ScrollIndicator95: View {
   private func scrollThumb(trackHeight: CGFloat) -> some View {
     let thumb = thumbGeometry(trackHeight: trackHeight)
 
-    Color.clear
-      .frame(height: thumb.height)
-      .contentShape(.rect)
-      .bevel95(.raised)
-      .offset(y: thumb.offset)
-      .gesture(
-        DragGesture(minimumDistance: 0)
-          .onChanged { value in
-            dragThumb(value, trackHeight: trackHeight, thumbHeight: thumb.height)
+    ZStack {
+      Color.clear
+        .frame(height: thumb.height)
+        .bevel95(.raised)
+        .accessibilityHidden(true)
+
+      Color.clear
+        .contentShape(.rect)
+        .accessibilityLabel(strings.scrollPosition)
+        .accessibilityValue(
+          Text(verbatim: valueFormatters.percentage(Double(metrics.progress), locale))
+        )
+        .accessibilityAdjustableAction { direction in
+          switch direction {
+          case .increment:
+            scroll(by: lineIncrement)
+          case .decrement:
+            scroll(by: -lineIncrement)
+          @unknown default:
+            break
           }
-          .onEnded { _ in
-            dragStartOffset = nil
-          }
-      )
-      .accessibilityLabel("Scroll position")
-      .accessibilityValue("\(Int(metrics.progress * 100))%")
-      .accessibilityAdjustableAction { direction in
-        switch direction {
-        case .increment:
-          scroll(by: lineIncrement)
-        case .decrement:
-          scroll(by: -lineIncrement)
-        @unknown default:
-          break
         }
-      }
+    }
+    .frame(height: thumb.height)
+    .contentShape(.rect)
+    .offset(y: thumb.offset)
+    .gesture(
+      DragGesture(minimumDistance: 0)
+        .onChanged { value in
+          dragThumb(value, trackHeight: trackHeight, thumbHeight: thumb.height)
+        }
+        .onEnded { _ in
+          dragStartOffset = nil
+        }
+    )
   }
 
   private func dragThumb(
@@ -221,6 +233,7 @@ private enum ScrollArrowDirection95 {
 
 private struct ScrollArrowButton95: View {
   @Environment(\.isEnabled) private var isEnabled
+  @Environment(\.strings95) private var strings
 
   let direction: ScrollArrowDirection95
   let theme: Theme95
@@ -235,11 +248,8 @@ private struct ScrollArrowButton95: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .contentShape(.rect)
     }
-    .swiftUI { button in
-      button.focusable(false)
-    }
     .frame(height: theme.metrics.scrollBarWidth - theme.metrics.bevelWidth * 2)
-    .accessibilityLabel(direction == .up ? "Scroll up" : "Scroll down")
+    .accessibilityLabel(direction == .up ? strings.scrollUp : strings.scrollDown)
   }
 }
 

@@ -16,7 +16,7 @@
         options: SnapshotPickerChoice.longOptions
       )
 
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 16) {
             picker.disabled(true)
@@ -34,7 +34,7 @@
       let options = snapshotPicker(selection: .dateModified)
         .snapshotOptionList95(selection: .dateModified, theme: .classic)
 
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           ZStack(alignment: .topLeading) {
             PickerOptionPresentationLayout95(
@@ -50,7 +50,7 @@
         named: "below"
       )
 
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           ZStack(alignment: .topLeading) {
             PickerOptionPresentationLayout95(

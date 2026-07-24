@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct ProgressView95SnapshotTests {
     @Test func indeterminateProgressFixedPhase() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 12) {
             Text95("Indeterminate — fixed phase")

@@ -50,7 +50,7 @@
         }
       }
 
-      assertSnapshot(of: view, as: imageSnapshot(height: 700))
+      assertSnapshot95(of: view, as: imageSnapshot(height: 700))
     }
 
     @Test func workspaceWindowedRegularWidth() {
@@ -107,7 +107,7 @@
         }
       }
 
-      assertSnapshot(of: view, as: imageSnapshot(width: 820, height: 650))
+      assertSnapshot95(of: view, as: imageSnapshot(width: 820, height: 650))
     }
     private func workspaceIcon(_ color: Color) -> some View {
       color

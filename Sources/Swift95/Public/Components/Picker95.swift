@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if os(macOS)
+  import AppKit
+#endif
+
 /// A typed option displayed by ``Picker95``.
 public struct PickerOption95<Value: Hashable, Label: View>: Identifiable {
   /// The value written to the picker's selection when this option is activated.
@@ -120,7 +124,7 @@ public struct Picker95<
   private let title: Text
   private let options: [PickerOption95<SelectionValue, OptionLabel>]
   private let currentValueLabel: (SelectionValue) -> CurrentValueLabel
-  private let accessibilityValue: (SelectionValue) -> Text
+  private let accessibilityValue: (SelectionValue) -> Text?
   private let triggerTransform: (AnyView) -> AnyView
 
   /// Creates a picker whose closed field reuses the selected option label.
@@ -146,7 +150,6 @@ public struct Picker95<
     }
     accessibilityValue = { value in
       options.first(where: { $0.value == value })?.accessibilityValue
-        ?? Text(verbatim: String(describing: value))
     }
     triggerTransform = { $0 }
   }
@@ -174,7 +177,6 @@ public struct Picker95<
     }
     accessibilityValue = { value in
       options.first(where: { $0.value == value })?.accessibilityValue
-        ?? Text(verbatim: String(describing: value))
     }
     triggerTransform = { $0 }
   }
@@ -191,9 +193,7 @@ public struct Picker95<
     _ titleKey: LocalizedStringKey,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
-    accessibilityValue: @escaping (SelectionValue) -> Text = {
-      Text(verbatim: String(describing: $0))
-    },
+    accessibilityValue: @escaping (SelectionValue) -> Text,
     @ViewBuilder currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel
   ) {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
@@ -217,9 +217,7 @@ public struct Picker95<
     _ title: S,
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
-    accessibilityValue: @escaping (SelectionValue) -> Text = {
-      Text(verbatim: String(describing: $0))
-    },
+    accessibilityValue: @escaping (SelectionValue) -> Text,
     @ViewBuilder currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel
   ) where S: StringProtocol {
     precondition(!options.isEmpty, "Picker95 requires at least one option")
@@ -236,7 +234,7 @@ public struct Picker95<
     selection: Binding<SelectionValue>,
     options: [PickerOption95<SelectionValue, OptionLabel>],
     currentValueLabel: @escaping (SelectionValue) -> CurrentValueLabel,
-    accessibilityValue: @escaping (SelectionValue) -> Text,
+    accessibilityValue: @escaping (SelectionValue) -> Text?,
     triggerTransform: @escaping (AnyView) -> AnyView
   ) {
     self.title = title
@@ -249,28 +247,43 @@ public struct Picker95<
 
   /// The styled picker field and custom option presentation.
   public var body: some View {
-    #if os(iOS)
-      triggerTransform(AnyView(trigger))
-        .overlay {
-          GeometryReader { geometry in
-            let triggerFrame = geometry.frame(in: .global)
+    Group {
+      #if os(iOS)
+        triggerTransform(AnyView(trigger))
+          .overlay {
+            GeometryReader { geometry in
+              let triggerFrame = geometry.frame(in: .global)
 
-            Color.clear
-              .fullScreenCover(isPresented: $isPresented) {
-                optionPresentation(triggerFrame: triggerFrame)
-              }
-              .transaction { transaction in
-                transaction.disablesAnimations = true
-              }
+              Color.clear
+                .fullScreenCover(isPresented: $isPresented) {
+                  optionPresentation(triggerFrame: triggerFrame)
+                }
+                .transaction { transaction in
+                  transaction.disablesAnimations = true
+                }
+            }
           }
-        }
-    #else
-      triggerTransform(AnyView(trigger))
-        .popover(isPresented: $isPresented) {
-          optionList
-            .frame(minWidth: 160)
-        }
-    #endif
+      #else
+        triggerTransform(AnyView(trigger))
+          .background {
+            MacPickerPresentation95(
+              isPresented: $isPresented,
+              overlap: theme.metrics.bevelWidth * 2,
+              minimumWidth: theme.metrics.pickerMinimumWidth,
+              theme: theme
+            ) {
+              optionList
+            }
+            .allowsHitTesting(false)
+          }
+      #endif
+    }
+    .onKeyPress(.escape) {
+      guard isPresented else { return .ignored }
+      pressedOption = nil
+      isPresented = false
+      return .handled
+    }
   }
 
   /// Applies SwiftUI modifiers to the completed picker trigger.
@@ -305,13 +318,14 @@ public struct Picker95<
   private var trigger: some View {
     Button {
       pressedOption = nil
-      isPresented = true
+      isPresented.toggle()
     } label: {
       currentValueLabel(selection)
     }
     .buttonStyle(PickerTriggerButtonStyle95(theme: theme))
+    .modifier(PickerTriggerFocusEffect95())
     .accessibilityLabel(title)
-    .accessibilityValue(accessibilityValue(selection))
+    .modifier(PickerAccessibilityValue95(value: accessibilityValue(selection)))
   }
 
   private func optionPresentation(triggerFrame: CGRect) -> some View {
@@ -326,7 +340,8 @@ public struct Picker95<
 
       PickerOptionPresentationLayout95(
         triggerFrame: triggerFrame,
-        overlap: theme.metrics.bevelWidth * 2
+        overlap: theme.metrics.bevelWidth * 2,
+        minimumWidth: theme.metrics.pickerMinimumWidth
       ) {
         optionList
       }
@@ -360,6 +375,201 @@ public struct Picker95<
   }
 }
 
+#if os(macOS)
+  struct MacPickerPresentation95<Content: View>: NSViewRepresentable {
+    @Binding var isPresented: Bool
+
+    let overlap: CGFloat
+    let minimumWidth: CGFloat
+    let theme: Theme95
+    @ViewBuilder let content: () -> Content
+
+    func makeCoordinator() -> Coordinator {
+      Coordinator()
+    }
+
+    func makeNSView(context: Context) -> NSView {
+      PickerPresentationAnchor95()
+    }
+
+    func updateNSView(_ anchor: NSView, context: Context) {
+      guard isPresented, anchor.window != nil else {
+        context.coordinator.dismiss()
+        return
+      }
+
+      context.coordinator.dismissAction = {
+        isPresented = false
+      }
+      context.coordinator.present(
+        AnyView(
+          content()
+            .frame(minWidth: max(anchor.bounds.width, minimumWidth))
+            .fixedSize(horizontal: false, vertical: true)
+            .theme95(theme)
+        ),
+        from: anchor,
+        overlap: overlap
+      )
+    }
+
+    static func dismantleNSView(_ nsView: NSView, coordinator: Coordinator) {
+      coordinator.dismiss()
+    }
+
+    @MainActor
+    final class Coordinator {
+      var dismissAction: (() -> Void)?
+
+      private var panel: PickerPanelWindow95?
+      private var localEventMonitor: Any?
+      private var globalEventMonitor: Any?
+
+      func present(_ rootView: AnyView, from anchor: NSView, overlap: CGFloat) {
+        guard let parentWindow = anchor.window else { return }
+
+        let host = NSHostingView(rootView: rootView)
+        let contentSize = host.fittingSize
+        host.frame = CGRect(origin: .zero, size: contentSize)
+
+        let panel: PickerPanelWindow95
+        if let currentPanel = self.panel {
+          panel = currentPanel
+          panel.contentView = host
+          panel.setContentSize(contentSize)
+        } else {
+          panel = PickerPanelWindow95(
+            contentRect: CGRect(origin: .zero, size: contentSize),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+          )
+          panel.isOpaque = false
+          panel.backgroundColor = .clear
+          panel.hasShadow = false
+          panel.hidesOnDeactivate = true
+          panel.level = .popUpMenu
+          panel.contentView = host
+          parentWindow.addChildWindow(panel, ordered: .above)
+          self.panel = panel
+          installEventMonitors()
+        }
+
+        position(panel, relativeTo: anchor, overlap: overlap)
+        panel.makeKeyAndOrderFront(nil)
+      }
+
+      func dismiss() {
+        if let panel {
+          panel.parent?.removeChildWindow(panel)
+          panel.orderOut(nil)
+        }
+        panel = nil
+        removeEventMonitors()
+      }
+
+      private func position(
+        _ panel: NSPanel,
+        relativeTo anchor: NSView,
+        overlap: CGFloat
+      ) {
+        guard let window = anchor.window else { return }
+
+        let triggerFrame = window.convertToScreen(anchor.convert(anchor.bounds, to: nil))
+        let visibleFrame =
+          window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? triggerFrame
+        let panelSize = panel.frame.size
+        let availableBelow = triggerFrame.minY - visibleFrame.minY
+        let y =
+          availableBelow >= panelSize.height - overlap
+          ? triggerFrame.minY - panelSize.height + overlap
+          : triggerFrame.maxY - overlap
+        let x = min(
+          max(triggerFrame.minX, visibleFrame.minX),
+          max(visibleFrame.minX, visibleFrame.maxX - panelSize.width)
+        )
+
+        panel.setFrameOrigin(
+          CGPoint(
+            x: x,
+            y: min(
+              max(y, visibleFrame.minY),
+              max(visibleFrame.minY, visibleFrame.maxY - panelSize.height)
+            )
+          )
+        )
+      }
+
+      private func installEventMonitors() {
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(
+          matching: [.leftMouseDown, .rightMouseDown, .keyDown]
+        ) { [weak self] event in
+          guard let self, let panel else { return event }
+          if event.type == .keyDown, event.keyCode == 53 {
+            dismissAction?()
+            return nil
+          }
+          if event.window !== panel {
+            dismissAction?()
+          }
+          return event
+        }
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(
+          matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] _ in
+          self?.dismissAction?()
+        }
+      }
+
+      private func removeEventMonitors() {
+        if let localEventMonitor {
+          NSEvent.removeMonitor(localEventMonitor)
+        }
+        if let globalEventMonitor {
+          NSEvent.removeMonitor(globalEventMonitor)
+        }
+        localEventMonitor = nil
+        globalEventMonitor = nil
+      }
+    }
+  }
+
+  final class PickerPanelWindow95: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+  }
+
+  final class PickerPresentationAnchor95: NSView {
+    override func hitTest(_ point: NSPoint) -> NSView? {
+      nil
+    }
+  }
+#endif
+
+private struct PickerTriggerFocusEffect95: ViewModifier {
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    #if os(macOS)
+      content.focusEffectDisabled()
+    #else
+      content
+    #endif
+  }
+}
+
+private struct PickerAccessibilityValue95: ViewModifier {
+  let value: Text?
+
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    if let value {
+      content.accessibilityValue(value)
+    } else {
+      content
+    }
+  }
+}
+
 private struct PickerOptionList95<Value: Hashable, OptionLabel: View>: View {
   let options: [PickerOption95<Value, OptionLabel>]
   @Binding var selection: Value
@@ -373,7 +583,7 @@ private struct PickerOptionList95<Value: Hashable, OptionLabel: View>: View {
       ScrollView95 {
         optionRows
       }
-      .frame(maxHeight: 280)
+      .frame(maxHeight: theme.metrics.pickerMaximumHeight)
     } else {
       optionRows
         .bevel95(.input)
@@ -456,6 +666,17 @@ struct PickerOptionButtonStyle95<Value: Hashable>: ButtonStyle {
 struct PickerOptionPresentationLayout95: Layout {
   let triggerFrame: CGRect
   let overlap: CGFloat
+  let minimumWidth: CGFloat
+
+  init(
+    triggerFrame: CGRect,
+    overlap: CGFloat,
+    minimumWidth: CGFloat = Metrics95.classic.pickerMinimumWidth
+  ) {
+    self.triggerFrame = triggerFrame
+    self.overlap = overlap
+    self.minimumWidth = minimumWidth
+  }
 
   func sizeThatFits(
     proposal: ProposedViewSize,
@@ -479,12 +700,12 @@ struct PickerOptionPresentationLayout95: Layout {
       triggerFrame: triggerFrame,
       contentSize: subview.sizeThatFits(
         ProposedViewSize(
-          width: min(max(triggerFrame.width, 160), bounds.width),
+          width: min(max(triggerFrame.width, minimumWidth), bounds.width),
           height: bounds.height
         )
       ),
       bounds: bounds,
-      minimumWidth: 160,
+      minimumWidth: minimumWidth,
       overlap: overlap
     )
     let width = placement.width
@@ -517,7 +738,10 @@ struct PickerTriggerButtonStyle95: ButtonStyle {
         .frame(maxWidth: .infinity, alignment: .leading)
 
       Color.clear
-        .frame(width: 24, height: 24)
+        .frame(
+          width: theme.metrics.pickerDisclosureSize,
+          height: theme.metrics.pickerDisclosureSize
+        )
         .bevel95(isPressed ? .sunken : .raised)
         .overlay {
           PixelCaret95(

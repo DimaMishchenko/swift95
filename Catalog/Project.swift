@@ -2,6 +2,9 @@ import ProjectDescription
 
 let project = Project(
   name: "Swift95Catalog",
+  options: .options(
+    automaticSchemesOptions: .enabled()
+  ),
   packages: [
     .local(path: .relativeToManifest(".."))
   ],
@@ -47,7 +50,10 @@ let project = Project(
           "UILaunchScreen": [:]
         ]
       ),
-      sources: ["Swift95TestHost/Sources/**"]
+      sources: ["Swift95TestHost/Sources/**"],
+      dependencies: [
+        .package(product: "Swift95")
+      ]
     ),
     .target(
       name: "Swift95Tests",
@@ -61,6 +67,18 @@ let project = Project(
         .target(name: "Swift95TestHost"),
         .package(product: "Swift95"),
         .package(product: "SnapshotTesting")
+      ]
+    ),
+    .target(
+      name: "Swift95UITests",
+      destinations: [.iPhone, .iPad],
+      product: .uiTests,
+      bundleId: "com.swift95.ui-tests",
+      deploymentTargets: .iOS("18.0"),
+      infoPlist: .default,
+      sources: ["Swift95UITests/Sources/**"],
+      dependencies: [
+        .target(name: "Swift95TestHost")
       ]
     )
   ]

@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct Slider95SnapshotTests {
     @Test func sliderBoundaryStates() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 16) {
             Slider95(value: .constant(0.0), in: 0...1) { Text("Minimum") }

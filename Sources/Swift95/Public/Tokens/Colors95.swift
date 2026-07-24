@@ -25,6 +25,12 @@ public struct Colors95: Sendable {
   public var text: Color
   /// Text displayed on an inverted surface.
   public var textInverted: Color
+  /// Text displayed directly on the desktop.
+  public var desktopText: Color
+  /// The hard shadow behind unselected desktop text.
+  public var desktopTextShadow: Color
+  /// The dashed outline around selected desktop text.
+  public var desktopSelectionOutline: Color
   /// Text for disabled controls.
   public var textDisabled: Color
   /// The light edge of embossed disabled text.
@@ -63,6 +69,9 @@ public struct Colors95: Sendable {
   ///   - workspaceBackground: The background of workspace and desktop surfaces.
   ///   - text: The primary foreground color.
   ///   - textInverted: Text shown on an inverted surface.
+  ///   - desktopText: Text displayed on the workspace desktop.
+  ///   - desktopTextShadow: The shadow behind desktop text.
+  ///   - desktopSelectionOutline: The outline around a selected desktop shortcut.
   ///   - textDisabled: Text used by disabled controls.
   ///   - textDisabledHighlight: The light edge used for embossed disabled text.
   ///   - accent: The primary interactive emphasis color.
@@ -83,6 +92,9 @@ public struct Colors95: Sendable {
     workspaceBackground: Color,
     text: Color,
     textInverted: Color,
+    desktopText: Color? = nil,
+    desktopTextShadow: Color? = nil,
+    desktopSelectionOutline: Color = .yellow,
     textDisabled: Color,
     textDisabledHighlight: Color,
     accent: Color,
@@ -103,6 +115,9 @@ public struct Colors95: Sendable {
     self.workspaceBackground = workspaceBackground
     self.text = text
     self.textInverted = textInverted
+    self.desktopText = desktopText ?? accentText
+    self.desktopTextShadow = desktopTextShadow ?? borderDarkest
+    self.desktopSelectionOutline = desktopSelectionOutline
     self.textDisabled = textDisabled
     self.textDisabledHighlight = textDisabledHighlight
     self.accent = accent

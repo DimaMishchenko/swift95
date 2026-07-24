@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct AccessibilitySnapshotTests {
     @Test func accessibilityDynamicTypeMatrix() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 18) {
             Text95("Accessibility text")
@@ -37,7 +37,7 @@
     }
 
     @Test func rightToLeftAndLongContent() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 14) {
             Button95("A long localized button title") {}

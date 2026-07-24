@@ -18,7 +18,6 @@ import SwiftUI
 /// ```
 public struct Desktop95<Content: View, Background: View>: View {
   @Environment(\.desktopPositionStore) private var positionStore
-  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Environment(\.theme95) private var theme
   @State private var selectedShortcut: AnyHashable?
   @State private var shortcutFrames: [AnyHashable: CGRect] = [:]
@@ -37,7 +36,7 @@ public struct Desktop95<Content: View, Background: View>: View {
   ///   - content: The shortcuts displayed on the desktop.
   public init(
     allowsShortcutMovement: Bool = true,
-    shortcutActivation: DesktopShortcutActivation95 = .automatic,
+    shortcutActivation: DesktopShortcutActivation95 = .doubleClick,
     @ViewBuilder content: () -> Content
   ) where Background == Color {
     self.content = content()
@@ -51,7 +50,7 @@ public struct Desktop95<Content: View, Background: View>: View {
   /// The custom background is drawn over ``ClassicWorkspaceBackground95`` and behind the shortcuts.
   public init(
     allowsShortcutMovement: Bool = true,
-    shortcutActivation: DesktopShortcutActivation95 = .automatic,
+    shortcutActivation: DesktopShortcutActivation95 = .doubleClick,
     @ViewBuilder content: () -> Content,
     @ViewBuilder background: () -> Background
   ) {
@@ -77,9 +76,7 @@ public struct Desktop95<Content: View, Background: View>: View {
       )
       let context = DesktopContext(
         allowsShortcutMovement: allowsShortcutMovement,
-        shortcutActivation: shortcutActivation.resolved(
-          isCompact: horizontalSizeClass == .compact
-        ),
+        shortcutActivation: shortcutActivation,
         isSelected: { selectedShortcut == $0 },
         select: { selectedShortcut = $0 },
         offset: { resolvedOffsets[$0] ?? .zero },

@@ -2,8 +2,10 @@ import SwiftUI
 
 /// A native SwiftUI list with Windows 95-inspired rows and scroll indicator.
 ///
-/// `List95` is backed by `SwiftUI.List`, retaining lazy row creation, native
-/// single selection, sections, and accessibility. Multiple-selection rows use
+/// `List95` is backed by `SwiftUI.List`, retaining lazy row creation, sections,
+/// and accessibility. Selection rows use bound buttons and toggles so selection
+/// remains available without exposing modern platform selection chrome.
+/// Multiple-selection rows use
 /// bound toggles so their checked state remains available without exposing
 /// modern edit-mode chrome. The list replaces the native background,
 /// separators, and scroll indicator with Swift95 styling.
@@ -102,7 +104,7 @@ public struct List95: View {
     indicatorTransform = { $0 }
   }
 
-  /// Creates a list with native single selection.
+  /// Creates a list with single selection.
   ///
   /// - Parameters:
   ///   - items: The identifiable items displayed by the list.
@@ -245,7 +247,7 @@ public struct List95: View {
     indicatorTransform = { $0 }
   }
 
-  /// Creates a sectioned list with native single selection.
+  /// Creates a sectioned list with single selection.
   ///
   /// - Parameters:
   ///   - sections: The typed sections and their items.
@@ -403,6 +405,7 @@ public struct List95: View {
 }
 
 private struct ListContent<Item: Identifiable, RowContent: View>: View {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.theme95) private var theme
   @State private var pressedID: Item.ID?
 
@@ -433,8 +436,8 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
     switch selection {
     case .none:
       styled(List { listContent })
-    case let .single(binding):
-      styled(List(selection: binding) { listContent })
+    case .single:
+      styled(List { listContent })
     case .multiple:
       styled(List { listContent })
     }
@@ -499,12 +502,16 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
           .listRowSeparator(.hidden)
           .listRowBackground(Color.clear)
       case .single:
-        configuredRow(item, isLast: isLast)
-          .buttonStyle(ListRowInteractionButtonStyle(id: item.id, pressedID: $pressedID))
-          .listRowInsets(EdgeInsets())
-          .listRowSeparator(.hidden)
-          .listRowBackground(Color.clear)
-          .tag(item.id)
+        Button {
+          selection.select(item.id)
+        } label: {
+          configuredRow(item, isLast: isLast)
+        }
+        .buttonStyle(ListRowInteractionButtonStyle(id: item.id, pressedID: $pressedID))
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .accessibilityAddTraits(selection.contains(item.id) ? .isSelected : [])
       case .multiple:
         Toggle(isOn: selection.binding(for: item.id)) {
           configuredRow(item, isLast: isLast)
@@ -530,7 +537,10 @@ private struct ListContent<Item: Identifiable, RowContent: View>: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .contentShape(.rect)
       .background(isHighlighted(item.id) ? theme.colors.accent : theme.colors.background)
-      .animation(.easeOut(duration: 0.08), value: isHighlighted(item.id))
+      .animation(
+        reduceMotion ? nil : .easeOut(duration: theme.motion.feedback),
+        value: isHighlighted(item.id)
+      )
       .overlay(alignment: .bottom) {
         if style == .compact, showsSeparators, !isLast {
           Divider95()
@@ -725,17 +735,25 @@ public struct Row95<Label: View>: View {
       if showsSelectionMark {
         CheckmarkDrawing95(
           color: foregroundColor,
-          size: style == .largeIcon ? 14 : 12
+          size: style == .largeIcon
+            ? theme.metrics.listLargeSelectionMarkSize
+            : theme.metrics.listCompactSelectionMarkSize
         )
         .opacity(isSelected ? 1 : 0)
-        .frame(width: style == .largeIcon ? 14 : 12)
+        .frame(
+          width: style == .largeIcon
+            ? theme.metrics.listLargeSelectionMarkSize
+            : theme.metrics.listCompactSelectionMarkSize
+        )
       }
 
       if let leading {
         leading
           .frame(
-            width: style == .largeIcon ? 32 : 18,
-            height: style == .largeIcon ? 32 : 18
+            width: style == .largeIcon
+              ? theme.metrics.listLargeIconSize : theme.metrics.listCompactIconSize,
+            height: style == .largeIcon
+              ? theme.metrics.listLargeIconSize : theme.metrics.listCompactIconSize
           )
       }
 
@@ -751,11 +769,12 @@ public struct Row95<Label: View>: View {
     .environment(\.foregroundColor95, foregroundColor)
     .padding(.horizontal, style == .largeIcon ? theme.spacing.m : theme.spacing.s)
     .padding(.vertical, style == .largeIcon ? theme.spacing.s : theme.spacing.xxxs)
-    .frame(minHeight: style == .largeIcon ? 48 : 24)
+    .frame(
+      minHeight: style == .largeIcon
+        ? theme.metrics.listLargeRowHeight : theme.metrics.listCompactRowHeight
+    )
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(isHighlighted ? theme.colors.accent : theme.colors.background)
-    .scaleEffect(isPressed ? 0.985 : 1)
-    .animation(.easeOut(duration: 0.08), value: isPressed)
     .contentShape(.rect)
   }
 
@@ -807,6 +826,11 @@ enum ListSelection<ID: Hashable> {
       get: { box.value },
       set: { box.value = $0 }
     )
+  }
+
+  func select(_ id: ID) {
+    guard case let .single(selection) = self else { return }
+    selection.wrappedValue = id
   }
 }
 

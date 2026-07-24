@@ -28,7 +28,7 @@ public struct StartMenu95<Content: View>: View {
     .font(theme.fonts.body)
     .foregroundStyle(theme.colors.text)
     .padding(theme.spacing.xxs)
-    .frame(width: 280, alignment: .leading)
+    .frame(width: theme.metrics.startMenuWidth, alignment: .leading)
     .background(theme.colors.background)
     .bevel95(.raised)
     .buttonStyle(StartMenuButtonStyle(theme: theme))
@@ -43,7 +43,11 @@ private struct StartMenuButtonStyle: ButtonStyle {
       .font(theme.fonts.body)
       .foregroundStyle(configuration.isPressed ? theme.colors.accentText : theme.colors.text)
       .padding(.horizontal, theme.spacing.m)
-      .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+      .frame(
+        maxWidth: .infinity,
+        minHeight: theme.metrics.startMenuRowHeight,
+        alignment: .leading
+      )
       .background(configuration.isPressed ? theme.colors.accent : Color.clear)
       .contentShape(.rect)
   }

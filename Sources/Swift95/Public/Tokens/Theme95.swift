@@ -26,6 +26,8 @@ public struct Theme95: Sendable {
   public var fonts: Fonts95
   /// The theme's shared spacing scale.
   public var spacing: Spacing95
+  /// The theme's semantic motion timings.
+  public var motion: Motion95
 
   /// Creates a theme from its token groups.
   ///
@@ -34,16 +36,19 @@ public struct Theme95: Sendable {
   ///   - metrics: The component measurements used by components.
   ///   - fonts: The typography roles and font factory used by components.
   ///   - spacing: The spacing scale used by components and app layouts.
+  ///   - motion: The semantic motion timings used by components.
   public init(
     colors: Colors95,
     metrics: Metrics95,
     fonts: Fonts95,
-    spacing: Spacing95 = .classic
+    spacing: Spacing95 = .classic,
+    motion: Motion95 = .classic
   ) {
     self.colors = colors
     self.metrics = metrics
     self.fonts = fonts
     self.spacing = spacing
+    self.motion = motion
   }
 
   /// The default Windows 95-inspired theme.
@@ -51,7 +56,8 @@ public struct Theme95: Sendable {
     colors: .classic,
     metrics: .classic,
     fonts: .classic,
-    spacing: .classic
+    spacing: .classic,
+    motion: .classic
   )
 }
 

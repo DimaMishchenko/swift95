@@ -328,7 +328,7 @@ struct ListCatalogView: View {
   ]
 
   var body: some View {
-    VStack(alignment: .leading, spacing: theme.spacing.xxl) {
+    CatalogPage95("List95") {
       Picker95(
         "Example",
         selection: $example,
@@ -339,11 +339,6 @@ struct ListCatalogView: View {
         exampleContent
       }
     }
-    .frame(maxWidth: 720, maxHeight: .infinity, alignment: .topLeading)
-    .padding(theme.spacing.xxl)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .catalogNavigationTitle("List95")
-    .background(theme.colors.background.ignoresSafeArea())
   }
 
   @ViewBuilder

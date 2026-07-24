@@ -25,6 +25,7 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
 
   private let externalState: Binding<WorkspaceState95<Route>>?
   private let presentation: WorkspacePresentation95
+  private let configuration: WorkspaceConfiguration95
   private let makeWindow: (Route) -> WorkspaceWindow95
   private let desktop: Desktop
   private let taskBar: TaskBar
@@ -33,6 +34,7 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
   public init(
     for routeType: Route.Type = Route.self,
     presentation: WorkspacePresentation95 = .automatic,
+    configuration: WorkspaceConfiguration95 = .default,
     _ window: @escaping (Route) -> WorkspaceWindow95,
     @ViewBuilder desktop: () -> Desktop,
     @ViewBuilder taskBar: () -> TaskBar
@@ -40,6 +42,7 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
     _ownedState = State(initialValue: WorkspaceState95())
     externalState = nil
     self.presentation = presentation
+    self.configuration = configuration
     makeWindow = window
     self.desktop = desktop()
     self.taskBar = taskBar()
@@ -50,6 +53,7 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
     for routeType: Route.Type = Route.self,
     state: Binding<WorkspaceState95<Route>>,
     presentation: WorkspacePresentation95 = .automatic,
+    configuration: WorkspaceConfiguration95 = .default,
     _ window: @escaping (Route) -> WorkspaceWindow95,
     @ViewBuilder desktop: () -> Desktop,
     @ViewBuilder taskBar: () -> TaskBar
@@ -57,6 +61,7 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
     _ownedState = State(initialValue: state.wrappedValue)
     externalState = state
     self.presentation = presentation
+    self.configuration = configuration
     makeWindow = window
     self.desktop = desktop()
     self.taskBar = taskBar()
@@ -73,7 +78,10 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
 
     VStack(spacing: 0) {
       GeometryReader { geometry in
-        let resolvedPresentation = presentation.resolved(for: geometry.size)
+        let resolvedPresentation = presentation.resolved(
+          for: geometry.size,
+          configuration: configuration
+        )
 
         ZStack(alignment: .topLeading) {
           desktop
@@ -118,7 +126,8 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
       },
       toggleTask: { value in
         guard let route = value.base as? Route else { return }
-        state.wrappedValue.toggleTask(route)
+        let allowsMinimization = makeWindow(route).configuration.capabilities.contains(.minimize)
+        state.wrappedValue.activateTask(route, allowsMinimization: allowsMinimization)
       }
     )
   }
@@ -151,11 +160,15 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
       frame: frame,
       activate: { state.wrappedValue.activate(route) },
       minimize: { state.wrappedValue.minimize(route) },
-      close: { state.wrappedValue.close(route) }
+      close: { state.wrappedValue.close(route) },
+      configuration: configuration
     )
     .opacity(isMinimized || (!isActive && presentation == .compact) ? 0 : 1)
     .allowsHitTesting(!isMinimized && (isActive || presentation == .windowed))
+    // Hidden windows stay mounted to preserve their SwiftUI state, so they must
+    // be removed from the accessibility tree separately.
     .accessibilityHidden(isMinimized || (!isActive && presentation == .compact))
+    .accessibilitySortPriority(isActive ? 10_000 : zIndex)
     .zIndex(zIndex)
   }
 
@@ -165,13 +178,10 @@ public struct Workspace95<Route: Hashable, Desktop: View, TaskBar: View>: View {
     workspaceSize: CGSize
   ) -> CGRect {
     let index = state.openWindows.firstIndex(of: route) ?? 0
-    let width = min(max(workspaceSize.width * 0.62, 340), 620)
-    let height = min(max(workspaceSize.height * 0.68, 260), 520)
-    let cascade = CGFloat(index % 8) * 24
-    let origin = CGPoint(
-      x: max(12, (workspaceSize.width - width) / 2 + cascade - 72),
-      y: max(12, (workspaceSize.height - height) / 2 + cascade - 48)
+    return WorkspaceInitialFrame95.frame(
+      index: index,
+      workspaceSize: workspaceSize,
+      configuration: configuration
     )
-    return CGRect(origin: origin, size: CGSize(width: width, height: height))
   }
 }

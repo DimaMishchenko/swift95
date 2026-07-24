@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DesktopContext {
   var allowsShortcutMovement = false
-  var shortcutActivation = DesktopShortcutActivation95.singleClick
+  var shortcutActivation = DesktopShortcutActivation95.doubleClick
   var isSelected: (AnyHashable) -> Bool = { _ in false }
   var select: (AnyHashable) -> Void = { _ in }
   var offset: (AnyHashable) -> CGSize = { _ in .zero }

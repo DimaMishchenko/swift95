@@ -10,7 +10,7 @@
   struct Tabs95SnapshotTests {
     @Test func tabsDisabledAndOverflowing() {
       let tabs = (1...8).map { Tab95("Tab \($0)", value: $0) }
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 16) {
             Tabs95(selection: .constant(1), tabs: tabs) { value in

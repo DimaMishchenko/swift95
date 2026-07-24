@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct TextEditor95SnapshotTests {
     @Test func textEditorContentFitAndOverflow() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 12) {
             TextEditor95(text: .constant("Content fits without scrolling"))

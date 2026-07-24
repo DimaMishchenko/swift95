@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WorkspaceWindowHost: View {
   @Environment(\.theme95) private var theme
+  @Environment(\.strings95) private var strings
   @GestureState private var windowDragTranslation = CGSize.zero
   @GestureState private var windowResizeTranslation = CGSize.zero
   @State private var isDraggingWindow = false
@@ -16,11 +17,17 @@ struct WorkspaceWindowHost: View {
   let activate: () -> Void
   let minimize: () -> Void
   let close: () -> Void
+  let configuration: WorkspaceConfiguration95
 
   var body: some View {
-    let actions = WorkspaceWindowActions95(close: close, minimize: minimize)
+    let capabilities = window.configuration.capabilities
+    let actions = WorkspaceWindowActions95(
+      close: capabilities.contains(.close) ? close : {},
+      minimize: capabilities.contains(.minimize) ? minimize : {}
+    )
     let maximizeAction: (() -> Void)? =
-      presentation == .windowed ? { toggleMaximized() } : nil
+      presentation == .windowed && capabilities.contains(.maximize)
+      ? { toggleMaximized() } : nil
 
     VStack(spacing: 0) {
       WorkspaceTitleBar(
@@ -28,10 +35,10 @@ struct WorkspaceWindowHost: View {
         icon: window.titleBarIcon,
         isActive: isActive,
         isCompact: presentation == .compact,
-        minimize: minimize,
+        minimize: capabilities.contains(.minimize) ? minimize : nil,
         maximize: maximizeAction,
         isMaximized: isMaximized,
-        close: close
+        close: capabilities.contains(.close) ? close : nil
       )
       .padding(.horizontal, titleBarInset)
       .padding(.top, titleBarInset)
@@ -47,7 +54,12 @@ struct WorkspaceWindowHost: View {
         WorkspaceWindowStatusBar(
           content: window.statusBar,
           resizeHandle: canResize
-            ? AnyView(WindowResizeHandle().gesture(windowResizeGesture))
+            ? AnyView(
+              WindowResizeHandle()
+                .gesture(windowResizeGesture)
+                .accessibilityLabel(strings.resizeWindow)
+                .accessibilityAdjustableAction(resizeAccessibilityAction)
+            )
             : nil
         )
       }
@@ -66,6 +78,18 @@ struct WorkspaceWindowHost: View {
     .onChange(of: frame) { _, _ in
       normalizeRetainedGeometry()
     }
+    .modifier(
+      WorkspaceWindowAccessibilityActions(
+        moveLabel: Text(strings.moveWindow),
+        resizeLabel: Text(strings.resizeWindow),
+        canMove: canMove,
+        canResize: canResize,
+        moveStep: configuration.accessibilityMoveStep,
+        resizeStep: configuration.accessibilityResizeStep,
+        move: moveAccessibilityAction,
+        resize: resize
+      )
+    )
   }
 
   private var isMaximized: Bool {
@@ -90,7 +114,7 @@ struct WorkspaceWindowHost: View {
   }
 
   private var showsStatusBar: Bool {
-    window.statusBar != nil || resolvedResizeControl == .statusBar
+    window.statusBar != nil || canResize
   }
 
   private var resolvedResizeControl: WorkspaceWindowResizeControl95 {
@@ -103,11 +127,19 @@ struct WorkspaceWindowHost: View {
   }
 
   private var canResize: Bool {
-    presentation == .windowed && resolvedResizeControl == .statusBar && !isMaximized
+    presentation == .windowed
+      && window.configuration.capabilities.contains(.resize)
+      && resolvedResizeControl == .statusBar && !isMaximized
+  }
+
+  private var canMove: Bool {
+    presentation == .windowed
+      && window.configuration.capabilities.contains(.move)
+      && !isMaximized
   }
 
   private var windowDragOffset: CGSize {
-    guard presentation == .windowed, !isMaximized else { return .zero }
+    guard canMove else { return .zero }
     let normalizedFrame = constrainedFrame(frame)
     let origin = constrainedOrigin(
       CGPoint(
@@ -132,15 +164,15 @@ struct WorkspaceWindowHost: View {
 
   private var windowDragGesture: some Gesture {
     DragGesture(
-      minimumDistance: presentation == .windowed ? 3 : .infinity,
+      minimumDistance: canMove ? 3 : .infinity,
       coordinateSpace: .global
     )
     .updating($windowDragTranslation) { value, translation, _ in
-      guard presentation == .windowed, restoredFrame == nil else { return }
+      guard canMove else { return }
       translation = value.translation
     }
     .onChanged { _ in
-      guard presentation == .windowed, restoredFrame == nil else { return }
+      guard canMove else { return }
       if !isDraggingWindow {
         isDraggingWindow = true
         activate()
@@ -148,7 +180,7 @@ struct WorkspaceWindowHost: View {
     }
     .onEnded { value in
       defer { isDraggingWindow = false }
-      guard presentation == .windowed, restoredFrame == nil else { return }
+      guard canMove else { return }
       var normalizedFrame = constrainedFrame(frame)
       normalizedFrame.origin = constrainedOrigin(
         CGPoint(
@@ -200,7 +232,11 @@ struct WorkspaceWindowHost: View {
   }
 
   private func constrainedFrame(_ frame: CGRect) -> CGRect {
-    WorkspaceWindowGeometry.normalizedFrame(frame, workspaceSize: workspaceSize)
+    WorkspaceWindowGeometry.normalizedFrame(
+      frame,
+      workspaceSize: workspaceSize,
+      minimumSize: window.configuration.minimumSize
+    )
   }
 
   private func normalizeRetainedGeometry() {
@@ -218,12 +254,113 @@ struct WorkspaceWindowHost: View {
     WorkspaceWindowGeometry.constrainedResizeSize(
       size,
       origin: origin,
-      workspaceSize: workspaceSize
+      workspaceSize: workspaceSize,
+      minimumSize: window.configuration.minimumSize
     )
   }
 
   private func constrainedOrigin(_ origin: CGPoint, size: CGSize) -> CGPoint {
     constrainedFrame(CGRect(origin: origin, size: size)).origin
+  }
+
+  private func resizeAccessibilityAction(_ direction: AccessibilityAdjustmentDirection) {
+    switch direction {
+    case .increment:
+      resize(by: configuration.accessibilityResizeStep)
+    case .decrement:
+      resize(by: -configuration.accessibilityResizeStep)
+    @unknown default:
+      break
+    }
+  }
+
+  private func moveAccessibilityAction(by offset: CGSize) {
+    var moved = constrainedFrame(frame)
+    moved.origin.x += offset.width
+    moved.origin.y += offset.height
+    frame = constrainedFrame(moved)
+    activate()
+  }
+
+  private func resize(by amount: CGFloat) {
+    guard canResize else { return }
+    var resized = constrainedFrame(frame)
+    resized.size = constrainedSize(
+      CGSize(width: resized.width + amount, height: resized.height + amount),
+      origin: resized.origin
+    )
+    frame = resized
+    activate()
+  }
+}
+
+private struct WorkspaceWindowAccessibilityActions: ViewModifier {
+  let moveLabel: Text
+  let resizeLabel: Text
+  let canMove: Bool
+  let canResize: Bool
+  let moveStep: CGFloat
+  let resizeStep: CGFloat
+  let move: (CGSize) -> Void
+  let resize: (CGFloat) -> Void
+
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    if canMove && canResize {
+      content
+        .modifier(MoveWindowAccessibilityActions(label: moveLabel, step: moveStep, move: move))
+        .modifier(
+          ResizeWindowAccessibilityActions(label: resizeLabel, step: resizeStep, resize: resize)
+        )
+    } else if canMove {
+      content.modifier(
+        MoveWindowAccessibilityActions(label: moveLabel, step: moveStep, move: move)
+      )
+    } else if canResize {
+      content.modifier(
+        ResizeWindowAccessibilityActions(label: resizeLabel, step: resizeStep, resize: resize)
+      )
+    } else {
+      content
+    }
+  }
+}
+
+private struct MoveWindowAccessibilityActions: ViewModifier {
+  let label: Text
+  let step: CGFloat
+  let move: (CGSize) -> Void
+
+  func body(content: Content) -> some View {
+    content
+      .accessibilityAction(named: Text("← ") + label) {
+        move(CGSize(width: -step, height: 0))
+      }
+      .accessibilityAction(named: Text("→ ") + label) {
+        move(CGSize(width: step, height: 0))
+      }
+      .accessibilityAction(named: Text("↑ ") + label) {
+        move(CGSize(width: 0, height: -step))
+      }
+      .accessibilityAction(named: Text("↓ ") + label) {
+        move(CGSize(width: 0, height: step))
+      }
+  }
+}
+
+private struct ResizeWindowAccessibilityActions: ViewModifier {
+  let label: Text
+  let step: CGFloat
+  let resize: (CGFloat) -> Void
+
+  func body(content: Content) -> some View {
+    content
+      .accessibilityAction(named: Text("+ ") + label) {
+        resize(step)
+      }
+      .accessibilityAction(named: Text("− ") + label) {
+        resize(-step)
+      }
   }
 }
 
@@ -247,15 +384,16 @@ private struct WindowFrameModifier: ViewModifier {
 
 private struct WorkspaceTitleBar: View {
   @Environment(\.theme95) private var theme
+  @Environment(\.strings95) private var strings
 
   let title: Text
   let icon: AnyView
   let isActive: Bool
   let isCompact: Bool
-  let minimize: () -> Void
+  let minimize: (() -> Void)?
   let maximize: (() -> Void)?
   let isMaximized: Bool
-  let close: () -> Void
+  let close: (() -> Void)?
 
   var body: some View {
     let height =
@@ -265,7 +403,12 @@ private struct WorkspaceTitleBar: View {
 
     HStack(spacing: theme.spacing.s) {
       icon
-        .frame(width: isCompact ? 24 : 18, height: isCompact ? 24 : 18)
+        .frame(
+          width: isCompact
+            ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize,
+          height: isCompact
+            ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize
+        )
         .accessibilityHidden(true)
 
       title
@@ -273,36 +416,44 @@ private struct WorkspaceTitleBar: View {
         .lineLimit(1)
         .foregroundStyle(isActive ? theme.colors.accentText : theme.colors.inactiveText)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityRespondsToUserInteraction(false)
 
-      WindowControlButton(
-        label: "Minimize",
-        glyph: .minimize,
-        height: height,
-        action: minimize
-      )
+      if let minimize {
+        WindowControlButton(
+          label: Text(strings.minimize),
+          glyph: .minimize,
+          height: height,
+          action: minimize
+        )
+      }
       if let maximize {
         WindowControlButton(
-          label: isMaximized ? "Restore" : "Maximize",
+          label: Text(isMaximized ? strings.restore : strings.maximize),
           glyph: isMaximized ? .restore : .maximize,
           height: height,
           action: maximize
         )
       }
-      WindowControlButton(
-        label: "Close",
-        glyph: .close,
-        height: height,
-        action: close
-      )
+      if let close {
+        WindowControlButton(
+          label: Text(strings.close),
+          glyph: .close,
+          height: height,
+          action: close
+        )
+      }
     }
     .padding(.horizontal, theme.spacing.xxs)
     .frame(height: height)
     .background(isActive ? theme.colors.accent : theme.colors.inactiveBackground)
   }
+
 }
 
 private struct WindowControlButton: View {
-  let label: LocalizedStringKey
+  @Environment(\.theme95) private var theme
+
+  let label: Text
   let glyph: WindowControlGlyph
   let height: CGFloat
   let action: () -> Void
@@ -310,11 +461,15 @@ private struct WindowControlButton: View {
   var body: some View {
     Button(action: action) {
       WindowControlGlyphDrawing(glyph: glyph)
-        .frame(width: 24, height: 22)
+        .frame(
+          width: theme.metrics.windowControlWidth,
+          height: theme.metrics.windowControlHeight
+        )
         .bevel95(.raised)
     }
     .buttonStyle(WindowControlButtonStyle(height: height))
-    .accessibilityLabel(Text(label))
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(label)
   }
 }
 
@@ -379,7 +534,7 @@ private struct WindowControlButtonStyle: ButtonStyle {
           Color.clear.bevel95(.sunken, background: Color.clear)
         }
       }
-      .frame(minWidth: 32)
+      .frame(minWidth: theme.metrics.windowControlMinimumWidth)
       .frame(height: height)
       .contentShape(.rect)
   }
@@ -409,7 +564,7 @@ private struct WorkspaceWindowStatusBar: View {
       }
     }
     .padding(theme.spacing.xxxs)
-    .frame(height: 28)
+    .frame(height: theme.metrics.statusBarHeight)
     .background(theme.colors.background)
   }
 }
@@ -436,8 +591,7 @@ private struct WindowResizeHandle: View {
         context.stroke(light, with: .color(theme.colors.borderLightest), lineWidth: 1)
       }
     }
-    .frame(width: 24, height: 24)
+    .frame(width: theme.metrics.resizeHandleSize, height: theme.metrics.resizeHandleSize)
     .contentShape(.rect)
-    .accessibilityHidden(true)
   }
 }

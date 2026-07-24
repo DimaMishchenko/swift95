@@ -50,63 +50,87 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
     let id = AnyHashable(value)
     let isSelected = desktop.isSelected(id) || isDragging
 
-    shortcutLabel(isSelected: isSelected)
-      .overlay {
-        if isDragging {
-          shortcutLabel(isSelected: false)
-            .opacity(0.62)
-            .offset(dragTranslation)
-            .allowsHitTesting(false)
-        }
+    activationGestures(
+      shortcutLabel(isSelected: isSelected)
+        .overlay {
+          if isDragging {
+            shortcutLabel(isSelected: false)
+              .opacity(theme.metrics.desktopDragPreviewOpacity)
+              .offset(dragTranslation)
+              .allowsHitTesting(false)
+          }
+        },
+      id: id
+    )
+    .onLongPressGesture(
+      minimumDuration: 0,
+      maximumDistance: .infinity,
+      pressing: { isPressing in
+        guard isPressing else { return }
+        desktop.select(id)
+      },
+      perform: {}
+    )
+    .offset(desktop.offset(id))
+    .background {
+      GeometryReader { geometry in
+        Color.clear.preference(
+          key: DesktopShortcutFramesPreferenceKey.self,
+          value: [id: geometry.frame(in: .named(DesktopCoordinateSpace.name))]
+        )
       }
-      .onTapGesture(count: 2) {
-        guard desktop.shortcutActivation == .doubleClick else { return }
+    }
+    .simultaneousGesture(shortcutDragGesture(id: id))
+    .zIndex(isDragging || isSelected ? 1 : 0)
+    .accessibilityElement(children: .combine)
+    .accessibilityAddTraits(.isButton)
+    .accessibilityAddTraits(isSelected ? .isSelected : [])
+    .accessibilityAction {
+      desktop.select(id)
+      openShortcut()
+    }
+    .modifier(
+      DesktopShortcutKeyboardActivation95 {
         desktop.select(id)
         openShortcut()
       }
-      .onTapGesture {
-        desktop.select(id)
-        if desktop.shortcutActivation == .singleClick {
+    )
+  }
+
+  @ViewBuilder
+  private func activationGestures<Content: View>(
+    _ content: Content,
+    id: AnyHashable
+  ) -> some View {
+    if desktop.shortcutActivation == .doubleClick {
+      content
+        .onTapGesture(count: 2) {
+          desktop.select(id)
           openShortcut()
         }
-      }
-      .onLongPressGesture(
-        minimumDuration: 0,
-        maximumDistance: .infinity,
-        pressing: { isPressing in
-          guard isPressing else { return }
+        .onTapGesture {
           desktop.select(id)
-        },
-        perform: {}
-      )
-      .offset(desktop.offset(id))
-      .background {
-        GeometryReader { geometry in
-          Color.clear.preference(
-            key: DesktopShortcutFramesPreferenceKey.self,
-            value: [id: geometry.frame(in: .named(DesktopCoordinateSpace.name))]
-          )
         }
-      }
-      .simultaneousGesture(shortcutDragGesture(id: id))
-      .zIndex(isDragging || isSelected ? 1 : 0)
-      .accessibilityElement(children: .combine)
-      .accessibilityAddTraits(.isButton)
-      .accessibilityAddTraits(isSelected ? .isSelected : [])
-      .accessibilityAction {
-        desktop.select(id)
-        openShortcut()
-      }
+    } else {
+      content
+        .onTapGesture {
+          desktop.select(id)
+          openShortcut()
+        }
+    }
   }
 
   private func shortcutLabel(isSelected: Bool) -> some View {
     VStack(spacing: theme.spacing.xxs) {
       icon
-        .frame(width: 42, height: 42)
+        .frame(width: theme.metrics.desktopIconSize, height: theme.metrics.desktopIconSize)
         .overlay {
           if isSelected {
             DesktopIconSelection(color: theme.colors.accent)
-              .mask { icon.frame(width: 42, height: 42) }
+              .mask {
+                icon.frame(
+                  width: theme.metrics.desktopIconSize, height: theme.metrics.desktopIconSize)
+              }
           }
         }
 
@@ -114,20 +138,22 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
         .font(theme.fonts.body)
         .multilineTextAlignment(.center)
         .lineLimit(2)
-        .foregroundStyle(theme.colors.accentText)
+        .foregroundStyle(isSelected ? theme.colors.accentText : theme.colors.desktopText)
         .padding(.horizontal, theme.spacing.xxxs)
         .background(isSelected ? theme.colors.accent : Color.clear)
         .overlay {
-          if isSelected { DesktopSelectionOutline() }
+          if isSelected {
+            DesktopSelectionOutline(color: theme.colors.desktopSelectionOutline)
+          }
         }
         .shadow(
-          color: isSelected ? .clear : theme.colors.borderDarkest,
+          color: isSelected ? .clear : theme.colors.desktopTextShadow,
           radius: 0,
           x: 1,
           y: 1
         )
     }
-    .frame(width: 88)
+    .frame(width: theme.metrics.desktopShortcutWidth)
     .padding(.vertical, theme.spacing.xxs)
     .contentShape(.rect)
   }
@@ -154,6 +180,25 @@ public struct DesktopShortcut95<Route: Hashable, Icon: View>: View {
   private func openShortcut() {
     openWindow(value)
     dismissStartMenu()
+  }
+}
+
+private struct DesktopShortcutKeyboardActivation95: ViewModifier {
+  let activate: () -> Void
+
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    #if os(macOS)
+      content
+        .focusable()
+        .focusEffectDisabled()
+        .onKeyPress(keys: [.return, .space]) { _ in
+          activate()
+          return .handled
+        }
+    #else
+      content
+    #endif
   }
 }
 
@@ -187,10 +232,12 @@ private struct DesktopIconSelection: View {
 }
 
 private struct DesktopSelectionOutline: View {
+  let color: Color
+
   var body: some View {
     Rectangle()
       .strokeBorder(
-        Color(.sRGB, red: 1, green: 1, blue: 0, opacity: 1),
+        color,
         style: StrokeStyle(lineWidth: 1, dash: [1, 1])
       )
       .allowsHitTesting(false)

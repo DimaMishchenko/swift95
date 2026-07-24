@@ -21,6 +21,7 @@ public struct WorkspaceWindow95 {
   let taskBarIcon: AnyView
   var statusBar: AnyView?
   var resizeControl: WorkspaceWindowResizeControl95
+  var configuration: WorkspaceWindowConfiguration95
   let makeContent: () -> AnyView
 
   /// Creates a window with a localized title and one icon for both surfaces.
@@ -35,6 +36,7 @@ public struct WorkspaceWindow95 {
     taskBarIcon = icon
     statusBar = nil
     resizeControl = .automatic
+    configuration = .default
     makeContent = { AnyView(content()) }
   }
 
@@ -50,6 +52,7 @@ public struct WorkspaceWindow95 {
     taskBarIcon = icon
     statusBar = nil
     resizeControl = .automatic
+    configuration = .default
     makeContent = { AnyView(content()) }
   }
 
@@ -65,6 +68,7 @@ public struct WorkspaceWindow95 {
     self.taskBarIcon = AnyView(taskBarIcon())
     statusBar = nil
     resizeControl = .automatic
+    configuration = .default
     makeContent = { AnyView(content()) }
   }
 
@@ -80,6 +84,7 @@ public struct WorkspaceWindow95 {
     self.taskBarIcon = AnyView(taskBarIcon())
     statusBar = nil
     resizeControl = .automatic
+    configuration = .default
     makeContent = { AnyView(content()) }
   }
 
@@ -98,6 +103,15 @@ public struct WorkspaceWindow95 {
   ) -> WorkspaceWindow95 {
     var copy = self
     copy.resizeControl = control
+    return copy
+  }
+
+  /// Configures this window's minimum size and available operations.
+  public func windowConfiguration95(
+    _ configuration: WorkspaceWindowConfiguration95
+  ) -> WorkspaceWindow95 {
+    var copy = self
+    copy.configuration = configuration
     return copy
   }
 }

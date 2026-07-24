@@ -184,6 +184,8 @@ private struct ProgressViewRenderingStyle95: ProgressViewStyle {
 }
 
 private struct ProgressBar95: View {
+  @Environment(\.locale) private var locale
+  @Environment(\.valueFormatters95) private var valueFormatters
   #if !os(macOS)
     @ScaledMetric(relativeTo: .body) private var dynamicTypeScale = CGFloat(1)
   #endif
@@ -202,13 +204,16 @@ private struct ProgressBar95: View {
         case .segmented:
           SegmentedProgressDrawing95(
             fraction: fraction,
-            color: progressColor
+            color: progressColor,
+            segmentWidth: theme.metrics.progressSegmentWidth,
+            gap: theme.metrics.progressSegmentGap
           )
           .padding(theme.metrics.progressContentInset)
         }
       } else {
         IndeterminateProgressDrawing95(
-          color: progressColor
+          color: progressColor,
+          theme: theme
         )
         .padding(theme.metrics.progressContentInset)
       }
@@ -235,10 +240,10 @@ private struct ProgressBar95: View {
   private func continuousProgress(fraction: CGFloat, size: CGSize) -> some View {
     let inset = theme.metrics.progressContentInset
     let fillWidth = max(0, size.width - inset * 2) * fraction
-    let percentage = "\(progress.percentage ?? 0)%"
+    let percentage = valueFormatters.percentage(Double(fraction), locale)
 
     return ZStack {
-      Text(percentage)
+      Text(verbatim: percentage)
         .font(theme.fonts.body)
         .foregroundStyle(isEnabled ? theme.colors.text : theme.colors.textDisabled)
         .frame(width: size.width, height: size.height)
@@ -249,7 +254,7 @@ private struct ProgressBar95: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(inset)
 
-      Text(percentage)
+      Text(verbatim: percentage)
         .font(theme.fonts.body)
         .foregroundStyle(theme.colors.accentText)
         .frame(width: size.width, height: size.height)
@@ -266,11 +271,11 @@ private struct ProgressBar95: View {
 private struct SegmentedProgressDrawing95: View {
   let fraction: CGFloat
   let color: Color
+  let segmentWidth: CGFloat
+  let gap: CGFloat
 
   var body: some View {
     Canvas { context, size in
-      let segmentWidth = CGFloat(10)
-      let gap = CGFloat(2)
       let segmentStride = segmentWidth + gap
       let segmentCount = Int((size.width + gap) / segmentStride)
       let completedCount = Int((CGFloat(segmentCount) * fraction).rounded(.down))
@@ -297,29 +302,42 @@ struct IndeterminateProgressDrawing95: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   let color: Color
+  let theme: Theme95
   var phase: CGFloat?
 
-  init(color: Color, phase: CGFloat? = nil) {
+  init(color: Color, theme: Theme95 = .classic, phase: CGFloat? = nil) {
     self.color = color
+    self.theme = theme
     self.phase = phase
   }
 
   var body: some View {
-    TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
+    TimelineView(
+      .animation(
+        minimumInterval: 1 / max(1, theme.motion.indeterminateProgressFPS),
+        paused: reduceMotion
+      )
+    ) { timeline in
       Canvas { context, size in
-        let blockWidth = CGFloat(10)
-        let gap = CGFloat(2)
-        let cycle = size.width + blockWidth * 3 + gap * 2
+        let blockWidth = theme.metrics.progressSegmentWidth
+        let gap = theme.metrics.progressSegmentGap
+        let blockCount = max(1, theme.metrics.indeterminateProgressBlockCount)
+        let cycle =
+          size.width + blockWidth * CGFloat(blockCount) + gap * CGFloat(blockCount - 1)
+        let cycleDuration = max(0.01, theme.motion.indeterminateProgressCycle)
         let phase =
           phase
           ?? (reduceMotion
             ? CGFloat(0.35)
             : CGFloat(
-              timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.2)
-                / 1.2))
-        let leading = phase * cycle - blockWidth * 3 - gap * 2
+              timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(
+                dividingBy: cycleDuration
+              )
+                / cycleDuration))
+        let leading =
+          phase * cycle - blockWidth * CGFloat(blockCount) - gap * CGFloat(blockCount - 1)
 
-        for index in 0..<3 {
+        for index in 0..<blockCount {
           let rect = CGRect(
             x: leading + CGFloat(index) * (blockWidth + gap),
             y: 0,

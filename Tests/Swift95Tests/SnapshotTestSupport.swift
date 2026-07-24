@@ -15,6 +15,8 @@
       .environment(\.theme95, .classic)
       .environment(\.locale, Locale(identifier: "en_US_POSIX"))
       .environment(\.colorScheme, .light)
+      .environment(\.horizontalSizeClass, .compact)
+      .environment(\.verticalSizeClass, .regular)
       .environment(\.layoutDirection, .leftToRight)
       .transaction { $0.disablesAnimations = true }
   }
@@ -34,10 +36,43 @@
     UITraitCollection { traits in
       MainActor.assumeIsolated {
         traits.displayScale = 1
+        traits.userInterfaceIdiom = .phone
         traits.userInterfaceStyle = .light
         traits.preferredContentSizeCategory = .large
+        traits.horizontalSizeClass = .compact
+        traits.verticalSizeClass = .regular
         traits.layoutDirection = .leftToRight
       }
     }
+  }
+
+  /// Adds the runtime device idiom to iPad references because SnapshotTesting's
+  /// default identifier contains only the test name and invocation counter.
+  @MainActor
+  func assertSnapshot95<Value, Format>(
+    of value: @autoclosure () throws -> Value,
+    as snapshotting: Snapshotting<Value, Format>,
+    named name: String? = nil,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    testName: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
+    let resolvedName =
+      UIDevice.current.userInterfaceIdiom == .pad
+      ? [name, "iPad"].compactMap(\.self).joined(separator: ".")
+      : name
+
+    assertSnapshot(
+      of: try value(),
+      as: snapshotting,
+      named: resolvedName,
+      fileID: fileID,
+      file: filePath,
+      testName: testName,
+      line: line,
+      column: column
+    )
   }
 #endif

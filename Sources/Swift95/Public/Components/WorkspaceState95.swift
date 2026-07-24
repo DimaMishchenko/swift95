@@ -81,7 +81,11 @@ public struct WorkspaceState95<Route: Hashable>: Equatable {
 
   /// Minimizes the active route or restores and activates an inactive route.
   public mutating func toggleTask(_ route: Route) {
-    if activeWindow == route && !minimizedWindows.contains(route) {
+    activateTask(route, allowsMinimization: true)
+  }
+
+  mutating func activateTask(_ route: Route, allowsMinimization: Bool) {
+    if allowsMinimization && activeWindow == route && !minimizedWindows.contains(route) {
       minimize(route)
     } else {
       activate(route)

@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct ScrollView95SnapshotTests {
     @Test func scrollIndicator95() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           HStack(alignment: .top, spacing: 24) {
             ScrollIndicator95(
@@ -33,7 +33,7 @@
     }
 
     @Test func scrollView95() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           HStack(alignment: .top, spacing: 16) {
             ScrollView95(lineIncrement: 28) {

@@ -9,7 +9,7 @@
   @Suite(.serialized)
   struct List95SnapshotTests {
     @Test func list95RowRenderingBranches() {
-      assertSnapshot(
+      assertSnapshot95(
         of: snapshotCanvas {
           VStack(alignment: .leading, spacing: 8) {
             Row95 { Text95("Normal compact row") }

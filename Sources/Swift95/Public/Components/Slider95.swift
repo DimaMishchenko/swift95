@@ -117,16 +117,35 @@ where
             isEnabled: isEnabled,
             theme: theme
           )
-
-          control
-            .labelsHidden()
-            .tint(.clear)
-            .opacity(0.01)
         }
         .contentShape(.rect)
         .highPriorityGesture(sliderGesture(width: geometry.size.width))
+        .focusable()
+        .focusEffectDisabled()
+        .onKeyPress(keys: [.leftArrow, .downArrow]) { _ in
+          adjustValue(forward: false)
+        }
+        .onKeyPress(keys: [.rightArrow, .upArrow]) { _ in
+          adjustValue(forward: true)
+        }
+        .accessibilityRepresentation {
+          control.labelsHidden()
+        }
       }
-      .frame(height: 28)
+      .frame(height: theme.metrics.sliderControlHeight)
+      #if os(iOS)
+        // Preserve the canonical 28-point drawing while extending touch and
+        // accessibility interaction to Apple's 44-point envelope.
+        .padding(
+          .vertical,
+          max(0, (44 - theme.metrics.sliderControlHeight) / 2)
+        )
+        .contentShape(.interaction, Rectangle())
+        .padding(
+          .vertical,
+          -max(0, (44 - theme.metrics.sliderControlHeight) / 2)
+        )
+      #endif
     }
   }
 
@@ -179,7 +198,7 @@ where
   }
 
   private func updateValue(at location: CGFloat, width: CGFloat) {
-    let thumbWidth = CGFloat(18)
+    let thumbWidth = theme.metrics.sliderThumbWidth
     let travel = max(0, width - thumbWidth)
     guard travel > 0 else {
       return
@@ -198,6 +217,30 @@ where
     }
 
     value = min(max(newValue, bounds.lowerBound), bounds.upperBound)
+  }
+
+  private func adjustValue(forward: Bool) -> KeyPress.Result {
+    guard isEnabled else {
+      return .ignored
+    }
+
+    let increment: Value
+    if let step {
+      increment = Value(step)
+    } else {
+      increment = (bounds.upperBound - bounds.lowerBound) / 10
+    }
+    guard increment > 0 else {
+      return .ignored
+    }
+
+    onEditingChanged(true)
+    value = min(
+      max(value + (forward ? increment : -increment), bounds.lowerBound),
+      bounds.upperBound
+    )
+    onEditingChanged(false)
+    return .handled
   }
 }
 
@@ -240,19 +283,19 @@ private struct SliderDrawing95: View {
 
   var body: some View {
     GeometryReader { geometry in
-      let thumbWidth = CGFloat(18)
+      let thumbWidth = theme.metrics.sliderThumbWidth
       let travel = max(0, geometry.size.width - thumbWidth)
 
       ZStack(alignment: .leading) {
         Color.clear
-          .frame(height: 6)
+          .frame(height: theme.metrics.sliderTrackHeight)
           .bevel95(
             .input,
             background: isEnabled ? theme.colors.borderDarkest : theme.colors.textDisabled
           )
 
         Color.clear
-          .frame(width: thumbWidth, height: 28)
+          .frame(width: thumbWidth, height: theme.metrics.sliderControlHeight)
           .bevel95(.raised)
           .offset(x: travel * fraction)
       }
