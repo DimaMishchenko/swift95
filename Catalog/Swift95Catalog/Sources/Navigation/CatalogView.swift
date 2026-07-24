@@ -3,28 +3,35 @@ import SwiftUI
 
 struct CatalogView: View {
   @Environment(\.theme95) private var theme
-  @State private var workspaceState = WorkspaceState95<CatalogRoute>()
+  @State private var workspaceState: WorkspaceState95<CatalogRoute>
+
+  private let configuration: CatalogLaunchConfiguration
+
+  init(configuration: CatalogLaunchConfiguration = .current) {
+    self.configuration = configuration
+    if let rawValue = configuration.destination,
+      let destination = CatalogDestination(rawValue: rawValue)
+    {
+      let route = CatalogRoute.destination(destination)
+      _workspaceState = State(
+        initialValue: WorkspaceState95(
+          openWindows: [route],
+          activeWindow: route
+        )
+      )
+    } else {
+      _workspaceState = State(initialValue: WorkspaceState95())
+    }
+  }
 
   var body: some View {
     Workspace95(
       for: CatalogRoute.self,
       state: $workspaceState,
+      presentation: catalogPresentation,
       catalogWindow
     ) {
-      Desktop95 {
-        DesktopShortcut95("Components", value: CatalogRoute.browser(.components)) {
-          catalogIcon("shippingbox.fill")
-        }
-
-        DesktopShortcut95("Foundations", value: CatalogRoute.browser(.foundations)) {
-          catalogIcon("square.3.layers.3d")
-        }
-
-        DesktopShortcut95("Workspace95", value: CatalogRoute.destination(.workspace)) {
-          catalogIcon("macwindow.on.rectangle")
-        }
-      }
-      .desktopState95(CatalogRoute.self, storageKey: "Swift95Catalog.MainDesktop")
+      catalogDesktop
     } taskBar: {
       TaskBar95("Start") {
         catalogTaskBarIcon("flag.fill")
@@ -32,30 +39,97 @@ struct CatalogView: View {
         StartMenu95 {
           WorkspaceLink95("Components", value: CatalogRoute.browser(.components))
           WorkspaceLink95("Foundations", value: CatalogRoute.browser(.foundations))
+          WorkspaceLink95("Test Lab", value: CatalogRoute.browser(.testLab))
 
           Divider95()
 
           WorkspaceLink95("Workspace95", value: CatalogRoute.destination(.workspace))
         }
       } tray: {
-        Text95(Date.now.formatted(date: .omitted, time: .shortened))
+        Text95(
+          configuration.isUITesting
+            ? "12:00"
+            : Date.now.formatted(date: .omitted, time: .shortened)
+        )
       }
+      .accessibilityHidden(configuration.isUITesting && configuration.destination != nil)
     }
     .background(theme.colors.background.ignoresSafeArea())
+  }
+
+  private var catalogPresentation: WorkspacePresentation95 {
+    if configuration.destination == CatalogDestination.testWorkspace.rawValue {
+      return .windowed
+    }
+    if configuration.isUITesting, configuration.destination != nil {
+      return .compact
+    }
+    return .automatic
+  }
+
+  @ViewBuilder
+  private var catalogDesktop: some View {
+    let desktop = Desktop95 {
+      DesktopShortcut95("Components", value: CatalogRoute.browser(.components)) {
+        catalogIcon("shippingbox.fill")
+      }
+
+      DesktopShortcut95("Foundations", value: CatalogRoute.browser(.foundations)) {
+        catalogIcon("square.3.layers.3d")
+      }
+
+      DesktopShortcut95("Test Lab", value: CatalogRoute.browser(.testLab)) {
+        catalogIcon("testtube.2")
+      }
+
+      DesktopShortcut95("Workspace95", value: CatalogRoute.destination(.workspace)) {
+        catalogIcon("macwindow.on.rectangle")
+      }
+    }
+
+    if configuration.isUITesting, configuration.destination != nil {
+      Desktop95 {}
+    } else if configuration.isUITesting {
+      desktop
+    } else {
+      desktop.desktopState95(CatalogRoute.self, storageKey: "Swift95Catalog.MainDesktop")
+    }
   }
 
   private func catalogWindow(_ route: CatalogRoute) -> WorkspaceWindow95 {
     switch route {
     case let .browser(section):
-      WorkspaceWindow95(section.title) {
+      return WorkspaceWindow95(section.title) {
         catalogIcon(section.symbol)
       } taskBarIcon: {
         catalogTaskBarIcon(section.symbol)
       } content: {
         CatalogBrowserView(section: section)
       }
+    case .destination(.testWorkspace):
+      var window = WorkspaceWindow95("Workspace") {
+        EmptyView()
+      } taskBarIcon: {
+        EmptyView()
+      } content: {
+        TestLabWorkspaceView95()
+      }
+
+      if configuration.disablesResize {
+        window = window.windowConfiguration95(
+          WorkspaceWindowConfiguration95(
+            capabilities: [.minimize, .maximize, .close, .move]
+          )
+        )
+      } else {
+        window = window.statusBar95 {
+          Text95("Ready")
+            .accessibilityRespondsToUserInteraction(false)
+        }
+      }
+      return window
     case let .destination(destination):
-      WorkspaceWindow95(destination.title) {
+      return WorkspaceWindow95(destination.title) {
         catalogIcon(destination.symbol)
       } taskBarIcon: {
         catalogTaskBarIcon(destination.symbol)
@@ -71,6 +145,7 @@ struct CatalogView: View {
       .scaledToFit()
       .foregroundStyle(.white)
       .padding(theme.spacing.xxxs)
+      .accessibilityHidden(true)
   }
 
   private func catalogTaskBarIcon(_ systemName: String) -> some View {
@@ -78,17 +153,19 @@ struct CatalogView: View {
       .resizable()
       .scaledToFit()
       .padding(theme.spacing.xxxs)
+      .accessibilityHidden(true)
   }
 }
 
-private enum CatalogRoute: Hashable, Codable {
+enum CatalogRoute: Hashable, Codable {
   case browser(CatalogSection)
   case destination(CatalogDestination)
 }
 
-private enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
+enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
   case components
   case foundations
+  case testLab
 
   var id: Self { self }
 
@@ -96,6 +173,7 @@ private enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codab
     switch self {
     case .components: "Components"
     case .foundations: "Foundations"
+    case .testLab: "Test Lab"
     }
   }
 
@@ -103,6 +181,7 @@ private enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codab
     switch self {
     case .components: "shippingbox.fill"
     case .foundations: "square.3.layers.3d"
+    case .testLab: "testtube.2"
     }
   }
 
@@ -111,7 +190,7 @@ private enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codab
   }
 }
 
-private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
+enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case text
   case button
   case image
@@ -134,6 +213,10 @@ private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, C
   case colors
   case spacing
   case metrics
+  case testControls
+  case testInteractions
+  case testOverrides
+  case testWorkspace
 
   var id: Self { self }
 
@@ -145,6 +228,8 @@ private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, C
       .components
     case .bevel, .typography, .colors, .spacing, .metrics:
       .foundations
+    case .testControls, .testInteractions, .testOverrides, .testWorkspace:
+      .testLab
     }
   }
 
@@ -172,6 +257,10 @@ private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, C
     case .colors: "Colors"
     case .spacing: "Spacing"
     case .metrics: "Metrics"
+    case .testControls: "Accessibility"
+    case .testInteractions: "Interactions"
+    case .testOverrides: "Overrides"
+    case .testWorkspace: "Workspace Fixtures"
     }
   }
 
@@ -199,27 +288,48 @@ private enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, C
     case .colors: "paintpalette"
     case .spacing: "arrow.left.and.right"
     case .metrics: "ruler"
+    case .testControls: "accessibility"
+    case .testInteractions: "hand.tap"
+    case .testOverrides: "slider.horizontal.2.square"
+    case .testWorkspace: "macwindow.badge.plus"
     }
   }
 }
 
 private struct CatalogBrowserView: View {
+  @Environment(\.theme95) private var theme
+
   let section: CatalogSection
 
   var body: some View {
-    List95(section.destinations, style: .largeIcon) { destination in
-      WorkspaceLink95(value: CatalogRoute.destination(destination)) {
-        Row95 {
-          Image(systemName: destination.symbol)
-            .resizable()
-            .scaledToFit()
-        } label: {
-          Text95(destination.title)
-        } accessory: {
-          true
-        }
+    VStack(alignment: .leading, spacing: theme.spacing.m) {
+      if section == .testLab {
+        Text95(
+          """
+          Test Lab contains deterministic fixtures used by UI tests to verify interactions and \
+          accessibility that image snapshots cannot cover.
+          """
+        )
+        .padding(.horizontal, theme.spacing.xl)
+        .padding(.top, theme.spacing.xl)
+        .accessibilityIdentifier("test-lab.notice")
+        .accessibilityRespondsToUserInteraction(false)
       }
-      .buttonStyle(.plain)
+
+      List95(section.destinations, style: .largeIcon) { destination in
+        WorkspaceLink95(value: CatalogRoute.destination(destination)) {
+          Row95 {
+            Image(systemName: destination.symbol)
+              .resizable()
+              .scaledToFit()
+          } label: {
+            Text95(destination.title)
+          } accessory: {
+            true
+          }
+        }
+        .buttonStyle(.plain)
+      }
     }
   }
 }
@@ -273,6 +383,14 @@ private struct CatalogDestinationView: View {
       SpacingCatalogView95()
     case .metrics:
       MetricsCatalogView95()
+    case .testControls:
+      TestLabAccessibilityView95()
+    case .testInteractions:
+      TestLabInteractionsView95()
+    case .testOverrides:
+      TestLabOverridesView95()
+    case .testWorkspace:
+      TestLabWorkspaceView95()
     }
   }
 }

@@ -59,6 +59,7 @@ public struct RadioButton95<Value: Hashable, Label: View, Control: View>: View {
         )
       )
       .accessibilityAddTraits(selection == value ? .isSelected : [])
+      .minimumInteractionTarget95()
   }
 
   /// Applies a transformation to the embedded SwiftUI button.

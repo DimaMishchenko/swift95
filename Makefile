@@ -25,7 +25,7 @@ help:
 	@echo "  make format               Format Swift sources"
 	@echo "  make lint                 Check Swift formatting"
 	@echo "  make test                 Run macOS, iPhone, and iPad tests"
-	@echo "  make test-macos           Run package tests on macOS"
+	@echo "  make test-macos           Run unit, snapshot, and UI tests on macOS"
 	@echo "  make test-ios             Run unit, snapshot, and UI tests on iPhone"
 	@echo "  make test-ipad            Run unit, snapshot, and UI tests on iPad"
 	@echo "  make build-catalog        Build the Catalog for iOS and macOS"
@@ -46,8 +46,9 @@ lint:
 
 test: test-macos test-ios test-ipad
 
-test-macos:
+test-macos: generate
 	swift test
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) -only-testing:Swift95UITests test
 
 test-ios: generate
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) test

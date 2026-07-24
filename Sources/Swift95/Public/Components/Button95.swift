@@ -67,6 +67,7 @@ public struct Button95<Label: View, Control: View>: View {
         contentInsets: contentInsets ?? .button95(theme.spacing)
       )
     )
+    .minimumInteractionTarget95()
   }
 
   /// Applies a transformation to the embedded SwiftUI button.

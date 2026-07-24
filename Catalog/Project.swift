@@ -39,46 +39,35 @@ let project = Project(
       ]
     ),
     .target(
-      name: "Swift95TestHost",
-      destinations: [.iPhone, .iPad],
-      product: .app,
-      bundleId: "com.swift95.test-host",
-      deploymentTargets: .iOS("18.0"),
-      infoPlist: .extendingDefault(
-        with: [
-          "CFBundleDisplayName": "Swift95 Tests",
-          "UILaunchScreen": [:]
-        ]
-      ),
-      sources: ["Swift95TestHost/Sources/**"],
-      dependencies: [
-        .package(product: "Swift95")
-      ]
-    ),
-    .target(
       name: "Swift95Tests",
-      destinations: [.iPhone, .iPad],
+      destinations: [.iPhone, .iPad, .mac],
       product: .unitTests,
       bundleId: "com.swift95.tests",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .multiplatform(
+        iOS: "18.0",
+        macOS: "15.0"
+      ),
       infoPlist: .default,
       sources: ["../Tests/Swift95Tests/**/*.swift"],
       dependencies: [
-        .target(name: "Swift95TestHost"),
+        .target(name: "Swift95Catalog"),
         .package(product: "Swift95"),
         .package(product: "SnapshotTesting")
       ]
     ),
     .target(
       name: "Swift95UITests",
-      destinations: [.iPhone, .iPad],
+      destinations: [.iPhone, .iPad, .mac],
       product: .uiTests,
       bundleId: "com.swift95.ui-tests",
-      deploymentTargets: .iOS("18.0"),
+      deploymentTargets: .multiplatform(
+        iOS: "18.0",
+        macOS: "15.0"
+      ),
       infoPlist: .default,
       sources: ["Swift95UITests/Sources/**"],
       dependencies: [
-        .target(name: "Swift95TestHost")
+        .target(name: "Swift95Catalog")
       ]
     )
   ]

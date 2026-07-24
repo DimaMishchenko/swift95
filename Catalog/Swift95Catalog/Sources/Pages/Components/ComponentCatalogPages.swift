@@ -38,6 +38,7 @@ struct ButtonCatalogView95: View {
 }
 
 struct ImageCatalogView95: View {
+  @Environment(\.catalogLaunchConfiguration) private var launchConfiguration
   @Environment(\.theme95) private var theme
 
   private let remoteImageURL = URL(
@@ -58,7 +59,7 @@ struct ImageCatalogView95: View {
       )
 
       CatalogExample95("Async image") {
-        AsyncImage95(url: remoteImageURL) { phase in
+        AsyncImage95(url: launchConfiguration.isUITesting ? nil : remoteImageURL) { phase in
           AsyncImageCatalogContent95(phase: phase)
         }
         .swiftUI { image in

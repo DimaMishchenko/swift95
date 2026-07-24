@@ -129,26 +129,25 @@ public struct ScrollIndicator95: View {
         .frame(height: thumb.height)
         .bevel95(.raised)
         .accessibilityHidden(true)
-
-      Color.clear
-        .contentShape(.rect)
-        .accessibilityLabel(strings.scrollPosition)
-        .accessibilityValue(
-          Text(verbatim: valueFormatters.percentage(Double(metrics.progress), locale))
-        )
-        .accessibilityAdjustableAction { direction in
-          switch direction {
-          case .increment:
-            scroll(by: lineIncrement)
-          case .decrement:
-            scroll(by: -lineIncrement)
-          @unknown default:
-            break
-          }
-        }
     }
     .frame(height: thumb.height)
     .contentShape(.rect)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(strings.scrollPosition)
+    .accessibilityValue(
+      Text(verbatim: valueFormatters.percentage(Double(metrics.progress), locale))
+    )
+    .accessibilityAdjustableAction { direction in
+      switch direction {
+      case .increment:
+        scroll(by: lineIncrement)
+      case .decrement:
+        scroll(by: -lineIncrement)
+      @unknown default:
+        break
+      }
+    }
+    .minimumInteractionTarget95()
     .offset(y: thumb.offset)
     .gesture(
       DragGesture(minimumDistance: 0)

@@ -57,8 +57,10 @@ struct WorkspaceWindowHost: View {
             ? AnyView(
               WindowResizeHandle()
                 .gesture(windowResizeGesture)
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel(strings.resizeWindow)
                 .accessibilityAdjustableAction(resizeAccessibilityAction)
+                .minimumInteractionTarget95()
             )
             : nil
         )
@@ -414,6 +416,7 @@ private struct WorkspaceTitleBar: View {
       title
         .font(theme.fonts.body.weight(.bold))
         .lineLimit(1)
+        .truncationMode(.tail)
         .foregroundStyle(isActive ? theme.colors.accentText : theme.colors.inactiveText)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityRespondsToUserInteraction(false)
@@ -470,6 +473,7 @@ private struct WindowControlButton: View {
     .buttonStyle(WindowControlButtonStyle(height: height))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(label)
+    .minimumInteractionTarget95()
   }
 }
 

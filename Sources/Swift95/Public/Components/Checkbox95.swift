@@ -37,7 +37,9 @@ public struct Checkbox95<Label: View, Control: View>: View {
 
   /// The styled checkbox control.
   public var body: some View {
-    control.toggleStyle(CheckboxToggleStyle95(theme: theme))
+    control
+      .toggleStyle(CheckboxToggleStyle95(theme: theme))
+      .minimumInteractionTarget95()
   }
 
   /// Applies a transformation to the embedded SwiftUI toggle.
