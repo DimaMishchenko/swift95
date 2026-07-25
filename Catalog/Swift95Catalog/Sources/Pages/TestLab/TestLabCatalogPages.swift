@@ -185,6 +185,17 @@ struct TestLabWorkspaceView95: View {
   }
 }
 
+struct TestLabMenuView95: View {
+  let activation: String
+
+  var body: some View {
+    Text95("Menu activation: \(activation)")
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .accessibilityIdentifier("menu.output")
+      .accessibilityRespondsToUserInteraction(false)
+  }
+}
+
 private enum TestRadio: Hashable {
   case automatic
   case manual

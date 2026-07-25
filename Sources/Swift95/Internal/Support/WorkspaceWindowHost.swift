@@ -8,6 +8,7 @@ struct WorkspaceWindowHost: View {
   @State private var isDraggingWindow = false
   @State private var isResizingWindow = false
   @State private var restoredFrame: CGRect?
+  @State private var presentedMenu: Int?
 
   let window: WorkspaceWindow95
   let isActive: Bool
@@ -45,10 +46,21 @@ struct WorkspaceWindowHost: View {
       .contentShape(.rect)
       .simultaneousGesture(windowDragGesture)
 
-      window.makeContent()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.colors.background)
-        .environment(\.workspaceWindow95, actions)
+      if window.menus.isEmpty {
+        windowContent(actions: actions)
+      } else {
+        ZStack(alignment: .topLeading) {
+          VStack(spacing: 0) {
+            Color.clear.frame(height: menuBarHeight)
+            windowContent(actions: actions)
+          }
+
+          MenuBar95(
+            presentedMenu: $presentedMenu,
+            menus: window.menus
+          )
+        }
+      }
 
       if showsStatusBar {
         WorkspaceWindowStatusBar(
@@ -96,6 +108,23 @@ struct WorkspaceWindowHost: View {
 
   private var isMaximized: Bool {
     restoredFrame != nil
+  }
+
+  private var menuBarHeight: CGFloat {
+    max(theme.metrics.titleBarHeight, 30)
+  }
+
+  private func windowContent(actions: WorkspaceWindowActions95) -> some View {
+    window.makeContent()
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(theme.colors.background)
+      .environment(\.workspaceWindow95, actions)
+      .simultaneousGesture(
+        TapGesture()
+          .onEnded {
+            presentedMenu = nil
+          }
+      )
   }
 
   private var titleBarInset: CGFloat {

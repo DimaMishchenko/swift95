@@ -125,6 +125,34 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertFalse(app.descendants(matching: .any)["Resize window"].exists)
   }
 
+  func testMenuSupportsClickAndTouchDragSelection() {
+    let app = launch(destination: "testMenu")
+    let fileMenu = element("menu.file", in: app)
+    XCTAssertTrue(fileMenu.waitForExistence(timeout: 5))
+
+    #if os(macOS)
+      fileMenu.click()
+      activate(element("menu.activate", in: app))
+    #else
+      let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
+      start.press(forDuration: 0.2, thenDragTo: firstItem)
+    #endif
+
+    assertLabel("Menu activation: Activate", for: "menu.output", in: app)
+  }
+
+  func testMenuExposesAccessibilityAndDisabledState() {
+    let app = launch(destination: "testMenu")
+    let fileMenu = element("menu.file", in: app)
+    activate(fileMenu)
+
+    XCTAssertEqual(fileMenu.value as? String, "Expanded")
+    let unavailable = element("menu.unavailable", in: app)
+    XCTAssertTrue(unavailable.waitForExistence(timeout: 3))
+    XCTAssertFalse(unavailable.isEnabled)
+  }
+
   private func launch(
     destination: String,
     disablesResize: Bool = false

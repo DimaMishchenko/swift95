@@ -84,6 +84,28 @@ struct WorkspaceCatalogView: View {
       } content: {
         NotepadWindow()
       }
+      .menuBar95 {
+        Menu95("File") {
+          MenuItem95("New") {}
+          MenuItem95("Open…") {}
+          MenuDivider95()
+          MenuItem95("Settings") {
+            workspaceState.open(.settings)
+          }
+          MenuDivider95()
+          MenuItem95("Close") {
+            workspaceState.close(.notepad)
+          }
+        }
+        Menu95("Edit") {
+          MenuItem95("Undo", isEnabled: false) {}
+          MenuDivider95()
+          MenuItem95("Select All") {}
+        }
+        Menu95("Help") {
+          MenuItem95("About Swift95") {}
+        }
+      }
     case .settings:
       WorkspaceWindow95("Settings") {
         workspaceIcon(.settings, size: .small)

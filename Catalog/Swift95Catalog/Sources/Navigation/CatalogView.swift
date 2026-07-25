@@ -5,6 +5,7 @@ import SwiftUI
 struct CatalogView: View {
   @Environment(\.theme95) private var theme
   @State private var workspaceState: WorkspaceState95<CatalogRoute>
+  @State private var menuActivation = "None"
 
   private let configuration: CatalogLaunchConfiguration
 
@@ -134,6 +135,36 @@ struct CatalogView: View {
         }
       }
       return window
+    case .destination(.testMenu):
+      return WorkspaceWindow95("Menu") {
+        EmptyView()
+      } taskBarIcon: {
+        EmptyView()
+      } content: {
+        TestLabMenuView95(activation: menuActivation)
+      }
+      .menuBar95 {
+        Menu95("File") {
+          MenuItem95("Activate") {
+            menuActivation = "Activate"
+          }
+          .swiftUI { $0.accessibilityIdentifier("menu.activate") }
+          MenuItem95("Second") {
+            menuActivation = "Second"
+          }
+          .swiftUI { $0.accessibilityIdentifier("menu.second") }
+          MenuDivider95()
+          MenuItem95("Unavailable", isEnabled: false) {}
+            .swiftUI { $0.accessibilityIdentifier("menu.unavailable") }
+        }
+        .swiftUI { $0.accessibilityIdentifier("menu.file") }
+        Menu95("Help") {
+          MenuItem95("About") {
+            menuActivation = "About"
+          }
+        }
+        .swiftUI { $0.accessibilityIdentifier("menu.help") }
+      }
     case let .destination(destination):
       return WorkspaceWindow95(destination.title) {
         catalogIcon(destination.icon, size: .small)
@@ -226,6 +257,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case testInteractions
   case testOverrides
   case testWorkspace
+  case testMenu
 
   var id: Self { self }
 
@@ -237,7 +269,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
       .components
     case .bevel, .typography, .colors, .spacing, .metrics, .icons:
       .foundations
-    case .testControls, .testInteractions, .testOverrides, .testWorkspace:
+    case .testControls, .testInteractions, .testOverrides, .testWorkspace, .testMenu:
       .testLab
     }
   }
@@ -271,6 +303,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .testInteractions: "Interactions"
     case .testOverrides: "Overrides"
     case .testWorkspace: "Workspace Fixtures"
+    case .testMenu: "Menu Fixtures"
     }
   }
 
@@ -303,6 +336,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .testInteractions: .hand
     case .testOverrides: .settings
     case .testWorkspace: .shellDesktop
+    case .testMenu: .list
     }
   }
 }
@@ -403,6 +437,8 @@ private struct CatalogDestinationView: View {
       TestLabOverridesView95()
     case .testWorkspace:
       TestLabWorkspaceView95()
+    case .testMenu:
+      TestLabMenuView95(activation: "None")
     }
   }
 }

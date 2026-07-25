@@ -124,6 +124,48 @@
       assertSnapshot(of: view, as: macImage(size: view.frame.size))
     }
 
+    @Test func openMenuWithHighlightedAndDisabledItems() {
+      let menuBar = MenuBar95(
+        presentedMenu: .constant(0),
+        menus: snapshotMenus,
+        snapshotHighlightedItem: (menu: 0, element: 3),
+        rendersPresentedMenu: false
+      )
+      let view = hostingView(width: 420, height: 360) {
+        ZStack(alignment: .topLeading) {
+          Color.white
+            .padding(.top, 30)
+
+          menuBar
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+          menuBar.menuPanel(at: 0)
+            .offset(y: 28)
+        }
+      }
+
+      assertSnapshot(of: view, as: macImage(size: view.frame.size))
+    }
+
+    private var snapshotMenus: [Menu95] {
+      [
+        Menu95("File") {
+          MenuItem95("New") {}
+          MenuItem95("Open…") {}
+          MenuDivider95()
+          MenuItem95("Save As…") {}
+          MenuDivider95()
+          MenuItem95("Print", isEnabled: false) {}
+        },
+        Menu95("Edit") {
+          MenuItem95("Undo") {}
+        },
+        Menu95("Help") {
+          MenuItem95("About") {}
+        }
+      ]
+    }
+
     private func hostingView<Content: View>(
       width: CGFloat,
       height: CGFloat,

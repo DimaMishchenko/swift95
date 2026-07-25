@@ -19,6 +19,7 @@ public struct WorkspaceWindow95 {
   let title: Text
   let titleBarIcon: AnyView
   let taskBarIcon: AnyView
+  var menus: [Menu95]
   var statusBar: AnyView?
   var resizeControl: WorkspaceWindowResizeControl95
   var configuration: WorkspaceWindowConfiguration95
@@ -34,6 +35,7 @@ public struct WorkspaceWindow95 {
     let icon = AnyView(icon())
     titleBarIcon = icon
     taskBarIcon = icon
+    menus = []
     statusBar = nil
     resizeControl = .automatic
     configuration = .default
@@ -50,6 +52,7 @@ public struct WorkspaceWindow95 {
     let icon = AnyView(icon())
     titleBarIcon = icon
     taskBarIcon = icon
+    menus = []
     statusBar = nil
     resizeControl = .automatic
     configuration = .default
@@ -66,6 +69,7 @@ public struct WorkspaceWindow95 {
     title = Text(titleKey)
     self.titleBarIcon = AnyView(titleBarIcon())
     self.taskBarIcon = AnyView(taskBarIcon())
+    menus = []
     statusBar = nil
     resizeControl = .automatic
     configuration = .default
@@ -82,10 +86,33 @@ public struct WorkspaceWindow95 {
     self.title = Text(verbatim: String(title))
     self.titleBarIcon = AnyView(titleBarIcon())
     self.taskBarIcon = AnyView(taskBarIcon())
+    menus = []
     statusBar = nil
     resizeControl = .automatic
     configuration = .default
     makeContent = { AnyView(content()) }
+  }
+
+  /// Adds an optional classic pull-down menu bar below the window title.
+  ///
+  /// ```swift
+  /// WorkspaceWindow95("Notepad", icon: { noteIcon }) {
+  ///   Editor()
+  /// }
+  /// .menuBar95 {
+  ///   Menu95("File") {
+  ///     MenuItem95("New", action: newDocument)
+  ///     MenuDivider95()
+  ///     MenuItem95("Close", action: closeDocument)
+  ///   }
+  /// }
+  /// ```
+  public func menuBar95(
+    @MenuBuilder95 content: () -> [Menu95]
+  ) -> WorkspaceWindow95 {
+    var copy = self
+    copy.menus = content()
+    return copy
   }
 
   /// Adds application status content to the classic bar at the bottom of the window.
