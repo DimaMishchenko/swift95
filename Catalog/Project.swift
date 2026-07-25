@@ -35,7 +35,8 @@ let project = Project(
       ),
       sources: ["Swift95Catalog/Sources/**"],
       dependencies: [
-        .package(product: "Swift95")
+        .package(product: "Swift95"),
+        .package(product: "Swift95Icons")
       ]
     ),
     .target(

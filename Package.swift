@@ -13,6 +13,10 @@ let package = Package(
     .library(
       name: "Swift95",
       targets: ["Swift95"]
+    ),
+    .library(
+      name: "Swift95Icons",
+      targets: ["Swift95Icons"]
     )
   ],
   dependencies: [
@@ -28,6 +32,12 @@ let package = Package(
         .process("Resources")
       ]
     ),
+    .target(
+      name: "Swift95Icons",
+      resources: [
+        .copy("Resources/Icons")
+      ]
+    ),
     .testTarget(
       name: "Swift95Tests",
       dependencies: [
@@ -35,6 +45,10 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
       ],
       exclude: ["__Snapshots__"]
+    ),
+    .testTarget(
+      name: "Swift95IconsTests",
+      dependencies: ["Swift95Icons"]
     )
   ]
 )

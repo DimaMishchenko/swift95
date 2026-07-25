@@ -39,6 +39,7 @@ struct CatalogView: View {
         StartMenu95 {
           WorkspaceLink95("Components", value: CatalogRoute.browser(.components))
           WorkspaceLink95("Foundations", value: CatalogRoute.browser(.foundations))
+          WorkspaceLink95("Icons", value: CatalogRoute.destination(.icons))
           WorkspaceLink95("Test Lab", value: CatalogRoute.browser(.testLab))
 
           Divider95()
@@ -76,6 +77,10 @@ struct CatalogView: View {
 
       DesktopShortcut95("Foundations", value: CatalogRoute.browser(.foundations)) {
         catalogIcon("square.3.layers.3d")
+      }
+
+      DesktopShortcut95("Icons", value: CatalogRoute.destination(.icons)) {
+        catalogIcon("square.grid.3x3")
       }
 
       DesktopShortcut95("Test Lab", value: CatalogRoute.browser(.testLab)) {
@@ -213,6 +218,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case colors
   case spacing
   case metrics
+  case icons
   case testControls
   case testInteractions
   case testOverrides
@@ -226,7 +232,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
       .scrollIndicator, .scrollView, .list, .divider, .checkbox, .radioButton,
       .progressView, .picker, .tabs, .workspace:
       .components
-    case .bevel, .typography, .colors, .spacing, .metrics:
+    case .bevel, .typography, .colors, .spacing, .metrics, .icons:
       .foundations
     case .testControls, .testInteractions, .testOverrides, .testWorkspace:
       .testLab
@@ -257,6 +263,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .colors: "Colors"
     case .spacing: "Spacing"
     case .metrics: "Metrics"
+    case .icons: "Swift95Icons"
     case .testControls: "Accessibility"
     case .testInteractions: "Interactions"
     case .testOverrides: "Overrides"
@@ -288,6 +295,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .colors: "paintpalette"
     case .spacing: "arrow.left.and.right"
     case .metrics: "ruler"
+    case .icons: "square.grid.3x3"
     case .testControls: "accessibility"
     case .testInteractions: "hand.tap"
     case .testOverrides: "slider.horizontal.2.square"
@@ -383,6 +391,8 @@ private struct CatalogDestinationView: View {
       SpacingCatalogView95()
     case .metrics:
       MetricsCatalogView95()
+    case .icons:
+      IconCatalogView95()
     case .testControls:
       TestLabAccessibilityView95()
     case .testInteractions:
