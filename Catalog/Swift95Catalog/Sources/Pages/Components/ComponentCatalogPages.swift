@@ -1,4 +1,5 @@
 import Swift95
+import Swift95Icons
 import SwiftUI
 
 struct TextCatalogView95: View {
@@ -28,7 +29,11 @@ struct ButtonCatalogView95: View {
         .disabled(true)
 
       Button95(action: {}) {
-        Label("Custom label", systemImage: "square.and.pencil")
+        HStack {
+          Icon95(.filePencil, size: .small)
+            .accessibilityHidden(true)
+          Text("Custom label")
+        }
       }
       .swiftUI { button in
         button.accessibilityHint("A custom SwiftUI label")
@@ -150,16 +155,16 @@ private struct AsyncImageCatalogContent95: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
     } else if phase.error != nil {
-      placeholder(symbol: "exclamationmark.triangle", label: "Image unavailable")
+      placeholder(icon: .warning, label: "Image unavailable")
     } else {
-      placeholder(symbol: "hourglass", label: "Loading image")
+      placeholder(icon: .time, label: "Loading image")
     }
   }
 
-  private func placeholder(symbol: String, label: String) -> some View {
+  private func placeholder(icon: Icon95.Name, label: String) -> some View {
     VStack(spacing: theme.spacing.m) {
-      Image(systemName: symbol)
-        .font(.largeTitle)
+      Icon95(icon, size: .large)
+        .accessibilityHidden(true)
       Text95(label)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -348,9 +353,8 @@ struct ListCatalogView: View {
     case .largeIcon:
       List95(CatalogListItem.largeItems, style: .largeIcon) { item in
         Row95 {
-          Image(systemName: item.symbol)
-            .resizable()
-            .scaledToFit()
+          Icon95(item.icon)
+            .accessibilityHidden(true)
         } label: {
           Text95(item.title)
         } accessory: {
@@ -373,9 +377,8 @@ struct ListCatalogView: View {
           style: .largeIcon
         ) { item in
           Row95 {
-            Image(systemName: item.symbol)
-              .resizable()
-              .scaledToFit()
+            Icon95(item.icon)
+              .accessibilityHidden(true)
           } label: {
             Text95(item.title)
           }
@@ -398,9 +401,8 @@ struct ListCatalogView: View {
     case .disabled:
       List95(CatalogListItem.largeItems, style: .largeIcon) { item in
         Row95 {
-          Image(systemName: item.symbol)
-            .resizable()
-            .scaledToFit()
+          Icon95(item.icon)
+            .accessibilityHidden(true)
         } label: {
           Text95(item.title)
         }
@@ -419,9 +421,8 @@ struct ListCatalogView: View {
       List95(CatalogListItem.accessoryItems, style: .largeIcon) { item in
         if item.hasChildren {
           Row95 {
-            Image(systemName: item.symbol)
-              .resizable()
-              .scaledToFit()
+            Icon95(item.icon)
+              .accessibilityHidden(true)
           } label: {
             Text95(item.title)
           } accessory: {
@@ -429,13 +430,13 @@ struct ListCatalogView: View {
           }
         } else {
           Row95 {
-            Image(systemName: item.symbol)
-              .resizable()
-              .scaledToFit()
+            Icon95(item.icon)
+              .accessibilityHidden(true)
           } label: {
             Text95(item.title)
           } accessory: {
-            Image(systemName: "checkmark")
+            Icon95(.tick, size: .small)
+              .accessibilityHidden(true)
           }
         }
       }
@@ -710,16 +711,16 @@ private struct CatalogListItem: Identifiable {
 
   let id: ID
   let title: String
-  let symbol: String
+  let icon: Icon95.Name
   let hasChildren: Bool
   let hasSeparatorAfter: Bool
 
-  static let programs = item("Programs", symbol: "folder", hasChildren: true)
-  static let documents = item("Documents", symbol: "doc.on.doc", hasChildren: true)
-  static let settings = item("Settings", symbol: "gearshape", hasChildren: true)
-  static let find = item("Find", symbol: "magnifyingglass")
-  static let help = item("Help", symbol: "questionmark.square")
-  static let run = item("Run", symbol: "terminal")
+  static let programs = item("Programs", icon: .shellProgramsFolder, hasChildren: true)
+  static let documents = item("Documents", icon: .shellDocumentsFolder, hasChildren: true)
+  static let settings = item("Settings", icon: .shellSettings, hasChildren: true)
+  static let find = item("Find", icon: .shellFind)
+  static let help = item("Help", icon: .shellHelp)
+  static let run = item("Run", icon: .shellRun)
   static let view = item("View", hasSeparatorAfter: true)
   static let customize = item("Customize this folder", hasSeparatorAfter: true)
   static let arrange = item("Arrange Icons")
@@ -749,14 +750,14 @@ private struct CatalogListItem: Identifiable {
 
   private static func item(
     _ title: String,
-    symbol: String = "doc",
+    icon: Icon95.Name = .document,
     hasChildren: Bool = false,
     hasSeparatorAfter: Bool = false
   ) -> CatalogListItem {
     CatalogListItem(
       id: ID(rawValue: title),
       title: title,
-      symbol: symbol,
+      icon: icon,
       hasChildren: hasChildren,
       hasSeparatorAfter: hasSeparatorAfter
     )

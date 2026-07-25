@@ -16,6 +16,15 @@ final class Icon95Tests: XCTestCase {
     XCTAssertEqual(smallIcon.renderedSize, CGSize(width: 16, height: 16))
   }
 
+  func testSelectedRenditionCanBeMadeResizable() {
+    let icon = Icon95(.logo, size: .standard)
+    _ = icon.resizable().frame(width: 16, height: 16)
+
+    XCTAssertEqual(icon.size, .standard)
+    XCTAssertEqual(icon.sourceSize, .standard)
+    XCTAssertEqual(icon.pixelSize, CGSize(width: 32, height: 32))
+  }
+
   func testIdentifierUsesTheNormalizedSwiftName() {
     XCTAssertEqual(Icon95.Name.addressBook.identifier, "addressBook")
     XCTAssertEqual(Icon95.Name.shellEntireNetwork.identifier, "shellEntireNetwork")

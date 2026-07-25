@@ -1,4 +1,5 @@
 import Swift95
+import Swift95Icons
 import SwiftUI
 
 struct CatalogView: View {
@@ -34,7 +35,7 @@ struct CatalogView: View {
       catalogDesktop
     } taskBar: {
       TaskBar95("Start") {
-        catalogTaskBarIcon("flag.fill")
+        catalogTaskBarIcon(.logo, size: .standard)
       } menu: {
         StartMenu95 {
           WorkspaceLink95("Components", value: CatalogRoute.browser(.components))
@@ -72,23 +73,23 @@ struct CatalogView: View {
   private var catalogDesktop: some View {
     let desktop = Desktop95 {
       DesktopShortcut95("Components", value: CatalogRoute.browser(.components)) {
-        catalogIcon("shippingbox.fill")
+        catalogIcon(CatalogSection.components.icon)
       }
 
       DesktopShortcut95("Foundations", value: CatalogRoute.browser(.foundations)) {
-        catalogIcon("square.3.layers.3d")
+        catalogIcon(CatalogSection.foundations.icon)
       }
 
       DesktopShortcut95("Icons", value: CatalogRoute.destination(.icons)) {
-        catalogIcon("square.grid.3x3")
+        catalogIcon(CatalogDestination.icons.icon)
       }
 
       DesktopShortcut95("Test Lab", value: CatalogRoute.browser(.testLab)) {
-        catalogIcon("testtube.2")
+        catalogIcon(CatalogSection.testLab.icon)
       }
 
       DesktopShortcut95("Workspace95", value: CatalogRoute.destination(.workspace)) {
-        catalogIcon("macwindow.on.rectangle")
+        catalogIcon(CatalogDestination.workspace.icon)
       }
     }
 
@@ -105,9 +106,9 @@ struct CatalogView: View {
     switch route {
     case let .browser(section):
       return WorkspaceWindow95(section.title) {
-        catalogIcon(section.symbol)
+        catalogIcon(section.icon, size: .small)
       } taskBarIcon: {
-        catalogTaskBarIcon(section.symbol)
+        catalogTaskBarIcon(section.icon)
       } content: {
         CatalogBrowserView(section: section)
       }
@@ -135,29 +136,31 @@ struct CatalogView: View {
       return window
     case let .destination(destination):
       return WorkspaceWindow95(destination.title) {
-        catalogIcon(destination.symbol)
+        catalogIcon(destination.icon, size: .small)
       } taskBarIcon: {
-        catalogTaskBarIcon(destination.symbol)
+        catalogTaskBarIcon(destination.icon)
       } content: {
         CatalogDestinationView(destination: destination)
       }
     }
   }
 
-  private func catalogIcon(_ systemName: String) -> some View {
-    Image(systemName: systemName)
-      .resizable()
-      .scaledToFit()
-      .foregroundStyle(.white)
+  private func catalogIcon(
+    _ name: Icon95.Name,
+    size: Icon95.Size = .standard
+  ) -> some View {
+    Icon95(name, size: size)
       .padding(theme.spacing.xxxs)
       .accessibilityHidden(true)
   }
 
-  private func catalogTaskBarIcon(_ systemName: String) -> some View {
-    Image(systemName: systemName)
+  private func catalogTaskBarIcon(
+    _ name: Icon95.Name,
+    size: Icon95.Size = .small
+  ) -> some View {
+    Icon95(name, size: size)
       .resizable()
-      .scaledToFit()
-      .padding(theme.spacing.xxxs)
+      .aspectRatio(contentMode: .fit)
       .accessibilityHidden(true)
   }
 }
@@ -182,11 +185,11 @@ enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
     }
   }
 
-  var symbol: String {
+  var icon: Icon95.Name {
     switch self {
-    case .components: "shippingbox.fill"
-    case .foundations: "square.3.layers.3d"
-    case .testLab: "testtube.2"
+    case .components: .controls3000
+    case .foundations: .packager
+    case .testLab: .hardwareDiag
     }
   }
 
@@ -271,35 +274,35 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     }
   }
 
-  var symbol: String {
+  var icon: Icon95.Name {
     switch self {
-    case .text: "textformat"
-    case .button: "capsule"
-    case .image: "photo"
-    case .slider: "slider.horizontal.3"
-    case .textField: "character.cursor.ibeam"
-    case .secureField: "lock"
-    case .textEditor: "doc.text"
-    case .scrollIndicator: "arrow.up.and.down"
-    case .scrollView: "scroll"
-    case .list: "list.bullet"
-    case .divider: "minus"
-    case .checkbox: "checkmark.square"
-    case .radioButton: "circle.inset.filled"
-    case .progressView: "chart.bar.fill"
-    case .picker: "list.bullet.rectangle"
-    case .tabs: "square.on.square"
-    case .workspace: "macwindow.on.rectangle"
-    case .bevel: "square.3.layers.3d"
-    case .typography: "textformat.size"
-    case .colors: "paintpalette"
-    case .spacing: "arrow.left.and.right"
-    case .metrics: "ruler"
-    case .icons: "square.grid.3x3"
-    case .testControls: "accessibility"
-    case .testInteractions: "hand.tap"
-    case .testOverrides: "slider.horizontal.2.square"
-    case .testWorkspace: "macwindow.badge.plus"
+    case .text: .fontWindow
+    case .button: .pushButton
+    case .image: .imgedit10
+    case .slider: .sndvol32300
+    case .textField: .fileText
+    case .secureField: .lock
+    case .textEditor: .notepad
+    case .scrollIndicator: .scrollingMarquee100
+    case .scrollView: .fileTextSettings
+    case .list: .list
+    case .divider: .columns
+    case .checkbox: .tick
+    case .radioButton: .circle
+    case .progressView: .graphWindow
+    case .picker: .details
+    case .tabs: .windowsExplorer
+    case .workspace: .desktop
+    case .bevel: .d3PipesIdApp
+    case .typography: .font
+    case .colors: .paint
+    case .spacing: .alignCenter
+    case .metrics: .calculatorSmall
+    case .icons: .fileIcons
+    case .testControls: .accessibility
+    case .testInteractions: .hand
+    case .testOverrides: .settings
+    case .testWorkspace: .shellDesktop
     }
   }
 }
@@ -327,9 +330,8 @@ private struct CatalogBrowserView: View {
       List95(section.destinations, style: .largeIcon) { destination in
         WorkspaceLink95(value: CatalogRoute.destination(destination)) {
           Row95 {
-            Image(systemName: destination.symbol)
-              .resizable()
-              .scaledToFit()
+            Icon95(destination.icon)
+              .accessibilityHidden(true)
           } label: {
             Text95(destination.title)
           } accessory: {

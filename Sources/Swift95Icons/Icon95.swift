@@ -13,12 +13,16 @@ import SwiftUI
 /// ```swift
 /// Icon95(.computer)
 /// Icon95(.computer, size: .small)
+///
+/// Icon95(.logo, size: .standard)
+///   .resizable()
+///   .frame(width: 16, height: 16)
 /// ```
 ///
 /// The view preserves the source artwork's aspect ratio, uses nearest-neighbor
-/// interpolation, and renders the longest edge at the selected size. When the
-/// requested artwork size is unavailable, `Icon95` selects the closest bundled
-/// rendition and still renders it at the requested point size.
+/// interpolation, and renders the longest edge at the selected size. Use
+/// ``resizable(capInsets:resizingMode:)`` when the selected artwork should adopt
+/// a size supplied by its SwiftUI layout.
 ///
 /// Use ``swiftUI(_:)`` to configure the rendered icon with native SwiftUI
 /// modifiers. An icon's meaning depends on its context, so provide
@@ -48,8 +52,9 @@ public struct Icon95: View {
 
   /// The requested semantic presentation size.
   ///
-  /// This is the rendered size requested by the caller. ``sourceSize`` may be
-  /// different when that rendition is not bundled.
+  /// This selects the preferred artwork rendition and the icon's default
+  /// intrinsic size. Call ``resizable(capInsets:resizingMode:)`` to override
+  /// the rendered size with standard SwiftUI layout modifiers.
   ///
   /// ```swift
   /// let icon = Icon95(.computer, size: .large)
@@ -110,10 +115,34 @@ public struct Icon95: View {
 
   /// The pixelated SwiftUI representation of the icon.
   public var body: some View {
-    platformImage
-      .resizable()
-      .interpolation(.none)
+    resizable()
       .frame(width: renderedSize.width, height: renderedSize.height)
+  }
+
+  /// Returns a resizable SwiftUI image using nearest-neighbor interpolation.
+  ///
+  /// This mirrors SwiftUI's `Image.resizable(capInsets:resizingMode:)`. The
+  /// selected ``size`` still determines which artwork rendition is loaded, but
+  /// the surrounding SwiftUI layout determines its displayed dimensions:
+  ///
+  /// ```swift
+  /// Icon95(.logo, size: .standard)
+  ///   .resizable()
+  ///   .aspectRatio(contentMode: .fit)
+  ///   .frame(width: 16, height: 16)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - capInsets: Insets that are not resized.
+  ///   - resizingMode: How the image fills its available space.
+  /// - Returns: The selected artwork as a resizable SwiftUI image.
+  public func resizable(
+    capInsets: EdgeInsets = EdgeInsets(),
+    resizingMode: Image.ResizingMode = .stretch
+  ) -> Image {
+    platformImage
+      .resizable(capInsets: capInsets, resizingMode: resizingMode)
+      .interpolation(.none)
   }
 
   /// Applies a transformation to the rendered SwiftUI icon.
@@ -202,7 +231,7 @@ public struct Icon95: View {
 }
 
 extension Icon95 {
-  /// A semantic icon presentation size.
+  /// A semantic icon size.
   ///
   /// Use semantic sizes instead of display-scale-specific `@2x` or `@3x`
   /// variants. Pixel art remains crisp because ``Icon95`` uses nearest-neighbor

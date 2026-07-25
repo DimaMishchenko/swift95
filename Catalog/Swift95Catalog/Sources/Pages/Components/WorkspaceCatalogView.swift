@@ -1,4 +1,5 @@
 import Swift95
+import Swift95Icons
 import SwiftUI
 
 struct WorkspaceCatalogView: View {
@@ -21,15 +22,15 @@ struct WorkspaceCatalogView: View {
       ) {
         Desktop95 {
           DesktopShortcut95("My Computer", value: CatalogWorkspaceRoute.myComputer) {
-            workspaceIcon("desktopcomputer")
+            workspaceIcon(.computer)
           }
 
           DesktopShortcut95("Notepad", value: CatalogWorkspaceRoute.notepad) {
-            workspaceIcon("note.text")
+            workspaceIcon(.notepad)
           }
 
           DesktopShortcut95("Settings", value: CatalogWorkspaceRoute.settings) {
-            workspaceIcon("gearshape")
+            workspaceIcon(.settings)
           }
         }
         .desktopState95(
@@ -38,7 +39,7 @@ struct WorkspaceCatalogView: View {
         )
       } taskBar: {
         TaskBar95("Start") {
-          workspaceTaskBarIcon("flag.fill")
+          workspaceTaskBarIcon(.logo, size: .standard)
         } menu: {
           StartMenu95 {
             WorkspaceLink95("My Computer", value: CatalogWorkspaceRoute.myComputer)
@@ -66,9 +67,9 @@ struct WorkspaceCatalogView: View {
     switch route {
     case .myComputer:
       WorkspaceWindow95("My Computer") {
-        workspaceIcon("desktopcomputer")
+        workspaceIcon(.computer, size: .small)
       } taskBarIcon: {
-        workspaceTaskBarIcon("desktopcomputer")
+        workspaceTaskBarIcon(.computer)
       } content: {
         MyComputerWindow()
       }
@@ -77,17 +78,17 @@ struct WorkspaceCatalogView: View {
       }
     case .notepad:
       WorkspaceWindow95("Untitled - Notepad") {
-        workspaceIcon("note.text")
+        workspaceIcon(.notepad, size: .small)
       } taskBarIcon: {
-        workspaceTaskBarIcon("note.text")
+        workspaceTaskBarIcon(.notepad)
       } content: {
         NotepadWindow()
       }
     case .settings:
       WorkspaceWindow95("Settings") {
-        workspaceIcon("gearshape")
+        workspaceIcon(.settings, size: .small)
       } taskBarIcon: {
-        workspaceTaskBarIcon("gearshape")
+        workspaceTaskBarIcon(.settings)
       } content: {
         SettingsWindow()
       }
@@ -95,19 +96,23 @@ struct WorkspaceCatalogView: View {
     }
   }
 
-  private func workspaceIcon(_ systemName: String) -> some View {
-    Image(systemName: systemName)
-      .resizable()
-      .scaledToFit()
-      .foregroundStyle(.white)
+  private func workspaceIcon(
+    _ name: Icon95.Name,
+    size: Icon95.Size = .standard
+  ) -> some View {
+    Icon95(name, size: size)
       .padding(theme.spacing.xxxs)
+      .accessibilityHidden(true)
   }
 
-  private func workspaceTaskBarIcon(_ systemName: String) -> some View {
-    Image(systemName: systemName)
+  private func workspaceTaskBarIcon(
+    _ name: Icon95.Name,
+    size: Icon95.Size = .small
+  ) -> some View {
+    Icon95(name, size: size)
       .resizable()
-      .scaledToFit()
-      .padding(theme.spacing.xxxs)
+      .aspectRatio(contentMode: .fit)
+      .accessibilityHidden(true)
   }
 }
 
