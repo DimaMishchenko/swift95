@@ -60,6 +60,28 @@ final class Swift95CatalogUITests: XCTestCase {
     assertLabel("Radio: Manual", for: "interaction.radio.output", in: app)
   }
 
+  func testAlertActionRunsAndDismissesPresentation() throws {
+    let app = launch(destination: "testInteractions")
+    revealAlertFixture(in: app)
+
+    activate(element("interaction.alert.show", in: app))
+
+    let message = element("interaction.alert.message", in: app)
+    let confirm = element("interaction.alert.confirm", in: app)
+    let close = element("swift95.alert.close", in: app)
+    XCTAssertTrue(message.waitForExistence(timeout: 3))
+    XCTAssertTrue(confirm.waitForExistence(timeout: 3))
+    XCTAssertTrue(close.waitForExistence(timeout: 3))
+    XCTAssertFalse(close.isEnabled)
+
+    try app.performAccessibilityAudit(for: alertAuditTypes)
+
+    activate(confirm)
+
+    assertLabel("Alert result: Confirmed", for: "interaction.alert.output", in: app)
+    XCTAssertFalse(message.waitForExistence(timeout: 1))
+  }
+
   func testTextAndSliderInputUpdateBoundState() {
     let app = launch(destination: "testInteractions")
     let field = element("interaction.text-field", in: app)
@@ -215,6 +237,16 @@ final class Swift95CatalogUITests: XCTestCase {
     return types
   }
 
+  private var alertAuditTypes: XCUIAccessibilityAuditType {
+    var types = fixtureAuditTypes
+    #if os(iOS)
+      // The transparent modal host retains the classic visible context behind the
+      // alert. The image-based detector otherwise reports that background copy.
+      types.subtract(.elementDetection)
+    #endif
+    return types
+  }
+
   private func activate(_ element: XCUIElement) {
     XCTAssertTrue(element.waitForExistence(timeout: 5), element.identifier)
     #if os(macOS)
@@ -222,6 +254,21 @@ final class Swift95CatalogUITests: XCTestCase {
     #else
       element.tap()
     #endif
+  }
+
+  private func revealAlertFixture(in app: XCUIApplication) {
+    let showAlert = element("interaction.alert.show", in: app)
+    guard !showAlert.waitForExistence(timeout: 1) else {
+      return
+    }
+
+    let fixture = element("test-lab.interactions", in: app)
+    #if os(macOS)
+      fixture.scroll(byDeltaX: 0, deltaY: -500)
+    #else
+      fixture.swipeUp()
+    #endif
+    XCTAssertTrue(showAlert.waitForExistence(timeout: 3))
   }
 
   private func assertLabel(

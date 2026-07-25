@@ -42,6 +42,75 @@ struct ButtonCatalogView95: View {
   }
 }
 
+struct AlertCatalogView95: View {
+  @State private var showsWarning = false
+  @State private var showsInformation = false
+  @State private var showsQuestion = false
+
+  var body: some View {
+    CatalogPage95("Alert95") {
+      CatalogExample95("Traditional icons") {
+        Button95("Warning") {
+          showsWarning = true
+        }
+
+        Button95("Information") {
+          showsInformation = true
+        }
+
+        Button95("Question") {
+          showsQuestion = true
+        }
+      }
+
+      Text95(
+        """
+        The icon builder accepts any SwiftUI view; these examples use traditional artwork from \
+        Swift95Icons. Put native SwiftUI Buttons in the action builder. Alert95 adapts each action \
+        to Button95 styling and dismisses automatically after activation.
+        """
+      )
+    }
+    .alert95(
+      "Printer",
+      isPresented: $showsWarning,
+      icon: {
+        Icon95(.warning)
+      }
+    ) {
+      Button("OK") {}
+        .keyboardShortcut(.defaultAction)
+    } message: {
+      Text("There is no default printer.")
+    }
+    .alert95(
+      "Setup complete",
+      isPresented: $showsInformation,
+      icon: {
+        Icon95(.infoBubble)
+      }
+    ) {
+      Button("Continue") {}
+        .keyboardShortcut(.defaultAction)
+    }
+    .alert95(
+      "Replace file?",
+      isPresented: $showsQuestion,
+      isCloseButtonEnabled: false,
+      icon: {
+        Icon95(.questionBubble)
+      }
+    ) {
+      Button("Replace", role: .destructive) {}
+        .keyboardShortcut(.defaultAction)
+      Button("Cancel", role: .cancel) {}
+        .keyboardShortcut(.cancelAction)
+    } message: {
+      Text("A file with this name already exists.")
+    }
+  }
+}
+
 struct ImageCatalogView95: View {
   @Environment(\.catalogLaunchConfiguration) private var launchConfiguration
   @Environment(\.theme95) private var theme

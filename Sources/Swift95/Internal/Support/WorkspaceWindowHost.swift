@@ -39,6 +39,7 @@ struct WorkspaceWindowHost: View {
         minimize: capabilities.contains(.minimize) ? minimize : nil,
         maximize: maximizeAction,
         isMaximized: isMaximized,
+        isCloseButtonEnabled: true,
         close: capabilities.contains(.close) ? close : nil
       )
       .padding(.horizontal, titleBarInset)
@@ -413,17 +414,19 @@ private struct WindowFrameModifier: ViewModifier {
   }
 }
 
-private struct WorkspaceTitleBar: View {
+struct WorkspaceTitleBar: View {
   @Environment(\.theme95) private var theme
   @Environment(\.strings95) private var strings
 
   let title: Text
-  let icon: AnyView
+  let icon: AnyView?
   let isActive: Bool
   let isCompact: Bool
   let minimize: (() -> Void)?
   let maximize: (() -> Void)?
   let isMaximized: Bool
+  let isCloseButtonEnabled: Bool
+  var closeAccessibilityIdentifier: String? = nil
   let close: (() -> Void)?
 
   var body: some View {
@@ -433,14 +436,16 @@ private struct WorkspaceTitleBar: View {
       : theme.metrics.titleBarHeight
 
     HStack(spacing: theme.spacing.s) {
-      icon
-        .frame(
-          width: isCompact
-            ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize,
-          height: isCompact
-            ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize
-        )
-        .accessibilityHidden(true)
+      if let icon {
+        icon
+          .frame(
+            width: isCompact
+              ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize,
+            height: isCompact
+              ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize
+          )
+          .accessibilityHidden(true)
+      }
 
       title
         .font(theme.fonts.body.weight(.bold))
@@ -471,8 +476,11 @@ private struct WorkspaceTitleBar: View {
           label: Text(strings.close),
           glyph: .close,
           height: height,
+          isEnabled: isCloseButtonEnabled,
+          accessibilityIdentifier: closeAccessibilityIdentifier,
           action: close
         )
+        .disabled(!isCloseButtonEnabled)
       }
     }
     .padding(.horizontal, theme.spacing.xxs)
@@ -488,11 +496,13 @@ private struct WindowControlButton: View {
   let label: Text
   let glyph: WindowControlGlyph
   let height: CGFloat
+  var isEnabled = true
+  var accessibilityIdentifier: String? = nil
   let action: () -> Void
 
   var body: some View {
     Button(action: action) {
-      WindowControlGlyphDrawing(glyph: glyph)
+      WindowControlGlyphDrawing(glyph: glyph, isEnabled: isEnabled)
         .frame(
           width: theme.metrics.windowControlWidth,
           height: theme.metrics.windowControlHeight
@@ -502,6 +512,7 @@ private struct WindowControlButton: View {
     .buttonStyle(WindowControlButtonStyle(height: height))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(label)
+    .accessibilityIdentifier(accessibilityIdentifier ?? "")
     .minimumInteractionTarget95()
   }
 }
@@ -517,6 +528,7 @@ private struct WindowControlGlyphDrawing: View {
   @Environment(\.theme95) private var theme
 
   let glyph: WindowControlGlyph
+  let isEnabled: Bool
 
   var body: some View {
     Canvas { context, _ in
@@ -548,7 +560,16 @@ private struct WindowControlGlyphDrawing: View {
   }
 
   private func fill(_ rect: CGRect, in context: inout GraphicsContext) {
-    context.fill(Path(rect), with: .color(theme.colors.text))
+    if !isEnabled {
+      context.fill(
+        Path(rect.offsetBy(dx: 1, dy: 1)),
+        with: .color(theme.colors.textDisabledHighlight)
+      )
+    }
+    context.fill(
+      Path(rect),
+      with: .color(isEnabled ? theme.colors.text : theme.colors.textDisabled)
+    )
   }
 }
 

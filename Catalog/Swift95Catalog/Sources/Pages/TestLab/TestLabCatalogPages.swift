@@ -47,6 +47,8 @@ struct TestLabInteractionsView95: View {
   @State private var sortOrder = TestSortOrder.name
   @State private var selectedItem: TestListItem.ID?
   @State private var selectedTab = TestTab.general
+  @State private var showsAlert = false
+  @State private var alertResult = "None"
 
   private let items = [
     TestListItem(id: "documents", title: "Documents"),
@@ -142,6 +144,36 @@ struct TestLabInteractionsView95: View {
           Text95("\(tab.title) settings")
             .accessibilityIdentifier("interaction.tab.content")
         }
+      }
+
+      CatalogExample95("Presentation") {
+        Button95("Show alert") {
+          showsAlert = true
+        }
+        .swiftUI { $0.accessibilityIdentifier("interaction.alert.show") }
+        .alert95(
+          "Confirm action",
+          isPresented: $showsAlert,
+          isCloseButtonEnabled: false,
+          icon: {
+            Image(systemName: "exclamationmark.triangle")
+          }
+        ) {
+          Button("Confirm") {
+            alertResult = "Confirmed"
+          }
+          .accessibilityIdentifier("interaction.alert.confirm")
+          Button("Cancel", role: .cancel) {
+            alertResult = "Cancelled"
+          }
+          .accessibilityIdentifier("interaction.alert.cancel")
+        } message: {
+          Text("This alert verifies modal interaction and dismissal.")
+            .accessibilityIdentifier("interaction.alert.message")
+        }
+
+        Text95("Alert result: \(alertResult)")
+          .accessibilityIdentifier("interaction.alert.output")
       }
     }
     .accessibilityIdentifier("test-lab.interactions")

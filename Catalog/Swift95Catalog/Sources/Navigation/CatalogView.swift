@@ -232,6 +232,7 @@ enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
 enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case text
   case button
+  case alert
   case image
   case slider
   case textField
@@ -263,7 +264,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
 
   var section: CatalogSection {
     switch self {
-    case .text, .button, .image, .slider, .textField, .secureField, .textEditor,
+    case .text, .button, .alert, .image, .slider, .textField, .secureField, .textEditor,
       .scrollIndicator, .scrollView, .list, .divider, .checkbox, .radioButton,
       .progressView, .picker, .tabs, .workspace:
       .components
@@ -278,6 +279,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     switch self {
     case .text: "Text95"
     case .button: "Button95"
+    case .alert: "Alert95"
     case .image: "Image95"
     case .slider: "Slider95"
     case .textField: "TextField95"
@@ -311,6 +313,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     switch self {
     case .text: .fontWindow
     case .button: .pushButton
+    case .alert: .warning
     case .image: .imgedit10
     case .slider: .sndvol32300
     case .textField: .fileText
@@ -387,6 +390,8 @@ private struct CatalogDestinationView: View {
       TextCatalogView95()
     case .button:
       ButtonCatalogView95()
+    case .alert:
+      AlertCatalogView95()
     case .image:
       ImageCatalogView95()
     case .slider:
