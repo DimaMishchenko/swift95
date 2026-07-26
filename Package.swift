@@ -22,7 +22,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-snapshot-testing",
-      exact: "1.19.2"
+      .upToNextMajor(from: "1.19.2")
     )
   ],
   targets: [

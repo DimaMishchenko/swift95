@@ -16,4 +16,15 @@ The author describes W95FA as free for personal and commercial use under the SIL
 
 W95FA is an independent recreation; it is not Microsoft Sans Serif font software.
 
-Future icons, fonts, sounds, and other assets must be added to this file with their source and applicable terms before release.
+## Classic icon artwork
+
+`Swift95Icons` bundles classic Windows-associated pixel artwork under `Sources/Swift95Icons/Resources/Icons`.
+
+The repository's MIT license applies to the Swift implementation, generated icon-name mappings,
+catalog, and documentation. It does not relicense the bundled icon artwork or any Microsoft names,
+logos, trademarks, or other brand assets. Rights in that artwork and those brand assets remain with
+their respective owners. Swift95 claims no ownership of them and provides them as part of an
+independent, historically inspired compatibility and preservation project.
+
+Swift95 is not affiliated with or endorsed by Microsoft. Rights holders can open a repository issue
+to identify an asset that requires corrected attribution or removal.
