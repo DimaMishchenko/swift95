@@ -1,0 +1,45 @@
+---
+import { DocsActions } from './React95DocsChrome';
+import {
+	apiDocumentationSections,
+	authoredDocumentationPages,
+} from '../data/docsNavigation';
+
+const sectionCount = apiDocumentationSections.reduce(
+	(total, section) => total + section.items.length,
+	0,
+);
+const guideCount = authoredDocumentationPages.size;
+---
+
+<div class="void-components95">
+	<div class="void-directory-status95">
+		<strong>{sectionCount} documented APIs</strong>
+		<span>{guideCount} focused guides ready</span>
+	</div>
+
+	{apiDocumentationSections.map((group) => (
+		<section class="void-component-group95" aria-labelledby={`group-${group.label.toLowerCase().replaceAll(' ', '-')}`}>
+			<h2 id={`group-${group.label.toLowerCase().replaceAll(' ', '-')}`}>{group.label}</h2>
+			<ul class="void-component-list95">
+				{group.items.map((item) => (
+					<li id={item.slug}>
+						<div>
+							<h3>{item.label}</h3>
+						</div>
+						<a href={`/components/${item.slug}/`}>
+							{authoredDocumentationPages.has(item.slug)
+								? 'Read guide'
+								: 'API details'}
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	))}
+
+	<section class="void-next95" aria-label="Component documentation status">
+		<p>Ready to build something?</p>
+		<DocsActions />
+	</section>
+</div>

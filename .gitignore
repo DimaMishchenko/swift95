@@ -8,3 +8,5 @@ xcuserdata/
 *.xcodeproj/
 *.xcworkspace/
 Derived/
+Sources/Swift95/Swift95.docc/Generated/
+Sources/Swift95Icons/Swift95Icons.docc/Generated/

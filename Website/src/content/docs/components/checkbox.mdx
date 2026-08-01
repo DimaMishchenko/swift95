@@ -1,0 +1,66 @@
+---
+title: Checkbox95
+description: A binary option control backed by SwiftUI Toggle behavior.
+template: splash
+prev: false
+next: false
+---
+
+import VoidDocsShell from '../../../components/VoidDocsShell.astro';
+import ReferenceSnapshot from '../../../components/ReferenceSnapshot';
+
+<VoidDocsShell
+  active="checkbox"
+  title="Checkbox95"
+  description="A binary option control backed by SwiftUI Toggle behavior."
+>
+
+`Checkbox95` binds a Boolean value to a pixel checkmark and input-style indicator.
+
+<ReferenceSnapshot
+  src="/images/checkbox95-states-macos.png"
+  width={360}
+  height={146}
+  alt="Checked, unchecked, and disabled Checkbox95 controls"
+  caption="The common checkbox states rendered by the snippet below."
+/>
+
+## Use it
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct Checkbox95Example: View {
+  @State private var showsHiddenFiles = true
+  @State private var confirmsDeletion = false
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Checkbox95("Show hidden files", isOn: $showsHiddenFiles)
+      Checkbox95("Confirm before deleting", isOn: $confirmsDeletion)
+      Checkbox95("Unavailable option", isOn: .constant(true))
+        .disabled(true)
+    }
+  }
+}
+```
+
+## Essential behavior
+
+| Concern | Behavior |
+| --- | --- |
+| Binding | Reads and writes a `Binding<Bool>`. |
+| Semantics | Preserves native toggle behavior, enabled state, keyboard use, and accessibility. |
+| Custom labels | Use `Checkbox95(isOn:label:)` for composed SwiftUI labels. |
+| Native APIs | Use `swiftUI(_:)` to modify the embedded `Toggle`. |
+
+## Related
+
+- [`RadioButton95`](/components/radio-button/)
+- [`Text95`](/components/text/)
+- [`Theme95`](/components/theme/)
+
+[Open the complete Checkbox95 API reference →](/api/documentation/swift95/checkbox95)
+
+</VoidDocsShell>

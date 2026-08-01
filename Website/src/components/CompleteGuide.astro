@@ -1,0 +1,96 @@
+---
+import { Code } from 'astro:components';
+import { apiDocumentationSections } from '../data/docsNavigation';
+import ReferenceSnapshot from './ReferenceSnapshot';
+
+type Fact = [string, string];
+
+interface Preview {
+	alt: string;
+	caption: string;
+	height: number;
+	src: string;
+	width: number;
+}
+
+interface Props {
+	apiPath: string;
+	code: string;
+	facts: Fact[];
+	label: string;
+	preview?: Preview;
+	related: Array<{ label: string; slug: string }>;
+	summary: string;
+}
+
+const { apiPath, code, facts, label, preview, related, summary } = Astro.props;
+const guideLinks = new Map(
+	apiDocumentationSections.flatMap((section) =>
+		section.items.map((item) => [item.label, `/components/${item.slug}/`]),
+	),
+);
+guideLinks.delete(label);
+const guideLinkPattern = new RegExp(
+	`\\b(${[...guideLinks.keys()]
+		.sort((left, right) => right.length - left.length)
+		.join('|')})\\b`,
+	'g',
+);
+const linkParts = (text: string) =>
+	text
+		.split(guideLinkPattern)
+		.filter(Boolean)
+		.map((part) => ({ href: guideLinks.get(part), text: part }));
+---
+
+<div class="complete-guide95">
+	<p>
+		{
+			linkParts(summary).map((part) =>
+				part.href ? <a href={part.href}>{part.text}</a> : part.text,
+			)
+		}
+	</p>
+
+	{
+		preview && (
+			<ReferenceSnapshot
+				src={preview.src}
+				width={preview.width}
+				height={preview.height}
+				alt={preview.alt}
+				caption={preview.caption}
+			/>
+		)
+	}
+
+	<h2>Use it</h2>
+	<Code code={code} lang="swift" theme="github-dark" />
+
+	<h2>Essential behavior</h2>
+	<div class="guide-facts95">
+		{
+			facts.map(([concern, behavior]) => (
+				<div class="guide-fact95">
+					<strong>{concern}</strong>
+					<span>
+						{
+							linkParts(behavior).map((part) =>
+								part.href ? <a href={part.href}>{part.text}</a> : part.text,
+							)
+						}
+					</span>
+				</div>
+			))
+		}
+	</div>
+
+	<h2>Related</h2>
+	<ul class="guide-related95">
+		{related.map((item) => <li><a href={`/components/${item.slug}/`}>{item.label}</a></li>)}
+	</ul>
+
+	<p class="guide-api-link95">
+		<a href={apiPath}>Open the complete {label} API reference →</a>
+	</p>
+</div>

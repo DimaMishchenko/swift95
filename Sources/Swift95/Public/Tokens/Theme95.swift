@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// Swift95 components read the closest theme from the SwiftUI environment. Use
 /// ``classic`` without a modifier for the default appearance, or create a theme
-/// and install it with ``SwiftUI/View/theme95(_:)`` for a view hierarchy.
+/// and install it with `View.theme95(_:)` for a view hierarchy.
 ///
 /// ```swift
 /// var colors = Colors95.classic

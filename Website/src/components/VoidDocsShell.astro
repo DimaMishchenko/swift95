@@ -1,0 +1,34 @@
+---
+import { DocsSidebar } from './React95DocsChrome';
+import SiteHeader from './SiteHeader.astro';
+
+interface Props {
+	active: string;
+	description?: string;
+	title: string;
+}
+
+const { active, description, title } = Astro.props;
+const titleSize =
+	title.length > 30 ? 'compact' : title.length > 20 ? 'long' : 'normal';
+const displayTitle = title.replace(/([a-z0-9])([A-Z])/g, '$1\u200B$2');
+---
+
+<div class="void-doc95">
+	<SiteHeader />
+
+	<div class="void-doc-layout95">
+		<DocsSidebar active={active} client:load />
+
+		<main class="void-doc-client95">
+			<header class="void-doc-intro95" data-title-size={titleSize}>
+				<h1 aria-label={title}>{displayTitle}</h1>
+				{description && <p>{description}</p>}
+			</header>
+
+			<div class="void-doc-content95">
+				<slot />
+			</div>
+		</main>
+	</div>
+</div>

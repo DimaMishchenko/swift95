@@ -1,0 +1,119 @@
+---
+title: Get started with Swift95
+description: Install Swift95 and render the first Windows 95-inspired SwiftUI control.
+template: splash
+prev: false
+next: false
+---
+
+import VoidDocsShell from '../../components/VoidDocsShell.astro';
+
+<VoidDocsShell
+	active="start"
+	title="Get started"
+	description="Install Swift95 and render your first control."
+>
+## Requirements
+
+- Swift 6
+- iOS and iPadOS 18 or later
+- macOS 15 or later
+
+## Add the package
+
+In Xcode, choose **File → Add Package Dependencies** and enter:
+
+```text
+https://github.com/dimamishchenko/swift95
+```
+
+Add the [`Swift95`](/api/documentation/swift95/) library to your target. Add
+[`Swift95Icons`](/api/documentation/swift95icons/) as well if your interface
+uses the bundled icon set.
+
+If you manage dependencies in `Package.swift`, add Swift95 to the package and
+reference its products from your target:
+
+```swift
+// swift-tools-version: 6.0
+
+import PackageDescription
+
+let package = Package(
+  name: "YourPackage",
+  platforms: [
+    .iOS(.v18),
+    .macOS(.v15)
+  ],
+  dependencies: [
+    .package(
+      url: "https://github.com/dimamishchenko/swift95",
+      branch: "main"
+    )
+  ],
+  targets: [
+    .target(
+      name: "YourTarget",
+      dependencies: [
+        .product(name: "Swift95", package: "swift95"),
+        .product(name: "Swift95Icons", package: "swift95")
+      ]
+    )
+  ]
+)
+```
+
+Omit the `Swift95Icons` product when your target does not use the bundled icons.
+
+## Render a control
+
+Import Swift95 beside SwiftUI, then use its components as ordinary SwiftUI views.
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct SaveButton: View {
+  var body: some View {
+    Button95("Save") {
+      saveDocument()
+    }
+  }
+
+  private func saveDocument() {}
+}
+```
+
+## Customize the theme
+
+Components use [`Theme95.classic`](/components/theme/) by default. Install a
+customized theme only when you need to change the shared colors, metrics, or
+fonts.
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct ThemedButton95Example: View {
+  var body: some View {
+    Button95("Continue") {}
+      .theme95(customTheme)
+  }
+
+  private var customTheme: Theme95 {
+    var colors = Colors95.classic
+    colors.accent = .purple
+
+    return Theme95(
+      colors: colors,
+      metrics: .classic,
+      fonts: .classic
+    )
+  }
+}
+```
+
+## Next steps
+
+Browse the [component directory](/components/) or read the full [Button95 documentation](/components/button/).
+</VoidDocsShell>

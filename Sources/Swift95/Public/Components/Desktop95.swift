@@ -3,7 +3,7 @@ import SwiftUI
 /// A desktop surface that arranges launch shortcuts from the top-leading corner.
 ///
 /// Shortcuts can be selected and moved without overlapping. Connect ``DesktopState95`` with
-/// ``View/desktopState95(_:)`` when their positions should survive view recreation.
+/// `View.desktopState95(_:)` when their positions should survive view recreation.
 ///
 /// ```swift
 /// Desktop95 {

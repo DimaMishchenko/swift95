@@ -1,0 +1,63 @@
+---
+title: Button95
+description: A native SwiftUI button with raised, pressed, and disabled Swift95 styling.
+template: splash
+prev: false
+next: false
+---
+
+import VoidDocsShell from '../../../components/VoidDocsShell.astro';
+import ReferenceSnapshot from '../../../components/ReferenceSnapshot';
+
+<VoidDocsShell
+  active="button"
+  title="Button95"
+  description="A native SwiftUI button with raised, pressed, and disabled Swift95 styling."
+>
+
+`Button95` keeps SwiftUI button behavior while applying the active
+[`Theme95`](/components/theme/).
+
+<ReferenceSnapshot
+  src="/images/button95-overview-macos.png"
+  width={360}
+  height={90}
+  alt="Default and disabled Button95 controls rendered on macOS"
+  caption="The default and disabled buttons rendered by the snippet below."
+/>
+
+## Use it
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct Button95Example: View {
+  var body: some View {
+    HStack {
+      Button95("Default") {}
+      Button95("Disabled") {}
+        .disabled(true)
+    }
+  }
+}
+```
+
+## Essential behavior
+
+| Concern | Behavior |
+| --- | --- |
+| State | Draws raised, pressed, and disabled appearances from the active theme. |
+| Semantics | Preserves the native action, role, enabled state, focus, and accessibility label. |
+| Custom labels | Use the view-builder initializer for icons or composed labels. |
+| Native APIs | Use `swiftUI(_:)` to add keyboard shortcuts and other SwiftUI button modifiers. |
+
+## Related
+
+- [`Checkbox95`](/components/checkbox/)
+- [`Alert95`](/components/alert/)
+- [`Theme95`](/components/theme/)
+
+[Open the complete Button95 API reference →](/api/documentation/swift95/button95)
+
+</VoidDocsShell>

@@ -1,0 +1,629 @@
+---
+import SiteHeader from './SiteHeader.astro';
+
+const components = [
+	'Button95',
+	'Workspace95',
+	'Theme95',
+	'Icon95',
+	'Alert95',
+	'TaskBar95',
+	'Menu95',
+	'Picker95',
+	'Checkbox95',
+	'Slider95',
+	'TextField95',
+	'ProgressView95',
+];
+---
+
+<div class="void-home95">
+	<SiteHeader />
+
+	<section class="void-hero95" id="start" aria-labelledby="void-title95">
+		<div class="void-copy95">
+			<h1 id="void-title95">Build interfaces from another timeline.</h1>
+			<p class="void-lede95">Windows 95 components for SwiftUI</p>
+			<a class="void-launch95" href="/start/">Get started</a>
+		</div>
+
+		<figure class="void-stage95">
+			<canvas
+				class="void-canvas95"
+				aria-hidden="true"
+				data-ascii-void
+			></canvas>
+			<figcaption class="visually-hidden95">
+				An animated ASCII void. Moving a pointer across it reveals Swift95 component and
+				type names.
+			</figcaption>
+		</figure>
+
+		<ul class="visually-hidden95" aria-label="Components hidden in the ASCII void">
+			{components.map((name) => <li>{name}</li>)}
+		</ul>
+	</section>
+</div>
+
+<script>
+	const componentNames = [
+		'Button95',
+		'Workspace95',
+		'Theme95',
+		'Icon95',
+		'Alert95',
+		'TaskBar95',
+		'Menu95',
+		'Picker95',
+		'Checkbox95',
+		'Slider95',
+		'TextField95',
+		'ProgressView95',
+	];
+
+	const glyphs = '····....++**{}[]<>/@:';
+	const cyan = '#008080';
+	const yellow = '#ffff00';
+	const trailRose = '#c6c6c6';
+	const trailViolet = '#440381';
+
+	type VoidPoint = {
+		angle: number;
+		character: string;
+		depth: number;
+		offset: number;
+		ring: number;
+		speed: number;
+		warp: number;
+		x: number;
+		y: number;
+	};
+
+	type SymbolPoint = {
+		angle: number;
+		depth: number;
+		fontSize: number;
+		name: string;
+		ring: number;
+		speed: number;
+		textWidth: number;
+		x: number;
+		y: number;
+	};
+
+	type TrailPoint = {
+		age: number;
+		character: string;
+		driftX: number;
+		driftY: number;
+		size: number;
+		x: number;
+		y: number;
+	};
+
+	const clamp = (value: number, minimum: number, maximum: number) =>
+		Math.min(maximum, Math.max(minimum, value));
+
+	const seededRandom = (seed: number) => {
+		const value = Math.sin(seed * 127.1) * 43758.5453;
+		return value - Math.floor(value);
+	};
+
+	document.querySelectorAll<HTMLCanvasElement>('[data-ascii-void]').forEach((canvas) => {
+		const context = canvas.getContext('2d');
+		const stage = canvas.closest<HTMLElement>('.void-stage95');
+
+		if (!context || !stage) return;
+
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const pointer = {
+			active: false,
+			angle: -Math.PI / 4,
+			strength: 0,
+			targetAngle: -Math.PI / 4,
+			x: 0,
+			y: 0,
+		};
+		const rocketCursor = new Image();
+		rocketCursor.decoding = 'async';
+		rocketCursor.src = '/cursors/void-rocket.png';
+		const points: VoidPoint[] = [];
+		const symbols: SymbolPoint[] = [];
+		const trail: TrailPoint[] = [];
+		let animationFrame = 0;
+		let visible = true;
+		let width = 0;
+		let height = 0;
+		let pixelRatio = 1;
+		let lastTime = performance.now();
+		let centerGradient: CanvasGradient | null = null;
+		let stageLeft = 0;
+		let stageTop = 0;
+		let trailSeed = 0;
+		let lastTrailX = Number.NaN;
+		let lastTrailY = Number.NaN;
+		let sampleStarted = lastTime;
+		let sampledFrames = 0;
+
+		const ringCount = 30;
+		const streamCount = 38;
+		const pointsPerStream = 52;
+		const spiralTurns = 2.65;
+
+		for (let stream = 0; stream < streamCount; stream += 1) {
+			const streamAngle =
+				(stream / streamCount) * Math.PI * 2 +
+				(seededRandom(stream + 121) - 0.5) * 0.16;
+			const streamWarp = seededRandom(stream + 151) * Math.PI * 2;
+			const streamCurvature =
+				spiralTurns * (0.82 + seededRandom(stream + 181) * 0.36);
+			const streamSpeed =
+				0.014 + seededRandom(stream + 201) * 0.007;
+			const streamBias =
+				(seededRandom(stream + 221) - 0.5) * 0.22;
+			for (let step = 0; step < pointsPerStream; step += 1) {
+				const index = stream * pointsPerStream + step;
+				const baseDepth = (step + 1) / pointsPerStream;
+				const gap =
+					seededRandom(index + 241) <
+					0.018 +
+						(Math.sin(step * 0.58 + streamWarp) > 0.88 ? 0.055 : 0);
+				if (gap) continue;
+
+				const depth = clamp(
+					baseDepth + (seededRandom(index + 261) - 0.5) * 0.018,
+					0.015,
+					1,
+				);
+				const ring = Math.round(depth * (ringCount - 1));
+				const scatter = seededRandom(index + 281);
+				const radialOffset =
+					(seededRandom(index + 101) - 0.5) *
+					(3 + depth * 9) *
+					(scatter > 0.93 ? 4.2 : 1);
+				points.push({
+					angle:
+						streamAngle +
+						depth * streamCurvature +
+						streamBias * depth * depth +
+						(seededRandom(index + 11) - 0.5) * 0.085,
+					character: glyphs[Math.floor(seededRandom(index + 41) * glyphs.length)],
+					depth,
+					offset: radialOffset,
+					ring,
+					speed: streamSpeed + depth * 0.006,
+					warp: streamWarp,
+					x: 0,
+					y: 0,
+				});
+			}
+		}
+		points.sort((left, right) => left.depth - right.depth);
+
+		const symbolRings = [24, 18, 27, 21];
+		const symbolLayout = componentNames.map((name, index) => {
+			const ring = symbolRings[index % symbolRings.length];
+			const depth = (ring + 1) / ringCount;
+			return {
+				angle:
+					(index / componentNames.length) * Math.PI * 2 +
+					depth * spiralTurns,
+				name,
+				ring,
+			};
+		});
+
+		symbolLayout.forEach(({ angle, name, ring }) => {
+			const depth = (ring + 1) / ringCount;
+			const fontSize = 10 + depth * 5;
+			context.font = `600 ${fontSize}px "SFMono-Regular", Consolas, monospace`;
+			symbols.push({
+				angle,
+				depth,
+				fontSize,
+				name,
+				ring,
+				speed: 0.018,
+				textWidth: context.measureText(name).width,
+				x: 0,
+				y: 0,
+			});
+		});
+
+		const resize = () => {
+			const bounds = stage.getBoundingClientRect();
+			stageLeft = bounds.left;
+			stageTop = bounds.top;
+			width = Math.max(1, bounds.width);
+			height = Math.max(1, bounds.height);
+			const pixelBudgetRatio = Math.sqrt(1_800_000 / (width * height));
+			pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5, pixelBudgetRatio);
+			canvas.width = Math.round(width * pixelRatio);
+			canvas.height = Math.round(height * pixelRatio);
+			canvas.style.width = `${width}px`;
+			canvas.style.height = `${height}px`;
+			context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+			const centerX = width * 0.54;
+			const centerY = height * 0.48;
+			const centerRadius = Math.min(width, height) * 0.095;
+			centerGradient = context.createRadialGradient(
+				centerX,
+				centerY,
+				centerRadius * 0.15,
+				centerX,
+				centerY,
+				centerRadius * 1.35,
+			);
+			centerGradient.addColorStop(0, '#000000');
+			centerGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.98)');
+			centerGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+			if (reducedMotion.matches) draw(performance.now(), 0);
+		};
+
+		const project = (
+			target: { x: number; y: number },
+			angle: number,
+			depth: number,
+			warp: number,
+			time: number,
+			speed: number,
+			radialOffset = 0,
+		) => {
+			const minimum = Math.min(width, height);
+			const tunnelDepth = depth;
+			const rotation =
+				angle +
+				time * speed +
+				Math.sin(time * 0.035 + tunnelDepth * 5) * 0.04;
+			const baseRadius =
+				minimum * (0.082 + Math.pow(tunnelDepth, 1.24) * 0.48);
+			const turbulence =
+				1 +
+				Math.sin(rotation * 2 + warp + time * 0.04) *
+					(0.025 + tunnelDepth * 0.035) +
+				Math.cos(rotation * 5 - warp) * 0.018;
+			const directionalStretch =
+				1 +
+				Math.sin(rotation - 0.65) * 0.08 +
+				Math.cos(rotation * 2 + 0.8) * 0.035;
+			const radius =
+				baseRadius * turbulence * directionalStretch + radialOffset;
+			const centerX = width * 0.54;
+			const centerY = height * 0.48;
+			const funnelDrift =
+				Math.sin(warp + time * 0.025) * minimum * 0.012 * (1 - tunnelDepth);
+			const x =
+				centerX +
+				Math.cos(rotation) * radius * 1.17 +
+				funnelDrift;
+			const y =
+				centerY +
+				Math.sin(rotation) * radius * 0.7 +
+				Math.cos(rotation * 2 + warp) * minimum * 0.018 * depth +
+				funnelDrift * 0.45;
+			target.x = x;
+			target.y = y;
+		};
+
+		const updatePointer = (clientX: number, clientY: number) => {
+			const nextX = clientX - stageLeft;
+			const nextY = clientY - stageTop;
+			if (pointer.active) {
+				const deltaX = nextX - pointer.x;
+				const deltaY = nextY - pointer.y;
+				if (Math.hypot(deltaX, deltaY) > 1.5) {
+					pointer.targetAngle = Math.atan2(deltaY, deltaX);
+				}
+			}
+			pointer.x = nextX;
+			pointer.y = nextY;
+			pointer.active = true;
+
+			const distance = Math.hypot(pointer.x - lastTrailX, pointer.y - lastTrailY);
+			if (!Number.isFinite(distance) || distance > 5) {
+				trailSeed += 1;
+				const characterRoll = seededRandom(trailSeed + 503);
+				trail.unshift({
+					age: 0,
+					character: characterRoll > 0.86 ? '*' : characterRoll > 0.58 ? '+' : '·',
+					driftX: (seededRandom(trailSeed + 541) - 0.5) * 0.16,
+					driftY: (seededRandom(trailSeed + 587) - 0.5) * 0.22 - 0.025,
+					size: 5.5 + seededRandom(trailSeed + 617) * 4.5,
+					x: pointer.x,
+					y: pointer.y,
+				});
+				lastTrailX = pointer.x;
+				lastTrailY = pointer.y;
+			}
+			if (trail.length > 34) trail.length = 34;
+		};
+
+		stage.addEventListener('pointermove', (event) => {
+			updatePointer(event.clientX, event.clientY);
+		});
+
+		stage.addEventListener('pointerenter', (event) => {
+			const bounds = stage.getBoundingClientRect();
+			stageLeft = bounds.left;
+			stageTop = bounds.top;
+			updatePointer(event.clientX, event.clientY);
+		});
+
+		stage.addEventListener('pointerleave', () => {
+			pointer.active = false;
+			lastTrailX = Number.NaN;
+			lastTrailY = Number.NaN;
+		});
+
+		stage.addEventListener(
+			'touchmove',
+			(event) => {
+				const touch = event.touches[0];
+				if (touch) updatePointer(touch.clientX, touch.clientY);
+			},
+			{ passive: true },
+		);
+
+		const drawTrail = () => {
+			trail.forEach((item, index) => {
+				item.age += 1;
+				const progress = index / Math.max(1, trail.length - 1);
+				const alpha = Math.max(0, 0.88 - progress * 0.68 - item.age * 0.014);
+				if (alpha <= 0) return;
+				const x = item.x + item.driftX * item.age;
+				const y = item.y + item.driftY * item.age;
+
+				context.save();
+				context.translate(x, y);
+				context.rotate(item.driftX * item.age * 0.018);
+				context.font = `${item.size * (1 - progress * 0.28)}px "SFMono-Regular", Consolas, monospace`;
+				context.textAlign = 'center';
+				context.textBaseline = 'middle';
+				context.fillStyle = progress < 0.58 ? trailRose : trailViolet;
+				context.globalAlpha = alpha;
+				context.shadowColor = context.fillStyle;
+				context.shadowBlur = item.character === '*' ? 9 : 5;
+				context.fillText(item.character, 0, 0);
+				context.restore();
+			});
+			context.globalAlpha = 1;
+			while (trail.length && trail[trail.length - 1].age > 62) trail.pop();
+		};
+
+		const drawRocketCursor = (delta: number) => {
+			if (!pointer.active || !rocketCursor.complete) return;
+
+			const angleDelta = Math.atan2(
+				Math.sin(pointer.targetAngle - pointer.angle),
+				Math.cos(pointer.targetAngle - pointer.angle),
+			);
+			const turnStrength = reducedMotion.matches
+				? 1
+				: clamp(delta * 0.018, 0, 0.42);
+			pointer.angle += angleDelta * turnStrength;
+
+			context.save();
+			context.translate(pointer.x, pointer.y);
+			context.rotate(pointer.angle + Math.PI / 4);
+			context.imageSmoothingEnabled = false;
+			context.drawImage(rocketCursor, -16, -16, 32, 32);
+			context.restore();
+		};
+
+		const draw = (now: number, delta: number) => {
+			context.clearRect(0, 0, width, height);
+			const seconds = reducedMotion.matches ? 0 : now / 1000;
+			const revealRadius = Math.min(width, height) * 0.145;
+			const revealRadiusSquared = revealRadius * revealRadius;
+			pointer.strength += ((pointer.active ? 1 : 0) - pointer.strength) * clamp(delta * 0.009, 0, 1);
+
+			let currentFontSize = -1;
+			let currentFillStyle = '';
+			for (let index = 0; index < points.length; index += 1) {
+				const point = points[index];
+				project(
+					point,
+					point.angle,
+					point.depth,
+					point.warp,
+					seconds,
+					point.speed,
+					point.offset,
+				);
+				let disturbance = 0;
+				if (pointer.strength > 0.002) {
+					const dx = point.x - pointer.x;
+					const dy = point.y - pointer.y;
+					const distanceSquared = dx * dx + dy * dy;
+					if (distanceSquared < revealRadiusSquared) {
+						const distance = Math.max(1, Math.sqrt(distanceSquared));
+						disturbance =
+							pointer.strength * (1 - distance / revealRadius);
+						point.x += (dx / distance) * disturbance * 11;
+						point.y += (dy / distance) * disturbance * 11;
+					}
+				}
+
+				const size =
+					Math.round((4.5 + point.depth * 6.5 + disturbance * 2.2) * 2) / 2;
+				const baseAlpha = 0.1 + point.depth * 0.62;
+				if (size !== currentFontSize) {
+					context.font = `${size}px "SFMono-Regular", Consolas, monospace`;
+					currentFontSize = size;
+				}
+				const fillStyle =
+					disturbance > 0.08
+						? index % 4 === 0
+							? yellow
+							: cyan
+						: index % 109 === 0
+							? cyan
+							: index % 149 === 0
+								? yellow
+								: '#fefefe';
+				if (fillStyle !== currentFillStyle) {
+					context.fillStyle = fillStyle;
+					currentFillStyle = fillStyle;
+				}
+				context.globalAlpha = Math.min(0.98, baseAlpha + disturbance * 0.36);
+				if (disturbance > 0.08) {
+					context.shadowColor = fillStyle;
+					context.shadowBlur = disturbance * 8;
+				}
+				context.fillText(point.character, point.x, point.y);
+				if (disturbance > 0.08) context.shadowBlur = 0;
+			}
+
+			context.globalAlpha = 1;
+
+			const centerX = width * 0.54;
+			const centerY = height * 0.48;
+			const centerRadius = Math.min(width, height) * 0.095;
+			if (centerGradient) {
+				context.fillStyle = centerGradient;
+				context.beginPath();
+				context.arc(centerX, centerY, centerRadius * 1.35, 0, Math.PI * 2);
+				context.fill();
+			}
+
+			symbols.forEach((symbol, index) => {
+				project(
+					symbol,
+					symbol.angle,
+					symbol.depth,
+					index * 0.77,
+					seconds,
+					symbol.speed,
+				);
+				const distance = Math.hypot(symbol.x - pointer.x, symbol.y - pointer.y);
+				const starReveal =
+					pointer.strength *
+					clamp(1 - distance / (revealRadius * 1.18), 0, 1);
+				const reveal = clamp((starReveal - 0.16) / 0.84, 0, 1);
+				if (starReveal < 0.06) return;
+
+				const twinkle =
+					0.88 + Math.sin(seconds * 4.2 + index * 1.73) * 0.12;
+				const starSize = (6 + symbol.depth * 5) * twinkle;
+				const fontSize = symbol.fontSize;
+				context.font = `600 ${fontSize}px "SFMono-Regular", Consolas, monospace`;
+				const textWidth = symbol.textWidth;
+				const labelX = symbol.x + starSize + 5;
+				const haloRadius = fontSize * 1.25;
+				const haloWidth = textWidth + 34;
+				const haloCenterX = labelX + textWidth * 0.5;
+				const haloCenterY = symbol.y - fontSize * 0.28;
+
+				context.save();
+				context.translate(haloCenterX, haloCenterY);
+				context.scale(haloWidth / (haloRadius * 2), 1);
+				const labelHalo = context.createRadialGradient(
+					0,
+					0,
+					0,
+					0,
+					0,
+					haloRadius,
+				);
+				labelHalo.addColorStop(0, 'rgba(0, 0, 0, 0.96)');
+				labelHalo.addColorStop(0.42, 'rgba(0, 0, 0, 0.88)');
+				labelHalo.addColorStop(0.64, 'rgba(0, 0, 0, 0.62)');
+				labelHalo.addColorStop(0.8, 'rgba(0, 0, 0, 0.3)');
+				labelHalo.addColorStop(0.91, 'rgba(0, 0, 0, 0.1)');
+				labelHalo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+				context.globalAlpha = reveal;
+				context.fillStyle = labelHalo;
+				context.beginPath();
+				context.arc(0, 0, haloRadius, 0, Math.PI * 2);
+				context.fill();
+				context.restore();
+
+				context.globalAlpha = starReveal;
+				context.strokeStyle = yellow;
+				context.lineWidth = 1;
+				context.shadowColor = yellow;
+				context.shadowBlur = 10 * starReveal;
+				context.beginPath();
+				context.moveTo(symbol.x, symbol.y - starSize);
+				context.lineTo(symbol.x, symbol.y + starSize);
+				context.moveTo(symbol.x - starSize * 0.68, symbol.y);
+				context.lineTo(symbol.x + starSize * 0.68, symbol.y);
+				context.stroke();
+
+				context.fillStyle = '#ffff00';
+				context.fillRect(symbol.x - 1.5, symbol.y - 1.5, 3, 3);
+
+				if (reveal > 0.02) {
+					context.globalAlpha = reveal;
+					context.fillStyle = '#fefefe';
+					context.shadowColor = cyan;
+					context.shadowBlur = 8 * reveal;
+					context.fillText(
+						symbol.name,
+						labelX,
+						symbol.y + fontSize * 0.34,
+					);
+				}
+				context.shadowBlur = 0;
+			});
+
+			context.globalAlpha = 1;
+			if (!reducedMotion.matches) drawTrail();
+			drawRocketCursor(delta);
+		};
+
+		const animate = (now: number) => {
+			animationFrame = 0;
+			if (!visible) return;
+			const delta = Math.min(40, now - lastTime);
+			lastTime = now;
+			draw(now, delta);
+			if (import.meta.env.DEV) {
+				sampledFrames += 1;
+				const sampleDuration = now - sampleStarted;
+				if (sampleDuration >= 1000) {
+					canvas.dataset.renderFps = (
+						(sampledFrames * 1000) /
+						sampleDuration
+					).toFixed(1);
+					sampleStarted = now;
+					sampledFrames = 0;
+				}
+			}
+			animationFrame = window.requestAnimationFrame(animate);
+		};
+
+		const resizeObserver = new ResizeObserver(resize);
+		resizeObserver.observe(stage);
+
+		const intersectionObserver = new IntersectionObserver(([entry]) => {
+			const nextVisible = entry?.isIntersecting ?? true;
+			if (nextVisible === visible) return;
+			visible = nextVisible;
+			if (!visible && animationFrame) {
+				window.cancelAnimationFrame(animationFrame);
+				animationFrame = 0;
+			} else if (visible && !animationFrame) {
+				lastTime = performance.now();
+				sampleStarted = lastTime;
+				sampledFrames = 0;
+				animationFrame = window.requestAnimationFrame(animate);
+			}
+		});
+		intersectionObserver.observe(stage);
+
+		reducedMotion.addEventListener('change', resize);
+		resize();
+		animationFrame = window.requestAnimationFrame(animate);
+
+		document.addEventListener(
+			'astro:before-swap',
+			() => {
+				window.cancelAnimationFrame(animationFrame);
+				resizeObserver.disconnect();
+				intersectionObserver.disconnect();
+			},
+			{ once: true },
+		);
+	});
+</script>

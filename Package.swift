@@ -21,6 +21,10 @@ let package = Package(
   ],
   dependencies: [
     .package(
+      url: "https://github.com/swiftlang/swift-docc-plugin",
+      from: "1.1.0"
+    ),
+    .package(
       url: "https://github.com/pointfreeco/swift-snapshot-testing",
       .upToNextMajor(from: "1.19.2")
     )
@@ -37,6 +41,10 @@ let package = Package(
       resources: [
         .copy("Resources/Icons")
       ]
+    ),
+    .executableTarget(
+      name: "DocumentationImageGenerator",
+      dependencies: ["Swift95"]
     ),
     .testTarget(
       name: "Swift95Tests",

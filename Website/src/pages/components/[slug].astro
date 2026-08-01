@@ -1,0 +1,105 @@
+---
+import VoidDocsShell from '../../components/VoidDocsShell.astro';
+import CompleteGuide from '../../components/CompleteGuide.astro';
+import {
+	apiDocumentationSections,
+	generatedDocumentationPages,
+} from '../../data/docsNavigation';
+import {
+	apiPathForGuide,
+	completeGuides,
+} from '../../data/completeGuides.mjs';
+import '../../styles/swift95.css';
+import SeoExtras from '../../components/SeoExtras.astro';
+
+interface Guide {
+	apiPath?: string;
+	code: string;
+	description: string;
+	facts: Array<[string, string]>;
+	preview?: {
+		alt: string;
+		caption: string;
+		height: number;
+		src: string;
+		width: number;
+	};
+	related: string[];
+	summary: string;
+}
+
+interface Page {
+	apiPath?: string;
+	label: string;
+	slug: string;
+}
+
+export function getStaticPaths() {
+	return generatedDocumentationPages.map((page) => ({
+		params: { slug: page.slug },
+		props: { page },
+	}));
+}
+
+const { page } = Astro.props as { page: Page };
+const guide = (completeGuides as unknown as Record<string, Guide>)[page.slug];
+if (!guide) {
+	throw new Error(`Missing complete guide data for ${page.slug}`);
+}
+const navigationItems = apiDocumentationSections.flatMap(
+	(section) => section.items,
+);
+const related = guide.related.map((slug: string) => {
+	const item = navigationItems.find((candidate) => candidate.slug === slug);
+	if (!item) throw new Error(`Unknown related guide: ${slug}`);
+	return item;
+});
+const apiPath = page.apiPath ?? apiPathForGuide(page.slug, page.label, guide);
+const canonical = new URL(Astro.url.pathname, Astro.site ?? new URL('https://swift95.dimasike.com'));
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta
+			name="description"
+			content={guide.description}
+		/>
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="canonical" href={canonical.href} />
+		<title>{page.label} | Swift95</title>
+		<meta property="og:title" content={`${page.label} | Swift95`} />
+		<meta property="og:description" content={guide.description} />
+		<meta property="og:type" content="article" />
+		<meta property="og:url" content={canonical.href} />
+		<meta property="og:site_name" content="Swift95" />
+		<meta property="og:locale" content="en_US" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<SeoExtras title={page.label} description={guide.description} />
+	</head>
+	<body>
+		<VoidDocsShell
+			active={page.slug}
+			title={page.label}
+			description={guide.description}
+		>
+			<CompleteGuide
+				apiPath={apiPath}
+				code={guide.code}
+				facts={guide.facts}
+				label={page.label}
+				preview={guide.preview}
+				related={related}
+				summary={guide.summary}
+			/>
+		</VoidDocsShell>
+	</body>
+</html>
+
+<style is:global>
+	body {
+		margin: 0;
+	}
+</style>

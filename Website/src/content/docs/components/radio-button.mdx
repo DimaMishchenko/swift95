@@ -1,0 +1,70 @@
+---
+title: RadioButton95
+description: A mutually exclusive value selector with native button behavior.
+template: splash
+prev: false
+next: false
+---
+
+import VoidDocsShell from '../../../components/VoidDocsShell.astro';
+import ReferenceSnapshot from '../../../components/ReferenceSnapshot';
+
+<VoidDocsShell
+  active="radio-button"
+  title="RadioButton95"
+  description="A mutually exclusive value selector with native button behavior."
+>
+
+Radio buttons form a group by sharing the same selection binding.
+
+<ReferenceSnapshot
+  src="/images/radiobutton95-group-macos.png"
+  width={360}
+  height={146}
+  alt="Three RadioButton95 options with Automatic selected"
+  caption="A complete mutually exclusive group rendered by the snippet below."
+/>
+
+## Use it
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct RadioButton95Example: View {
+  private enum Mode: Hashable {
+    case automatic
+    case manual
+    case ask
+  }
+
+  @State private var selection = Mode.automatic
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      RadioButton95("Automatic", value: .automatic, selection: $selection)
+      RadioButton95("Manual", value: .manual, selection: $selection)
+      RadioButton95("Ask every time", value: .ask, selection: $selection)
+    }
+  }
+}
+```
+
+## Essential behavior
+
+| Concern | Behavior |
+| --- | --- |
+| Selection | Every option needs a hashable value and a shared `Binding<Value>`. |
+| Grouping | Siblings form a group by sharing one selection binding; no extra container is required. |
+| Accessibility | The active option exposes the selected trait. |
+| Native APIs | Use `swiftUI(_:)` to modify the embedded `Button`. |
+
+## Related
+
+- [`Checkbox95`](/components/checkbox/)
+- [`Picker95`](/components/picker/)
+- [`Theme95`](/components/theme/)
+
+[Open the complete RadioButton95 API reference →](/api/documentation/swift95/radiobutton95)
+
+</VoidDocsShell>

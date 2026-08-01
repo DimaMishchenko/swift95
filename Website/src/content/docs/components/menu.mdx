@@ -1,0 +1,79 @@
+---
+title: Menu95
+description: Classic pull-down menus for Swift95 workspace windows.
+template: splash
+prev: false
+next: false
+---
+
+import VoidDocsShell from '../../../components/VoidDocsShell.astro';
+import ReferenceSnapshot from '../../../components/ReferenceSnapshot';
+
+<VoidDocsShell
+  active="menu"
+  title="Menu95"
+  description="Classic pull-down menus for Swift95 workspace windows."
+>
+
+`Menu95` groups
+[`MenuItem95`](/api/documentation/swift95/menuitem95) commands and
+[`MenuDivider95`](/api/documentation/swift95/menudivider95) separators in a
+workspace window menu bar.
+
+<ReferenceSnapshot
+  src="/images/menu95-open-macos.png"
+  width={190}
+  height={220}
+  alt="An open File Menu95 with highlighted Save As and disabled Print commands"
+  caption="The File menu produced by the snippet below, captured open with Save As highlighted."
+/>
+
+## Use it
+
+```swift compile
+import Swift95
+import SwiftUI
+
+struct Menu95Example {
+  @MainActor
+  static func makeWindow() -> WorkspaceWindow95 {
+    WorkspaceWindow95(
+      "Notes",
+      icon: {
+        Color.blue.frame(width: 16, height: 16)
+      }
+    ) {
+      TextEditor95(text: .constant(""))
+    }
+    .menuBar95 {
+      Menu95("File") {
+        MenuItem95("New") {}
+        MenuItem95("Open…") {}
+        MenuDivider95()
+        MenuItem95("Save As…") {}
+        MenuDivider95()
+        MenuItem95("Print", isEnabled: false) {}
+      }
+    }
+  }
+}
+```
+
+## Essential behavior
+
+| Concern | Behavior |
+| --- | --- |
+| Placement | Add menus to [`WorkspaceWindow95`](/components/workspace-window/) with [`menuBar95`](/api/documentation/swift95/workspacewindow95/menubar95(content:)). |
+| Content | Builders support items, dividers, conditions, and loops. |
+| States | Items render enabled, highlighted, pressed, and disabled states. |
+| Input | Supports pointer hover as well as touch press-and-drag selection. |
+
+## Related
+
+- [`WorkspaceWindow95`](/components/workspace-window/)
+- [`StartMenu95`](/components/start-menu/)
+- [`Divider95`](/components/divider/)
+
+[Open the complete Menu95 API reference →](/api/documentation/swift95/menu95)
+
+</VoidDocsShell>

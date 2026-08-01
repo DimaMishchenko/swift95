@@ -989,7 +989,7 @@ extension Icon95 {
     /// The normalized Swift case identifier used to reference the icon.
     ///
     /// This value is suitable for catalogs, search, and source-code snippets.
-    /// Use ``rawValue`` only when the original resource name is required.
+    /// Use `rawValue` only when the original resource name is required.
     ///
     /// ```swift
     /// Icon95.Name.addressBook.identifier // "addressBook"
