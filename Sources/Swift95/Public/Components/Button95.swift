@@ -29,6 +29,7 @@ public struct Button95<Label: View, Control: View>: View {
 
   private let control: Control
   private let contentInsets: EdgeInsets?
+  private let action: () -> Void
 
   /// Creates a button with a custom SwiftUI label.
   ///
@@ -43,6 +44,7 @@ public struct Button95<Label: View, Control: View>: View {
   ) where Control == Button<Label> {
     control = Button(role: role, action: action, label: label)
     contentInsets = nil
+    self.action = action
   }
 
   init(
@@ -52,11 +54,13 @@ public struct Button95<Label: View, Control: View>: View {
   ) where Control == Button<Label> {
     control = Button(action: action, label: label)
     self.contentInsets = contentInsets
+    self.action = action
   }
 
-  private init(control: Control, contentInsets: EdgeInsets?) {
+  private init(control: Control, contentInsets: EdgeInsets?, action: @escaping () -> Void) {
     self.control = control
     self.contentInsets = contentInsets
+    self.action = action
   }
 
   /// The styled button control.
@@ -68,6 +72,7 @@ public struct Button95<Label: View, Control: View>: View {
       )
     )
     .minimumInteractionTarget95()
+    .accessibilityAction(named: Text("Activate"), action)
   }
 
   /// Applies a transformation to the embedded SwiftUI button.
@@ -82,7 +87,8 @@ public struct Button95<Label: View, Control: View>: View {
   ) -> Button95<Label, ModifiedControl> {
     Button95<Label, ModifiedControl>(
       control: transform(control),
-      contentInsets: contentInsets
+      contentInsets: contentInsets,
+      action: action
     )
   }
 }
@@ -101,6 +107,7 @@ extension Button95 where Label == Text, Control == Button<Text> {
   ) {
     control = Button(titleKey, role: role, action: action)
     contentInsets = nil
+    self.action = action
   }
 
   /// Creates a button with an unlocalized text label.
@@ -118,6 +125,7 @@ extension Button95 where Label == Text, Control == Button<Text> {
       Text(verbatim: String(title))
     }
     contentInsets = nil
+    self.action = action
   }
 }
 

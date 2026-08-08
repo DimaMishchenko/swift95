@@ -184,6 +184,8 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
             width: theme.metrics.taskbarStartIconSize,
             height: theme.metrics.taskbarStartIconSize
           )
+          .accessibilityElement(children: .ignore)
+          .accessibilityHidden(true)
         startTitle
           .font(theme.fonts.body.weight(.bold))
       }
@@ -209,6 +211,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       HStack(spacing: theme.spacing.xxs) {
         task.icon
           .frame(width: theme.metrics.taskbarIconSize, height: theme.metrics.taskbarIconSize)
+          .accessibilityElement(children: .ignore)
           .accessibilityHidden(true)
         task.title
           .font(theme.fonts.body.weight(task.isActive ? .bold : .regular))
