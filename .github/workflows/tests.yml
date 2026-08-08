@@ -15,20 +15,24 @@ concurrency:
 jobs:
   check:
     runs-on: macos-15
-    env:
-      DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data
-      TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
-      TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
-      TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
     steps:
       - uses: actions/checkout@v4
 
       - uses: jdx/mise-action@v4
+        env:
+          TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
+          TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
+          TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
 
       - name: Verify toolchain
         run: tuist version
 
       - name: Run project checks
+        env:
+          DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data
+          TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
+          TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
+          TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
         run: make check
 
       - name: Upload test results
