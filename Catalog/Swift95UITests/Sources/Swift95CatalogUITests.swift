@@ -166,7 +166,12 @@ final class Swift95CatalogUITests: XCTestCase {
       let output = element("menu.output", in: app)
       XCTAssertTrue(output.waitForExistence(timeout: 3))
       if (output.value as? String) != "Menu activation: Activate" {
-        firstItem.click()
+        // The failed drag dismisses the menu on macOS 26, so resolve a fresh
+        // item after reopening it instead of clicking the stale element.
+        fileMenu.click()
+        let retryItem = element("menu.activate", in: app)
+        XCTAssertTrue(retryItem.waitForExistence(timeout: 3))
+        retryItem.click()
       }
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
