@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "swift-95",
+  name: "swift95",
   defaultLocalization: "en",
   platforms: [
     .iOS(.v18),
