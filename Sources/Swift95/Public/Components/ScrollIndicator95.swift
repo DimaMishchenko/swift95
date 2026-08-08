@@ -133,7 +133,7 @@ public struct ScrollIndicator95: View {
     .frame(height: thumb.height)
     .contentShape(.rect)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(strings.scrollPosition)
+    .accessibilityLabel(Text(strings.scrollPosition))
     .accessibilityValue(
       Text(verbatim: valueFormatters.percentage(Double(metrics.progress), locale))
     )
@@ -248,7 +248,7 @@ private struct ScrollArrowButton95: View {
       .contentShape(.rect)
     }
     .frame(height: theme.metrics.scrollBarWidth - theme.metrics.bevelWidth * 2)
-    .accessibilityLabel(direction == .up ? strings.scrollUp : strings.scrollDown)
+    .accessibilityLabel(Text(direction == .up ? strings.scrollUp : strings.scrollDown))
   }
 }
 

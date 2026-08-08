@@ -107,7 +107,7 @@ struct MenuBar95: View {
       .accessibilityElement(children: .combine)
       .accessibilityAddTraits(.isButton)
       .accessibilityAddTraits(isPresented ? .isSelected : [])
-      .accessibilityValue(isPresented ? strings.expanded : strings.collapsed)
+      .accessibilityValue(Text(isPresented ? strings.expanded : strings.collapsed))
       .accessibilityAction {
         if isPresented {
           dismiss()

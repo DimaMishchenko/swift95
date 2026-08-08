@@ -71,7 +71,7 @@ struct WorkspaceWindowHost: View {
               WindowResizeHandle()
                 .gesture(windowResizeGesture)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(strings.resizeWindow)
+                .accessibilityLabel(Text(strings.resizeWindow))
                 .accessibilityAdjustableAction(resizeAccessibilityAction)
                 .minimumInteractionTarget95()
             )

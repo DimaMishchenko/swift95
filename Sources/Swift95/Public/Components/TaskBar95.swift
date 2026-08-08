@@ -198,7 +198,7 @@ public struct TaskBar95<StartIcon: View, Menu: View, Tray: View>: View {
       )
     )
     .accessibilityAddTraits(isMenuPresented ? .isSelected : [])
-    .accessibilityValue(isMenuPresented ? strings.expanded : strings.collapsed)
+    .accessibilityValue(Text(isMenuPresented ? strings.expanded : strings.collapsed))
   }
 
   private func taskButton(for task: WorkspaceTaskContext) -> some View {
@@ -258,7 +258,7 @@ private struct TaskAccessibilityValue95: ViewModifier {
   @ViewBuilder
   func body(content: Content) -> some View {
     if let value {
-      content.accessibilityValue(value)
+      content.accessibilityValue(Text(value))
     } else {
       content
     }
