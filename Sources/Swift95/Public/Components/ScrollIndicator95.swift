@@ -67,18 +67,21 @@ public struct ScrollIndicator95: View {
 
       GeometryReader { geometry in
         ScrollTrack95(colors: theme.colors)
-          .overlay(alignment: .top) {
-            if metrics.isScrollable {
-              scrollThumb(trackHeight: geometry.size.height)
-            }
-          }
           .gesture(
             SpatialTapGesture()
               .onEnded { value in
                 pageScroll(at: value.location.y, trackHeight: geometry.size.height)
               }
           )
-          .minimumInteractionTarget95()
+          // The track remains available for direct touch and pointer paging, but
+          // it is not a separate assistive-technology control. The arrows and
+          // adjustable thumb expose the accessible scrolling actions.
+          .accessibilityHidden(true)
+          .overlay(alignment: .top) {
+            if metrics.isScrollable {
+              scrollThumb(trackHeight: geometry.size.height)
+            }
+          }
       }
 
       ScrollArrowButton95(direction: .down, theme: theme) {
