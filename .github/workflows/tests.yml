@@ -90,3 +90,46 @@ jobs:
             ${{ runner.temp }}/swift95-derived-data/Logs/Test
             ${{ runner.temp }}/tuist-state/logs
           if-no-files-found: ignore
+
+  catalog-build:
+    name: Catalog builds
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v4
+
+      - name: Select available simulator destinations
+        shell: bash
+        run: |
+          set -euo pipefail
+          iphone_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPhone")))][0].udid')"
+          ipad_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPad")))][0].udid')"
+          if [[ -z "$iphone_udid" || "$iphone_udid" == "null" ]]; then
+            echo "No available iPhone simulator found" >&2
+            exit 1
+          fi
+          if [[ -z "$ipad_udid" || "$ipad_udid" == "null" ]]; then
+            echo "No available iPad simulator found" >&2
+            exit 1
+          fi
+          echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
+          echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
+
+      - name: Build Catalog for iPhone, iPad, and macOS
+        env:
+          DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data
+          TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
+          TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
+          TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
+        run: make build-catalog
+
+      - name: Upload build results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: swift95-build-results
+          path: |
+            ${{ runner.temp }}/swift95-derived-data/Logs
+            ${{ runner.temp }}/tuist-state/logs
+          if-no-files-found: ignore
