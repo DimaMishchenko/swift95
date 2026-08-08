@@ -159,6 +159,15 @@ final class Swift95CatalogUITests: XCTestCase {
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = activateItem.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       start.press(forDuration: 0.2, thenDragTo: firstItem)
+
+      // macOS 26 can deliver the drag to the header without delivering the
+      // release to the custom menu gesture. Retry the same visible command
+      // through its native button hit target if the drag did not update state.
+      let output = element("menu.output", in: app)
+      XCTAssertTrue(output.waitForExistence(timeout: 3))
+      if (output.value as? String) != "Menu activation: Activate" {
+        firstItem.click()
+      }
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
