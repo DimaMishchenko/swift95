@@ -78,6 +78,7 @@ public struct ScrollIndicator95: View {
                 pageScroll(at: value.location.y, trackHeight: geometry.size.height)
               }
           )
+          .minimumInteractionTarget95()
       }
 
       ScrollArrowButton95(direction: .down, theme: theme) {
@@ -249,6 +250,7 @@ private struct ScrollArrowButton95: View {
     }
     .frame(height: theme.metrics.scrollBarWidth - theme.metrics.bevelWidth * 2)
     .accessibilityLabel(Text(direction == .up ? strings.scrollUp : strings.scrollDown))
+    .minimumInteractionTarget95()
   }
 }
 
