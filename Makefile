@@ -27,6 +27,7 @@ XCBEAUTIFY ?= $(shell command -v xcbeautify 2>/dev/null)
 ONLY_TESTING ?=
 TEST_SELECTION := $(if $(ONLY_TESTING),-only-testing:$(ONLY_TESTING))
 SWIFT_TEST_ARGS ?=
+XCODEBUILD_TEST_FLAGS ?=
 XCODEBUILD_FLAGS ?=
 
 ifeq ($(CI),true)
@@ -82,10 +83,10 @@ test-macos: generate
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) $(if $(ONLY_TESTING),$(TEST_SELECTION),-only-testing:Swift95UITests) test $(XCODEBUILD_OUTPUT)
 
 test-ios: generate
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) test $(XCODEBUILD_OUTPUT)
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test $(XCODEBUILD_OUTPUT)
 
 test-ipad: generate
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IPAD_DESTINATION)' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) test $(XCODEBUILD_OUTPUT)
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IPAD_DESTINATION)' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test $(XCODEBUILD_OUTPUT)
 
 build-catalog: build-catalog-ios build-catalog-macos
 

@@ -394,12 +394,15 @@ private struct AlertButtonStyle95: PrimitiveButtonStyle {
   let dismiss: () -> Void
 
   func makeBody(configuration: Configuration) -> some View {
-    Button95(role: configuration.role) {
+    let activate = {
       configuration.trigger()
       dismiss()
-    } label: {
+    }
+
+    return Button95(role: configuration.role, action: activate) {
       configuration.label
     }
+    .accessibilityAction(named: Text("Activate"), activate)
   }
 }
 

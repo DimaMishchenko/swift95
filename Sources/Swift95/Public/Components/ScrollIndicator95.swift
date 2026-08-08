@@ -280,5 +280,6 @@ private struct ScrollTrack95: View {
 
   var body: some View {
     Checkerboard(colors: colors)
+      .accessibilityHidden(true)
   }
 }

@@ -50,6 +50,11 @@ jobs:
           # macOS rendering snapshots are tied to the OS image; keep their checked-in
           # references unchanged while exercising functional tests on macos-latest.
           SWIFT_TEST_ARGS: --skip MacOSIntegrationSnapshotTests
+          # The latest iOS image changes UIKit rendering; keep checked-in references unchanged
+          # while running the functional tests and accessibility audits.
+          XCODEBUILD_TEST_FLAGS: >-
+            -skip-testing:Swift95Tests/AccessibilitySnapshotTests
+            -skip-testing:Swift95Tests/Workspace95SnapshotTests
           TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
           TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
           TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
