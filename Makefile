@@ -26,6 +26,7 @@ IPAD_DESTINATION ?= platform=iOS Simulator,name=$(IPAD_SIMULATOR),OS=$(IPAD_OS)
 XCBEAUTIFY ?= $(shell command -v xcbeautify 2>/dev/null)
 ONLY_TESTING ?=
 TEST_SELECTION := $(if $(ONLY_TESTING),-only-testing:$(ONLY_TESTING))
+SWIFT_TEST_ARGS ?=
 XCODEBUILD_FLAGS ?=
 
 ifeq ($(XCBEAUTIFY),)
@@ -73,7 +74,7 @@ lint:
 test: test-macos test-ios test-ipad
 
 test-macos: generate
-	swift test
+	swift test $(SWIFT_TEST_ARGS)
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) $(if $(ONLY_TESTING),$(TEST_SELECTION),-only-testing:Swift95UITests) test $(XCODEBUILD_OUTPUT)
 
 test-ios: generate
