@@ -45,7 +45,7 @@ TEST_XCODEBUILD_FLAGS ?= $(XCODEBUILD_FLAGS) -parallel-testing-enabled NO
 .DEFAULT_GOAL := help
 .NOTPARALLEL:
 
-.PHONY: help generate format lint test test-macos test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos website-dev website-build website-check .website-examples .website-astro .website-docc check
+.PHONY: help generate format lint test test-package test-macos test-macos-ui test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos website-dev website-build website-check .website-examples .website-astro .website-docc check
 
 help:
 	@echo "Swift95 developer commands"
@@ -54,6 +54,8 @@ help:
 	@echo "  make lint                 Check Swift formatting"
 	@echo "  make test                 Run macOS, iPhone, and iPad tests"
 	@echo "  make test-macos           Run unit, snapshot, and UI tests on macOS"
+	@echo "  make test-package         Run Swift package tests"
+	@echo "  make test-macos-ui        Run Catalog UI tests on macOS"
 	@echo "  make test-ios             Run unit, snapshot, and UI tests on iPhone"
 	@echo "  make test-ipad            Run unit, snapshot, and UI tests on iPad"
 	@echo "  make build-catalog        Build the Catalog for iOS and macOS"
@@ -76,10 +78,14 @@ format:
 lint:
 	swift format lint -r Sources Tests Catalog
 
-test: test-macos test-ios test-ipad
+test: test-package test-macos-ui test-ios test-ipad
 
-test-macos: generate
+test-package:
 	swift test $(SWIFT_TEST_ARGS)
+
+test-macos: test-package test-macos-ui
+
+test-macos-ui: generate
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) $(if $(ONLY_TESTING),$(TEST_SELECTION),-only-testing:Swift95UITests) test $(XCODEBUILD_OUTPUT)
 
 test-ios: generate

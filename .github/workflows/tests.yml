@@ -13,43 +13,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  quality:
+    name: Quality and package tests
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: jdx/mise-action@v4
+      - name: Run formatting and package tests
         env:
-          TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
-          TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
-          TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
-
-      - name: Verify toolchain
-        run: tuist version
-
-      - name: Select available simulator destinations
-        shell: bash
-        run: |
-          set -euo pipefail
-          iphone_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPhone")))][0].udid')"
-          ipad_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPad")))][0].udid')"
-          if [[ -z "$iphone_udid" || "$iphone_udid" == "null" ]]; then
-            echo "No available iPhone simulator found" >&2
-            exit 1
-          fi
-          if [[ -z "$ipad_udid" || "$ipad_udid" == "null" ]]; then
-            echo "No available iPad simulator found" >&2
-            exit 1
-          fi
-          echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
-          echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
-
-      - name: Run project checks
-        env:
-          DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data
           # macOS rendering snapshots are tied to the OS image; keep their checked-in
           # references unchanged while exercising functional tests on macos-latest.
           SWIFT_TEST_ARGS: --skip MacOSIntegrationSnapshotTests
+        run: make lint test-package
+
+  platform-tests:
+    name: ${{ matrix.name }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS UI tests
+            make_target: test-macos-ui
+            artifact: macos
+            device_prefix: ""
+            destination_variable: ""
+          - name: iPhone tests
+            make_target: test-ios
+            artifact: iphone
+            device_prefix: iPhone
+            destination_variable: IOS_DESTINATION
+          - name: iPad tests
+            make_target: test-ipad
+            artifact: ipad
+            device_prefix: iPad
+            destination_variable: IPAD_DESTINATION
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v4
+
+      - name: Select available simulator destination
+        if: ${{ matrix.device_prefix != '' }}
+        shell: bash
+        env:
+          DEVICE_PREFIX: ${{ matrix.device_prefix }}
+          DESTINATION_VARIABLE: ${{ matrix.destination_variable }}
+        run: |
+          set -euo pipefail
+          udid="$(xcrun simctl list devices available --json | jq -r --arg prefix "$DEVICE_PREFIX" '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith($prefix)))][0].udid')"
+          if [[ -z "$udid" || "$udid" == "null" ]]; then
+            echo "No available $DEVICE_PREFIX simulator found" >&2
+            exit 1
+          fi
+          echo "$DESTINATION_VARIABLE=platform=iOS Simulator,id=$udid" >> "$GITHUB_ENV"
+
+      - name: Run ${{ matrix.name }}
+        env:
+          DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data
           # The latest iOS image changes UIKit rendering; keep checked-in references unchanged
           # while running the functional tests and accessibility audits.
           XCODEBUILD_TEST_FLAGS: >-
@@ -58,13 +79,13 @@ jobs:
           TUIST_XDG_CACHE_HOME: ${{ runner.temp }}/tuist-cache
           TUIST_XDG_CONFIG_HOME: ${{ runner.temp }}/tuist-config
           TUIST_XDG_STATE_HOME: ${{ runner.temp }}/tuist-state
-        run: make check
+        run: make ${{ matrix.make_target }}
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: swift95-test-results
+          name: swift95-test-results-${{ matrix.artifact }}
           path: |
             ${{ runner.temp }}/swift95-derived-data/Logs/Test
             ${{ runner.temp }}/tuist-state/logs

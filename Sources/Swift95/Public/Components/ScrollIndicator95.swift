@@ -253,7 +253,6 @@ private struct ScrollArrowButton95: View {
     }
     .frame(height: theme.metrics.scrollBarWidth - theme.metrics.bevelWidth * 2)
     .accessibilityLabel(Text(direction == .up ? strings.scrollUp : strings.scrollDown))
-    .minimumInteractionTarget95()
   }
 }
 

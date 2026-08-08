@@ -72,7 +72,9 @@ public struct Button95<Label: View, Control: View>: View {
       )
     )
     .minimumInteractionTarget95()
-    .accessibilityAction(named: Text("Activate"), action)
+    .accessibilityAction {
+      action()
+    }
   }
 
   /// Applies a transformation to the embedded SwiftUI button.

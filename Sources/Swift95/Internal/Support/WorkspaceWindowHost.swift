@@ -444,7 +444,6 @@ struct WorkspaceTitleBar: View {
             height: isCompact
               ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize
           )
-          .accessibilityElement(children: .ignore)
           .accessibilityHidden(true)
       }
 

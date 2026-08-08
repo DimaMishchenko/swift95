@@ -125,18 +125,6 @@ final class Swift95CatalogUITests: XCTestCase {
     let app = launch(destination: "testControls")
     XCTAssertTrue(element("test-lab.accessibility", in: app).waitForExistence(timeout: 5))
 
-    for (index, other) in app.descendants(matching: .other).allElementsBoundByAccessibilityElement
-      .enumerated()
-    {
-      let frame = other.frame
-      if frame.width < 44 || frame.height < 44 {
-        print(
-          "AX small Other[\(index)] label=\(other.label.debugDescription) "
-            + "identifier=\(other.identifier.debugDescription) frame=\(frame)"
-        )
-      }
-    }
-
     try app.performAccessibilityAudit(for: fixtureAuditTypes)
   }
 
@@ -191,9 +179,9 @@ final class Swift95CatalogUITests: XCTestCase {
       start.press(forDuration: 0.2, thenDragTo: firstItem)
 
       let output = element("menu.output", in: app)
-      let selected = expectation(
-        for: NSPredicate(format: "label == %@", "Menu activation: Activate"),
-        evaluatedWith: output
+      let selected = XCTNSPredicateExpectation(
+        predicate: NSPredicate(format: "label == %@", "Menu activation: Activate"),
+        object: output
       )
       if XCTWaiter.wait(for: [selected], timeout: 3) != .completed {
         // iOS 26 can dismiss the menu without delivering the drag release to
