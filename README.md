@@ -1,30 +1,54 @@
-# swift-95
+<p align="center">
+  <img src="Assets/README/swift95-readme-hero.png" alt="Swift95 window showing the project name and tagline" width="960">
+</p>
 
-An opinionated Windows 95-inspired component kit for SwiftUI on Apple platforms.
+# Swift95
 
-## Supported platforms
+Swift95 is a Windows 95-inspired component kit for SwiftUI. It brings classic controls,
+desktop-style workspaces, themes, and classic icons to native apps without giving up SwiftUI state,
+accessibility, or platform behavior.
 
-- iOS and iPadOS 18 or later
-- macOS 15 or later
+**[📖 Documentation](https://swift95.dimasike.com)** ·
+**[🧩 Components](https://swift95.dimasike.com/components/)** ·
+**[🔎 API reference](https://swift95.dimasike.com/api/documentation/)**
 
-Swift95 adapts interaction and layout behavior to each platform. The catalog is a native
-multiplatform app and the component set is built and visually tested on iPhone, iPad, and Mac.
+## Try it
 
-## Inspired by
+In Xcode, choose **File → Add Package Dependencies** and enter:
 
-- [React95](https://github.com/React95/React95), which brought the Windows 95 component language to React and provides an extensive open design kit.
-- [ClassicKit](https://github.com/Baddaboo/ClassicKit), one of the early efforts to reimplement this interface style for Apple platforms.
+```text
+https://github.com/dimamishchenko/swift95
+```
 
-## Catalog
+Add the `Swift95` product to your target, then use its components like ordinary SwiftUI views:
+
+```swift
+import Swift95
+import SwiftUI
+
+struct SaveButton: View {
+  var body: some View {
+    Button95("Save") {
+      saveDocument()
+    }
+  }
+
+  private func saveDocument() {}
+}
+```
+
+Add the optional `Swift95Icons` product when you want the bundled classic icon set.
+
+Swift95 requires Swift 6 and supports iOS and iPadOS 18 or later and macOS 15 or later.
+
+## Run the catalog
+
+Explore the components locally on Mac, iPhone, or iPad:
 
 ```sh
-tuist generate --path Catalog
+make generate
 open Catalog/Swift95Catalog.xcworkspace
 ```
 
-Run the `Swift95Catalog` scheme using a Mac, iPhone Simulator, or iPad Simulator destination to
-inspect the platform-specific behavior.
-
-## Disclaimer
-
-Windows and associated names and assets are the property of Microsoft Corporation. Swift95 is an independent project and is not affiliated with or endorsed by Microsoft. The bundled W95FA recreation is independently licensed under the SIL Open Font License 1.1; see [ASSET_LICENSES.md](ASSET_LICENSES.md).
+Run the `Swift95Catalog` scheme for your preferred destination—or
+**[🚀 start with the complete guide](https://swift95.dimasike.com/start/)**.

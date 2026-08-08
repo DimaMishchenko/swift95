@@ -7,13 +7,18 @@ import SwiftUI
 struct DocumentationImageGenerator {
   static func main() throws {
     let arguments = CommandLine.arguments
-    guard arguments.count == 2 else {
+    guard arguments.count == 3 else {
       throw GeneratorError.usage
     }
 
     let outputDirectory = URL(fileURLWithPath: arguments[1], isDirectory: true)
+    let readmeOutputDirectory = URL(fileURLWithPath: arguments[2], isDirectory: true)
     try FileManager.default.createDirectory(
       at: outputDirectory,
+      withIntermediateDirectories: true
+    )
+    try FileManager.default.createDirectory(
+      at: readmeOutputDirectory,
       withIntermediateDirectories: true
     )
 
@@ -161,11 +166,21 @@ struct DocumentationImageGenerator {
       .padding(18)
       .frame(width: 120, height: 90)
     }
+
+    try render(
+      "swift95-readme-hero.png",
+      size: CGSize(width: 960, height: 220),
+      padding: 0,
+      to: readmeOutputDirectory
+    ) {
+      ReadmeHero()
+    }
   }
 
   private static func render<Content: View>(
     _ name: String,
     size: CGSize,
+    padding: CGFloat = 20,
     to outputDirectory: URL,
     @ViewBuilder content: () -> Content
   ) throws {
@@ -175,7 +190,7 @@ struct DocumentationImageGenerator {
         maxHeight: .infinity,
         alignment: .topLeading
       )
-      .padding(20)
+      .padding(padding)
       .background(Theme95.classic.colors.background)
       .theme95(.classic)
       .environment(\.locale, Locale(identifier: "en_US_POSIX"))
@@ -232,6 +247,63 @@ struct DocumentationImageGenerator {
   }
 }
 
+private struct ReadmeHero: View {
+  @State private var workspace = WorkspaceState95(
+    openWindows: [ReadmeRoute.welcome],
+    activeWindow: ReadmeRoute.welcome,
+    windowFrames: [
+      ReadmeRoute.welcome: CGRect(x: 0, y: 0, width: 960, height: 220)
+    ]
+  )
+
+  var body: some View {
+    Workspace95(
+      for: ReadmeRoute.self,
+      state: $workspace,
+      presentation: .windowed
+    ) { _ in
+      WorkspaceWindow95(
+        "Swift95",
+        icon: { heroIcon }
+      ) {
+        VStack(alignment: .leading, spacing: 12) {
+          Text95("Swift95")
+            .swiftUI { text in
+              text.font(Theme95.classic.fonts.font(size: 64))
+            }
+
+          Text95("Build interfaces from another timeline.")
+            .swiftUI { text in
+              text.font(Theme95.classic.fonts.font(size: 26))
+            }
+        }
+        .padding(26)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+      }
+      .resizeControl95(.hidden)
+    } desktop: {
+      Color.clear
+    } taskBar: {
+      EmptyView()
+    }
+  }
+
+  private var heroIcon: some View {
+    ZStack {
+      Color.blue
+      Text("95")
+        .font(.system(size: 9, weight: .bold, design: .monospaced))
+        .foregroundStyle(.white)
+    }
+    .frame(width: 18, height: 18)
+    .bevel95(.raised)
+  }
+}
+
+private enum ReadmeRoute: Hashable {
+  case welcome
+}
+
 private enum RadioChoice: Hashable {
   case automatic
   case manual
@@ -265,7 +337,7 @@ private enum GeneratorError: Error, CustomStringConvertible {
     case let .render(name):
       "Could not render \(name)"
     case .usage:
-      "Usage: DocumentationImageGenerator <output-directory>"
+      "Usage: DocumentationImageGenerator <documentation-output-directory> <readme-output-directory>"
     }
   }
 }

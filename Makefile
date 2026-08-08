@@ -94,7 +94,7 @@ website-dev:
 
 .website-examples:
 	node $(WEBSITE_PATH)/scripts/crop-reference-images.mjs
-	swift run DocumentationImageGenerator "$(abspath $(WEBSITE_PATH))/public/images"
+	swift run DocumentationImageGenerator "$(abspath $(WEBSITE_PATH))/public/images" "$(abspath Assets/README)"
 	node $(WEBSITE_PATH)/scripts/extract-snippets.mjs
 	swift format lint -r "$(SNIPPET_PACKAGE_PATH)/Sources"
 	swift build --package-path "$(SNIPPET_PACKAGE_PATH)" --scratch-path "$(SNIPPET_BUILD_PATH)"
