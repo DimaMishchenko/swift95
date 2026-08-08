@@ -154,7 +154,11 @@ final class Swift95CatalogUITests: XCTestCase {
 
     #if os(macOS)
       fileMenu.click()
-      activate(element("menu.activate", in: app))
+      let activateItem = element("menu.activate", in: app)
+      XCTAssertTrue(activateItem.waitForExistence(timeout: 5))
+      let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      let firstItem = activateItem.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      start.press(forDuration: 0.2, thenDragTo: firstItem)
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
@@ -249,6 +253,11 @@ final class Swift95CatalogUITests: XCTestCase {
 
   private func activate(_ element: XCUIElement) {
     XCTAssertTrue(element.waitForExistence(timeout: 5), element.identifier)
+    let hittable = expectation(
+      for: NSPredicate(format: "hittable == true"),
+      evaluatedWith: element
+    )
+    wait(for: [hittable], timeout: 5)
     #if os(macOS)
       element.click()
     #else
@@ -258,17 +267,24 @@ final class Swift95CatalogUITests: XCTestCase {
 
   private func revealAlertFixture(in app: XCUIApplication) {
     let showAlert = element("interaction.alert.show", in: app)
-    guard !showAlert.waitForExistence(timeout: 1) else {
+    guard !showAlert.waitForExistence(timeout: 1) || !showAlert.isHittable else {
       return
     }
 
     let fixture = element("test-lab.interactions", in: app)
     #if os(macOS)
-      fixture.scroll(byDeltaX: 0, deltaY: -500)
+      for _ in 0..<3 where !showAlert.isHittable {
+        fixture.scroll(byDeltaX: 0, deltaY: -500)
+      }
     #else
       fixture.swipeUp()
     #endif
     XCTAssertTrue(showAlert.waitForExistence(timeout: 3))
+    let hittable = expectation(
+      for: NSPredicate(format: "hittable == true"),
+      evaluatedWith: showAlert
+    )
+    wait(for: [hittable], timeout: 5)
   }
 
   private func assertLabel(

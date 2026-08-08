@@ -15,7 +15,8 @@ SNIPPET_BUILD_PATH := .build/documentation-snippets-build
 CATALOG_WORKSPACE := $(CATALOG_PATH)/Swift95Catalog.xcworkspace
 CATALOG_SCHEME := Swift95Catalog
 IOS_TEST_SCHEME := Swift95
-DERIVED_DATA ?= DerivedData
+# Keep macOS UI-test runners outside protected user folders such as Documents.
+DERIVED_DATA ?= $(TMPDIR)swift95-derived-data
 IOS_SIMULATOR ?= iPhone 16 Pro
 IOS_OS ?= 18.5
 IOS_DESTINATION ?= platform=iOS Simulator,name=$(IOS_SIMULATOR),OS=$(IOS_OS)
