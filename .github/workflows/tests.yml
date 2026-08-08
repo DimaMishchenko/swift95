@@ -27,6 +27,23 @@ jobs:
       - name: Verify toolchain
         run: tuist version
 
+      - name: Select available simulator destinations
+        shell: bash
+        run: |
+          set -euo pipefail
+          iphone_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPhone")))][0].udid')"
+          ipad_udid="$(xcrun simctl list devices available --json | jq -r '[.devices[] | .[] | select(.isAvailable == true and (.name | startswith("iPad")))][0].udid')"
+          if [[ -z "$iphone_udid" || "$iphone_udid" == "null" ]]; then
+            echo "No available iPhone simulator found" >&2
+            exit 1
+          fi
+          if [[ -z "$ipad_udid" || "$ipad_udid" == "null" ]]; then
+            echo "No available iPad simulator found" >&2
+            exit 1
+          fi
+          echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
+          echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
+
       - name: Run project checks
         env:
           DERIVED_DATA: ${{ runner.temp }}/swift95-derived-data

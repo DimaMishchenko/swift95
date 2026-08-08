@@ -29,7 +29,11 @@ TEST_SELECTION := $(if $(ONLY_TESTING),-only-testing:$(ONLY_TESTING))
 SWIFT_TEST_ARGS ?=
 XCODEBUILD_FLAGS ?=
 
-ifeq ($(XCBEAUTIFY),)
+ifeq ($(CI),true)
+# Keep xcodebuild's exit status visible in CI; formatter pipelines can hide
+# unavailable-destination and test failures from the shell.
+XCODEBUILD_OUTPUT :=
+else ifeq ($(XCBEAUTIFY),)
 XCODEBUILD_OUTPUT :=
 else
 XCODEBUILD_OUTPUT := 2>&1 | $(XCBEAUTIFY)
