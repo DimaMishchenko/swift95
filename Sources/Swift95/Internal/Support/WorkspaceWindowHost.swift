@@ -438,13 +438,13 @@ struct WorkspaceTitleBar: View {
     HStack(spacing: theme.spacing.s) {
       if let icon {
         icon
+          .accessibilityHidden(true)
           .frame(
             width: isCompact
               ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize,
             height: isCompact
               ? theme.metrics.compactTitleBarIconSize : theme.metrics.titleBarIconSize
           )
-          .accessibilityHidden(true)
       }
 
       title
