@@ -50,7 +50,7 @@ make generate
 open Catalog/Swift95Catalog.xcworkspace
 ```
 
-Run the `Swift95Catalog` scheme for your preferred destination—or
+Run the `Swift95Catalog` scheme for your preferred destination, or
 **[🚀 start with the complete guide](https://swift95.dimasike.com/start/)**.
 
 ## Development
