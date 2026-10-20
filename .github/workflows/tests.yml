@@ -24,14 +24,13 @@ env:
 jobs:
   quality:
     name: Quality and package tests
-    runs-on: macos-15-intel
+    runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - run: make lint test-package
         env:
           SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
-          SWIFTUI_RENDER_BACKEND: CoreGraphics
       - name: Upload snapshot failures
         if: failure()
         uses: actions/upload-artifact@v7
@@ -43,10 +42,12 @@ jobs:
 
   platform-tests:
     name: ${{ matrix.name }}
-    runs-on: macos-15-intel
+    needs: [quality, documentation]
+    runs-on: macos-15
     timeout-minutes: 45
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - name: macOS UI tests
@@ -114,11 +115,10 @@ jobs:
 
   documentation:
     name: Website and API documentation
-    runs-on: macos-15-intel
+    runs-on: macos-15
     timeout-minutes: 30
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
-      SWIFTUI_RENDER_BACKEND: CoreGraphics
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

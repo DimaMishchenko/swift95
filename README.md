@@ -61,12 +61,11 @@ the complete documentation site. The Catalog uses the Tuist version in `.tool-ve
 website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
 CI validates pull requests and pushes to `main` using Xcode 16.4 and iOS 18.5 simulators on
-macOS 15 Intel runners. Platform tests also build and launch the Catalog. Snapshot references
-are checked without recording replacements. macOS integration snapshots render at a fixed 2× scale in
+macOS 15 Apple silicon runners. Package and website checks run first, followed by at most two
+Catalog platform test jobs at a time. Snapshot references are checked without recording
+replacements. macOS integration snapshots render at a fixed 2× scale in
 Display P3, independently of the host display. Use the pinned CI environment to compare
 macOS integration references; newer macOS renderers can produce different pixels.
-Offscreen package captures and documentation images use CoreGraphics on CI's Intel VMs,
-which do not provide a usable Metal device.
 
 The **CI** workflow publishes the website after every push to `main`, including merged pull
 requests, once all checks pass. To publish manually, run it from `main` with **publish_website**
