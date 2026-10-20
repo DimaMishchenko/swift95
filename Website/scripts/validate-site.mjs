@@ -149,11 +149,12 @@ if (!robots.includes(new URL('/sitemap-index.xml', site).href)) {
 }
 
 for (const file of [
+	'fonts/W95FA-OFL.txt',
 	'llms.txt',
 	'llms-small.txt',
 	'llms-full.txt',
 ]) {
-	if (!(await pathExists(path.join(outputRoot, file)))) throw new Error(`Missing agent resource: ${file}`);
+	if (!(await pathExists(path.join(outputRoot, file)))) throw new Error(`Missing public resource: ${file}`);
 }
 
 const socialMetadata = await sharp(path.join(outputRoot, 'social/swift95-social.png')).metadata();

@@ -30,11 +30,7 @@ SWIFT_TEST_ARGS ?=
 XCODEBUILD_TEST_FLAGS ?=
 XCODEBUILD_FLAGS ?=
 
-ifeq ($(CI),true)
-# Keep xcodebuild's exit status visible in CI; formatter pipelines can hide
-# unavailable-destination and test failures from the shell.
-XCODEBUILD_OUTPUT :=
-else ifeq ($(XCBEAUTIFY),)
+ifeq ($(XCBEAUTIFY),)
 XCODEBUILD_OUTPUT :=
 else
 XCODEBUILD_OUTPUT := 2>&1 | $(XCBEAUTIFY)
@@ -128,31 +124,32 @@ website-check:
 .website-docc:
 	rm -rf "$(DOCC_BUILD_PATH)" "$(DOCC_OUTPUT_PATH)"
 	mkdir -p "$(DOCC_BUILD_PATH)"
-	node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs prepare
+	set -e; \
+	trap 'node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs clean' EXIT; \
+	node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs prepare; \
 	swift package --allow-writing-to-directory "$(abspath $(DOCC_BUILD_PATH))" generate-documentation \
 		--target Swift95 \
 		--output-path "$(abspath $(DOCC_BUILD_PATH))/Swift95.doccarchive" \
 		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)" \
-		--no-transform-for-static-hosting
+		--no-transform-for-static-hosting; \
 	swift package --allow-writing-to-directory "$(abspath $(DOCC_BUILD_PATH))" generate-documentation \
 		--target Swift95Icons \
 		--output-path "$(abspath $(DOCC_BUILD_PATH))/Swift95Icons.doccarchive" \
 		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)" \
-		--no-transform-for-static-hosting
+		--no-transform-for-static-hosting; \
 	xcrun docc merge \
 		"$(DOCC_BUILD_PATH)/Swift95.doccarchive" \
 		"$(DOCC_BUILD_PATH)/Swift95Icons.doccarchive" \
 		--output-path "$(DOCC_BUILD_PATH)/Swift95.doccarchive-merged" \
 		--synthesized-landing-page-name "Swift95" \
 		--synthesized-landing-page-kind "Package" \
-		--synthesized-landing-page-topics-style detailedGrid
+		--synthesized-landing-page-topics-style detailedGrid; \
 	node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs customize \
-		"$(DOCC_BUILD_PATH)/Swift95.doccarchive-merged"
+		"$(DOCC_BUILD_PATH)/Swift95.doccarchive-merged"; \
 	xcrun docc process-archive transform-for-static-hosting \
 		"$(DOCC_BUILD_PATH)/Swift95.doccarchive-merged" \
 		--output-path "$(DOCC_OUTPUT_PATH)" \
-		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)"
+		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)"; \
 	cp "$(DOCC_ROOT_REDIRECT)" "$(DOCC_OUTPUT_PATH)/index.html"
-	node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs clean
 
 check: lint test build-catalog

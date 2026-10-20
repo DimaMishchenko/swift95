@@ -19,6 +19,7 @@ where
   Control: View
 {
   @Environment(\.isEnabled) private var isEnabled
+  @Environment(\.layoutDirection) private var layoutDirection
   @Environment(\.theme95) private var theme
   @State private var isEditing = false
   @Binding private var value: Value
@@ -122,10 +123,16 @@ where
         .highPriorityGesture(sliderGesture(width: geometry.size.width))
         .focusable()
         .focusEffectDisabled()
-        .onKeyPress(keys: [.leftArrow, .downArrow]) { _ in
+        .onKeyPress(.leftArrow) {
+          adjustValue(forward: layoutDirection == .rightToLeft)
+        }
+        .onKeyPress(.rightArrow) {
+          adjustValue(forward: layoutDirection == .leftToRight)
+        }
+        .onKeyPress(.downArrow) {
           adjustValue(forward: false)
         }
-        .onKeyPress(keys: [.rightArrow, .upArrow]) { _ in
+        .onKeyPress(.upArrow) {
           adjustValue(forward: true)
         }
         .accessibilityRepresentation {
@@ -134,8 +141,6 @@ where
       }
       .frame(height: theme.metrics.sliderControlHeight)
       #if os(iOS)
-        // Preserve the canonical 28-point drawing while extending touch and
-        // accessibility interaction to Apple's 44-point envelope.
         .padding(
           .vertical,
           max(0, (44 - theme.metrics.sliderControlHeight) / 2)
@@ -198,13 +203,16 @@ where
   }
 
   private func updateValue(at location: CGFloat, width: CGFloat) {
-    let thumbWidth = theme.metrics.sliderThumbWidth
-    let travel = max(0, width - thumbWidth)
-    guard travel > 0 else {
+    guard
+      let progress = SliderGeometry95.fraction(
+        at: location,
+        width: width,
+        thumbWidth: theme.metrics.sliderThumbWidth,
+        layoutDirection: layoutDirection
+      )
+    else {
       return
     }
-
-    let progress = min(max((location - thumbWidth / 2) / travel, 0), 1)
     let distance = bounds.upperBound - bounds.lowerBound
     var newValue = bounds.lowerBound + Value(progress) * distance
 
@@ -276,7 +284,33 @@ extension Slider95 where Label == EmptyView, Control == Slider<EmptyView, EmptyV
   }
 }
 
+enum SliderGeometry95 {
+  static func thumbCenter(
+    fraction: CGFloat,
+    width: CGFloat,
+    thumbWidth: CGFloat,
+    layoutDirection: LayoutDirection
+  ) -> CGFloat {
+    let progress = min(max(fraction, 0), 1)
+    let physicalProgress = layoutDirection == .rightToLeft ? 1 - progress : progress
+    return thumbWidth / 2 + max(0, width - thumbWidth) * physicalProgress
+  }
+
+  static func fraction(
+    at location: CGFloat,
+    width: CGFloat,
+    thumbWidth: CGFloat,
+    layoutDirection: LayoutDirection
+  ) -> CGFloat? {
+    let travel = width - thumbWidth
+    guard travel > 0 else { return nil }
+    let physicalProgress = min(max((location - thumbWidth / 2) / travel, 0), 1)
+    return layoutDirection == .rightToLeft ? 1 - physicalProgress : physicalProgress
+  }
+}
+
 private struct SliderDrawing95: View {
+  @Environment(\.layoutDirection) private var layoutDirection
   let fraction: CGFloat
   let isEnabled: Bool
   let theme: Theme95
@@ -284,9 +318,8 @@ private struct SliderDrawing95: View {
   var body: some View {
     GeometryReader { geometry in
       let thumbWidth = theme.metrics.sliderThumbWidth
-      let travel = max(0, geometry.size.width - thumbWidth)
 
-      ZStack(alignment: .leading) {
+      ZStack {
         Color.clear
           .frame(height: theme.metrics.sliderTrackHeight)
           .bevel95(
@@ -297,7 +330,15 @@ private struct SliderDrawing95: View {
         Color.clear
           .frame(width: thumbWidth, height: theme.metrics.sliderControlHeight)
           .bevel95(.raised)
-          .offset(x: travel * fraction)
+          .position(
+            x: SliderGeometry95.thumbCenter(
+              fraction: fraction,
+              width: geometry.size.width,
+              thumbWidth: thumbWidth,
+              layoutDirection: layoutDirection
+            ),
+            y: geometry.size.height / 2
+          )
       }
     }
     .accessibilityHidden(true)

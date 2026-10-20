@@ -48,6 +48,13 @@ struct BevelCatalogView95: View {
 struct TypographyCatalogView95: View {
   @Environment(\.theme95) private var theme
 
+  private let systemFonts = Fonts95(
+    title: .system(.title),
+    title2: .system(.title2),
+    title3: .system(.title3),
+    body: .system(.body)
+  )
+
   var body: some View {
     CatalogPage95("Typography") {
       Text("Title")
@@ -58,6 +65,10 @@ struct TypographyCatalogView95: View {
         .font(theme.fonts.title3)
       Text("The quick brown fox jumps over the lazy dog.")
         .font(theme.fonts.body)
+      Text("Scalable system font at 12 points")
+        .font(systemFonts.font(size: 12, relativeTo: .body))
+      Text("Scalable system font at 30 points")
+        .font(systemFonts.font(size: 30, relativeTo: .body))
     }
   }
 }

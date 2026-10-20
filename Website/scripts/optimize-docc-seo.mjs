@@ -1,5 +1,6 @@
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { installDocCSEO } from './docc-seo-runtime.mjs';
 import { fileURLToPath } from 'node:url';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -84,6 +85,7 @@ function seoHead(metadata) {
 		},
 	};
 	const managedTags = [
+		['meta[name="description"]', `<meta name="description" content="${escapeHtml(metadata.description)}">`],
 		['meta[name="robots"]', `<meta name="robots" content="${robots}">`],
 		['link[rel="canonical"]', `<link rel="canonical" href="${metadata.canonical}">`],
 		[
@@ -108,38 +110,19 @@ function seoHead(metadata) {
 		['meta[name="twitter:image"]', `<meta name="twitter:image" content="${socialImage}">`],
 		[
 			'script[data-swift95-seo-schema]',
-			`<script data-swift95-seo-schema type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}<\/script>`,
+			`<script data-swift95-seo-schema="" type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}<\/script>`,
 		],
 	];
-	const headKeeper = `(function () {
-	const title = ${JSON.stringify(pageTitle)};
-	const tags = ${JSON.stringify(managedTags).replaceAll('<', '\\u003c')};
-	const ensure = () => {
-		document.title = title;
-		for (const [selector, html] of tags) {
-			if (!document.head.querySelector(selector)) document.head.insertAdjacentHTML('beforeend', html);
-		}
+	const page = {
+		pathname: new URL(metadata.canonical).pathname.replace(/\/$/, '').toLowerCase(),
+		title: pageTitle,
+		tags: managedTags,
 	};
-	new MutationObserver(ensure).observe(document.head, { childList: true });
-	ensure();
-})();`;
+	const payload = JSON.stringify(page).replaceAll('<', '\\u003c');
 	return `${marker}
-<meta name="description" content="${escapeHtml(metadata.description)}">
-<meta name="robots" content="${robots}">
-<link rel="canonical" href="${metadata.canonical}">
-<link rel="alternate" type="text/plain" href="/llms.txt" title="Swift95 documentation for language models">
-<meta property="og:title" content="${escapeHtml(pageTitle)}">
-<meta property="og:description" content="${escapeHtml(metadata.description)}">
-<meta property="og:type" content="article">
-<meta property="og:url" content="${metadata.canonical}">
-<meta property="og:site_name" content="Swift95">
-<meta property="og:image" content="${socialImage}">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escapeHtml(pageTitle)}">
-<meta name="twitter:description" content="${escapeHtml(metadata.description)}">
-<meta name="twitter:image" content="${socialImage}">
-<script data-swift95-seo-schema type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}</script>
-<script data-swift95-seo-keeper>${headKeeper}</script>`;
+${managedTags.map(([, html]) => html).join('\n')}
+<script data-swift95-seo-page type="application/json">${payload}</script>
+<script data-swift95-seo-keeper>(${installDocCSEO.toString()})(${payload});</script>`;
 }
 
 function optimizeHtml(html, metadata) {

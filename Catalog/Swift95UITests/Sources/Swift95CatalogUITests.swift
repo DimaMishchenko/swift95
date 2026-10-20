@@ -101,6 +101,28 @@ final class Swift95CatalogUITests: XCTestCase {
     assertLabelChanges(from: "Slider: 25", for: "interaction.slider.output", in: app)
   }
 
+  #if os(iOS)
+    func testRightToLeftSliderInputFollowsVisualDirection() throws {
+      let app = launch(destination: "slider")
+      let slider = element("catalog.slider.rtl", in: app)
+      XCTAssertTrue(slider.waitForExistence(timeout: 5))
+      if !slider.isHittable {
+        app.swipeUp()
+      }
+
+      slider.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5)).tap()
+      let rightValue = try XCTUnwrap(
+        Double(try XCTUnwrap(slider.value as? String).replacingOccurrences(of: "%", with: ""))
+      )
+
+      slider.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5)).tap()
+      let leftValue = try XCTUnwrap(
+        Double(try XCTUnwrap(slider.value as? String).replacingOccurrences(of: "%", with: ""))
+      )
+      XCTAssertGreaterThan(leftValue, rightValue)
+    }
+  #endif
+
   func testPickerListAndTabsUpdateSelection() {
     let app = launch(destination: "testInteractions")
     revealSelectionFixtures(in: app)

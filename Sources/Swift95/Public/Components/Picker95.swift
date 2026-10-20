@@ -269,8 +269,7 @@ public struct Picker95<
             MacPickerPresentation95(
               isPresented: $isPresented,
               overlap: theme.metrics.bevelWidth * 2,
-              minimumWidth: theme.metrics.pickerMinimumWidth,
-              theme: theme
+              minimumWidth: theme.metrics.pickerMinimumWidth
             ) {
               optionList
             }
@@ -381,7 +380,6 @@ public struct Picker95<
 
     let overlap: CGFloat
     let minimumWidth: CGFloat
-    let theme: Theme95
     @ViewBuilder let content: () -> Content
 
     func makeCoordinator() -> Coordinator {
@@ -406,7 +404,7 @@ public struct Picker95<
           content()
             .frame(minWidth: max(anchor.bounds.width, minimumWidth))
             .fixedSize(horizontal: false, vertical: true)
-            .theme95(theme)
+            .environment(\.self, context.environment)
         ),
         from: anchor,
         overlap: overlap

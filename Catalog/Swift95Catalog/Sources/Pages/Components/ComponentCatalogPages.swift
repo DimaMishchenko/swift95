@@ -263,6 +263,14 @@ struct SliderCatalogView95: View {
         Slider95(value: .constant(35.0), in: 0...100)
           .disabled(true)
       }
+
+      CatalogExample95("Right-to-left") {
+        Slider95(value: $volume, in: 0...100) {
+          Text("Volume: \(Int(volume))")
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+        .accessibilityIdentifier("catalog.slider.rtl")
+      }
     }
   }
 }
@@ -651,6 +659,16 @@ struct PickerCatalogView95: View {
           options: SortOrder95.options
         )
         .disabled(true)
+      }
+
+      CatalogExample95("Right-to-left") {
+        Picker95(
+          "Sort by",
+          selection: $sortOrder,
+          options: SortOrder95.options
+        )
+        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.locale, Locale(identifier: "ar"))
       }
 
       Text95("Selection: \(sortOrder.title)")

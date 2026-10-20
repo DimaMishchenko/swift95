@@ -28,3 +28,10 @@ Hand-written documentation pages live in `src/content/docs/`; generated componen
 defined by `src/data/completeGuides.mjs`. Reusable site styling lives in
 `src/styles/swift95.css`, and stable images copied from the native snapshot suite live in
 `public/images/`.
+
+The scoped `@expressive-code/core` dependency override uses `postcss-nested` 7.0.2 or later
+in the 7.x line so its selector parser receives the CPU exhaustion fix from
+[`postcss-selector-parser` 7.1.6](https://github.com/postcss/postcss-selector-parser/blob/main/CHANGELOG.md#716---2026-09-03).
+This keeps the current Starlight release and PostCSS 8 API. The nesting plugin's
+[7.0 changes](https://github.com/postcss/postcss-nested/blob/main/CHANGELOG.md#700)
+affect comment placement and require Node 18 or later, which the Astro toolchain already exceeds.

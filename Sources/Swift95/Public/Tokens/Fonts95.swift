@@ -151,8 +151,14 @@ public struct Fonts95: Sendable {
   }()
 
   private static let systemFont: Factory = { size, weight, textStyle in
-    if let textStyle {
-      return Font.system(textStyle).weight(weight)
+    if let textStyle, let systemFont = CTFontCreateUIFontForLanguage(.system, size, nil) {
+      return
+        Font.custom(
+          CTFontCopyFamilyName(systemFont) as String,
+          size: size,
+          relativeTo: textStyle
+        )
+        .weight(weight)
     }
     return Font.system(size: size, weight: weight)
   }
