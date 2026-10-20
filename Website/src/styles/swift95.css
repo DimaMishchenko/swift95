@@ -1,3 +1,5 @@
+@layer starlight, react95;
+
 @font-face {
 	font-family: "W95FA";
 	src: url("/fonts/W95FA.otf") format("opentype");

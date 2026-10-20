@@ -3,6 +3,12 @@
 The documentation site is built with Astro and Starlight. It contains the custom homepage,
 hand-written guides, generated component guides, and the Swift-DocC API reference.
 
+Use Node.js 22.22.0 or later. TypeScript stays on 6.x because `astro check` requires its
+programmatic language service API, which TypeScript 7 does not provide yet. Track compatibility
+in the [Astro TypeScript 7 support discussion](https://github.com/withastro/roadmap/discussions/1321).
+The stylesheet declares Starlight's layers before React95's so the documentation reset does
+not override React95 10's layered component styles.
+
 From the repository root:
 
 ```sh

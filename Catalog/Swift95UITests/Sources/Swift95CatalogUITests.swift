@@ -88,7 +88,16 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertTrue(field.waitForExistence(timeout: 5))
     activate(field)
     field.typeText("HAL")
+    let inputReady = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "value == %@", "HAL"),
+      object: field
+    )
+    let inputResult = XCTWaiter.wait(for: [inputReady], timeout: 5)
+    XCTAssertEqual(
+      inputResult, .completed, "Text field value: \(String(describing: field.value))")
+    XCTAssertEqual(field.value as? String, "HAL")
     assertLabel("Text: HAL", for: "interaction.text.output", in: app)
+    field.typeText("\n")
 
     let slider = element("interaction.slider", in: app)
     XCTAssertTrue(slider.exists)
@@ -103,7 +112,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   #if os(iOS)
     func testRightToLeftSliderInputFollowsVisualDirection() throws {
-      let app = launch(destination: "slider")
+      let app = launch(destination: "testRTLControls")
       let slider = element("catalog.slider.rtl", in: app)
       XCTAssertTrue(slider.waitForExistence(timeout: 5))
       if !slider.isHittable {
@@ -161,7 +170,7 @@ final class Swift95CatalogUITests: XCTestCase {
   }
 
   func testRightToLeftCatalogPickerSelectsAndDismissesOptions() {
-    let app = launch(destination: "picker")
+    let app = launch(destination: "testRTLControls")
     let picker = element("catalog.picker.rtl", in: app)
     XCTAssertTrue(picker.waitForExistence(timeout: 5))
     activate(picker)
@@ -180,12 +189,18 @@ final class Swift95CatalogUITests: XCTestCase {
     #else
       activate(name)
       assertLabel("Selection: Name", for: "catalog.picker.selection", in: app)
+      activate(picker)
+      XCTAssertTrue(date.waitForExistence(timeout: 3))
+      app.windows.firstMatch
+        .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)).tap()
+      XCTAssertFalse(date.exists)
+      assertLabel("Selection: Name", for: "catalog.picker.selection", in: app)
     #endif
   }
 
   #if os(macOS)
     func testRightToLeftSliderKeyboardFollowsVisualDirection() throws {
-      let app = launch(destination: "slider")
+      let app = launch(destination: "testRTLControls")
       let slider = element("catalog.slider.rtl", in: app)
       XCTAssertTrue(slider.waitForExistence(timeout: 5))
       activate(slider)
@@ -199,7 +214,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   func testPickerListAndTabsUpdateSelection() {
     let app = launch(destination: "testInteractions")
-    revealSelectionFixtures(in: app)
+    revealSelectionFixture("interaction.picker", in: app)
 
     let picker = element("interaction.picker", in: app)
     XCTAssertTrue(picker.waitForExistence(timeout: 5))
@@ -210,10 +225,14 @@ final class Swift95CatalogUITests: XCTestCase {
     activate(dateOption)
     assertLabel("Picker: Date modified", for: "interaction.picker.output", in: app)
 
+    revealSelectionFixture("interaction.list.settings", in: app)
     activate(element("interaction.list.settings", in: app))
     assertLabel("List: settings", for: "interaction.list.output", in: app)
 
-    activate(element("interaction.tab.display", in: app))
+    revealSelectionFixture("interaction.tab.display", in: app)
+    let displayTab = element("interaction.tab.display", in: app)
+    activate(displayTab)
+    XCTAssertTrue(displayTab.isSelected)
     assertLabel("Display settings", for: "interaction.tab.content", in: app)
   }
 
@@ -249,26 +268,15 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertTrue(fileMenu.waitForExistence(timeout: 5))
 
     #if os(macOS)
-      fileMenu.click()
+      activate(fileMenu)
       let activateItem = element("menu.activate", in: app)
       XCTAssertTrue(activateItem.waitForExistence(timeout: 5))
-      let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-      let firstItem = activateItem.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-      start.press(forDuration: 0.2, thenDragTo: firstItem)
-
-      // macOS 26 can deliver the drag to the header without delivering the
-      // release to the custom menu gesture. Retry the same visible command
-      // through its native button hit target if the drag did not update state.
-      let output = element("menu.output", in: app)
-      XCTAssertTrue(output.waitForExistence(timeout: 3))
-      if (output.value as? String) != "Menu activation: Activate" {
-        // The failed drag dismisses the menu on macOS 26, so resolve a fresh
-        // item after reopening it instead of clicking the stale element.
-        fileMenu.click()
-        let retryItem = element("menu.activate", in: app)
-        XCTAssertTrue(retryItem.waitForExistence(timeout: 3))
-        retryItem.click()
-      }
+      XCTAssertTrue(activateItem.isEnabled)
+      let commandPoint = CGPoint(x: fileMenu.frame.midX, y: activateItem.frame.midY)
+      XCTAssertTrue(activateItem.frame.contains(commandPoint))
+      fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .withOffset(CGVector(dx: 0, dy: commandPoint.y - fileMenu.frame.midY))
+        .click()
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
@@ -388,11 +396,6 @@ final class Swift95CatalogUITests: XCTestCase {
 
   private func activate(_ element: XCUIElement) {
     XCTAssertTrue(element.waitForExistence(timeout: 5), element.identifier)
-    let hittable = expectation(
-      for: NSPredicate(format: "hittable == true"),
-      evaluatedWith: element
-    )
-    wait(for: [hittable], timeout: 5)
     #if os(macOS)
       element.click()
     #else
@@ -434,8 +437,22 @@ final class Swift95CatalogUITests: XCTestCase {
     #else
       let predicate = NSPredicate(format: "label == %@", expected)
     #endif
-    expectation(for: predicate, evaluatedWith: output)
-    waitForExpectations(timeout: 3)
+    let matched = XCTNSPredicateExpectation(predicate: predicate, object: output)
+    let result = XCTWaiter.wait(for: [matched], timeout: 3)
+    if result != .completed {
+      let label = output.label
+      let value = output.value as? String
+      let scalars = label.unicodeScalars.map { String(format: "U+%04X", $0.value) }
+        .joined(separator: " ")
+      let diagnostics =
+        "AX label: \(label.debugDescription); value: \(String(describing: value)); label scalars: \(scalars)"
+      #if os(macOS)
+        XCTAssertEqual(value, expected, diagnostics)
+      #else
+        XCTAssertEqual(label, expected, diagnostics)
+      #endif
+      XCTAssertEqual(result, .completed, diagnostics)
+    }
   }
 
   private func assertLabelChanges(
@@ -454,12 +471,14 @@ final class Swift95CatalogUITests: XCTestCase {
     waitForExpectations(timeout: 3)
   }
 
-  private func revealSelectionFixtures(in app: XCUIApplication) {
-    let picker = element("interaction.picker", in: app)
+  private func revealSelectionFixture(_ identifier: String, in app: XCUIApplication) {
+    let control = element(identifier, in: app)
     let scrollView = app.scrollViews.firstMatch
     XCTAssertTrue(scrollView.waitForExistence(timeout: 5))
-    for _ in 0..<8 {
-      if picker.isHittable { return }
+    for attempt in 0...8 {
+      let viewport = scrollView.frame.insetBy(dx: 0, dy: 24)
+      if control.isHittable, viewport.contains(control.frame) { return }
+      guard attempt < 8 else { break }
       #if os(macOS)
         scrollView.scroll(byDeltaX: 0, deltaY: -150)
       #else
@@ -470,6 +489,6 @@ final class Swift95CatalogUITests: XCTestCase {
               withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
       #endif
     }
-    XCTAssertTrue(picker.isHittable)
+    XCTFail("Could not reveal \(identifier) in the selection fixture")
   }
 }

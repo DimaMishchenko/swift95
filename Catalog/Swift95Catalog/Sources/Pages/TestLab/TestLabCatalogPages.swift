@@ -180,6 +180,62 @@ struct TestLabInteractionsView95: View {
   }
 }
 
+struct TestLabRTLControlsView95: View {
+  @State private var volume = 45.0
+  @State private var brightness = 6.0
+  @State private var disabledVolume = 35.0
+  @State private var rtlVolume = 45.0
+  @State private var sortOrder = TestSortOrder.name
+
+  var body: some View {
+    CatalogPage95("RTL Controls") {
+      VStack(alignment: .leading, spacing: 12) {
+        Slider95(value: $volume, in: 0...100) {
+          Text("Continuous: \(Int(volume))")
+        }
+        .accessibilityIdentifier("catalog.slider.continuous")
+
+        Slider95(value: $brightness, in: 0...10, step: 1) {
+          Text("Stepped: \(Int(brightness))")
+        }
+        .accessibilityIdentifier("catalog.slider.stepped")
+
+        Slider95(value: $disabledVolume, in: 0...100) {
+          Text("Disabled")
+        }
+        .disabled(true)
+        .accessibilityIdentifier("catalog.slider.disabled")
+
+        Slider95(value: $rtlVolume, in: 0...100) {
+          Text("RTL volume: \(Int(rtlVolume))")
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+        .accessibilityIdentifier("catalog.slider.rtl")
+
+        Picker95(
+          "Sort by",
+          selection: $sortOrder,
+          options: [TestSortOrder.name, .dateModified, .size]
+            .map { value in
+              PickerOption95(value.title, value: value)
+                .swiftUI { row in
+                  row.accessibilityIdentifier("catalog.picker.rtl.\(value.title)")
+                }
+            }
+        )
+        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.locale, Locale(identifier: "ar"))
+        .accessibilityIdentifier("catalog.picker.rtl")
+
+        Text95("Selection: \(sortOrder.title)")
+          .accessibilityIdentifier("catalog.picker.selection")
+      }
+      .frame(maxWidth: 360, alignment: .leading)
+    }
+    .accessibilityIdentifier("test-lab.rtl-controls")
+  }
+}
+
 struct TestLabOverridesView95: View {
   @State private var scrollOffset = CGFloat.zero
 
@@ -243,11 +299,13 @@ private enum TestRadio: Hashable {
 private enum TestSortOrder: Hashable {
   case name
   case dateModified
+  case size
 
   var title: String {
     switch self {
     case .name: "Name"
     case .dateModified: "Date modified"
+    case .size: "Size"
     }
   }
 }

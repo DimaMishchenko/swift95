@@ -19,48 +19,31 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 jobs:
-  quality:
-    name: Quality and package tests
-    runs-on: macos-15
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-      - run: make lint test-package
-
-  platform-tests:
-    name: ${{ matrix.name }}
-    runs-on: macos-15
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: macOS UI tests
-            make_target: test-macos-ui
-            artifact: macos
-            device_type: ""
-            destination_variable: ""
-          - name: iPhone tests
-            make_target: test-ios
-            artifact: iphone
-            device_type: com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro
-            destination_variable: IOS_DESTINATION
-          - name: iPad tests
-            make_target: test-ipad
-            artifact: ipad
-            device_type: com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB
-            destination_variable: IPAD_DESTINATION
+  validation:
+    name: Validation
+    runs-on: macos-latest
+    timeout-minutes: 60
     env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
+      SNAPSHOT_TESTING_RECORD: never
+      TEST_RUNNER_SNAPSHOT_TESTING_RECORD: never
       TEST_XCODEBUILD_FLAGS: >-
         -parallel-testing-enabled NO
+        -collect-test-diagnostics never
         -test-timeouts-enabled YES
         -default-test-execution-time-allowance 120
         -maximum-test-execution-time-allowance 180
     steps:
       - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Website/package-lock.json
 
       - name: Configure build paths
         run: |
@@ -68,54 +51,38 @@ jobs:
           echo "TUIST_XDG_CACHE_HOME=$RUNNER_TEMP/tuist-cache" >> "$GITHUB_ENV"
           echo "TUIST_XDG_CONFIG_HOME=$RUNNER_TEMP/tuist-config" >> "$GITHUB_ENV"
           echo "TUIST_XDG_STATE_HOME=$RUNNER_TEMP/tuist-state" >> "$GITHUB_ENV"
+          echo "SNAPSHOT_ARTIFACTS=$RUNNER_TEMP/snapshot-failures" >> "$GITHUB_ENV"
 
-      - uses: jdx/mise-action@v4
+      - name: Check formatting and run package tests
+        run: make lint test-package
 
-      - name: Create test simulator
-        if: matrix.device_type != ''
-        env:
-          DEVICE_TYPE: ${{ matrix.device_type }}
-          DESTINATION_VARIABLE: ${{ matrix.destination_variable }}
+      - name: Create test simulators
         run: |
-          udid="$(xcrun simctl create 'Swift95 CI' "$DEVICE_TYPE" com.apple.CoreSimulator.SimRuntime.iOS-18-5)"
-          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
-          echo "$DESTINATION_VARIABLE=platform=iOS Simulator,id=$udid" >> "$GITHUB_ENV"
+          iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
+          echo "IPHONE_SIMULATOR_UDID=$iphone_udid" >> "$GITHUB_ENV"
+          echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
+          ipad_udid="$(xcrun simctl create 'Swift95 CI iPad' com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
+          echo "IPAD_SIMULATOR_UDID=$ipad_udid" >> "$GITHUB_ENV"
+          echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
 
-      - name: Run ${{ matrix.name }}
-        run: make ${{ matrix.make_target }}
+      - name: Run macOS, iPhone, and iPad tests
+        run: make test-catalog
 
-      - name: Upload test results
+      - run: npm --prefix Website ci
+      - name: Build and validate website and API documentation
+        run: make website-build
+
+      - name: Upload validation failures
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: swift95-test-results-${{ matrix.artifact }}
+          name: swift95-validation-failures
           path: |
+            ${{ runner.temp }}/snapshot-failures
             ${{ runner.temp }}/swift95-derived-data/Logs/Test
             ${{ runner.temp }}/tuist-state/logs
           retention-days: 7
           if-no-files-found: ignore
-
-      - name: Delete test simulator
-        if: always() && env.SIMULATOR_UDID != ''
-        run: |
-          xcrun simctl shutdown "$SIMULATOR_UDID" || true
-          xcrun simctl delete "$SIMULATOR_UDID"
-
-  documentation:
-    name: Website and API documentation
-    runs-on: macos-15
-    timeout-minutes: 30
-    env:
-      SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: Website/package-lock.json
-      - run: npm --prefix Website ci
-      - run: make website-build
 
       - name: Upload website for publication
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
@@ -123,10 +90,20 @@ jobs:
         with:
           path: Website/dist
 
+      - name: Delete test simulators
+        if: always()
+        run: |
+          for udid in "${IPHONE_SIMULATOR_UDID:-}" "${IPAD_SIMULATOR_UDID:-}"; do
+            if [[ -n "$udid" ]]; then
+              xcrun simctl shutdown "$udid" || true
+              xcrun simctl delete "$udid"
+            fi
+          done
+
   deploy:
     name: Publish website
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
-    needs: [quality, platform-tests, documentation]
+    needs: [validation]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -137,7 +114,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

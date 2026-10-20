@@ -179,6 +179,7 @@
         .environment(\.locale, Locale(identifier: "en_US_POSIX"))
         .environment(\.colorScheme, .light)
         .environment(\.layoutDirection, .leftToRight)
+        .environment(\.displayScale, 2)
         .transaction { $0.disablesAnimations = true }
       let view = NSHostingView(rootView: root)
       view.frame = CGRect(x: 0, y: 0, width: width, height: height)
@@ -197,21 +198,25 @@
         diffing: image.diffing
       ) { view in
         Async { callback in
-          let window = NSWindow(
+          let window = SnapshotWindow95(
             contentRect: view.frame,
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
           )
           window.isReleasedWhenClosed = false
+          window.colorSpace = .displayP3
           window.contentView = view
+          window.orderFrontRegardless()
           view.layoutSubtreeIfNeeded()
 
           RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.1))
           view.layoutSubtreeIfNeeded()
+          window.displayIfNeeded()
           image.snapshot(view)
             .run { snapshot in
               window.contentView = nil
+              window.close()
               callback(snapshot)
             }
         }
@@ -242,6 +247,10 @@
         .frame(width: 18, height: 18)
         .bevel95(.raised)
     }
+  }
+
+  private final class SnapshotWindow95: NSWindow {
+    override var backingScaleFactor: CGFloat { 2 }
   }
 
   private enum MacPickerValue: Hashable {

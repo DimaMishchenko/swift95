@@ -50,23 +50,21 @@ make generate
 open Catalog/Swift95Catalog.xcworkspace
 ```
 
-Run the `Swift95Catalog` scheme for your preferred destination—or
+Run the `Swift95Catalog` scheme for your preferred destination, or
 **[🚀 start with the complete guide](https://swift95.dimasike.com/start/)**.
 
 ## Development
 
-Run `make help` for the available commands. Use `make format` and `make lint` for formatting,
-`make check` for package tests, platform tests, and Catalog builds, and `make website-build` for
-the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
-website uses Node.js 22 and dependencies installed with `npm --prefix Website ci`.
+Use Xcode 26.6 and the Tuist version in `.tool-versions`. Website development also requires
+Node.js 22.22 or later and `npm --prefix Website ci`.
 
-CI validates pull requests and pushes to `main` using Xcode 16.4 and iOS 18.5 simulators on
-macOS 15. Platform tests also build and launch the Catalog. Snapshot references are checked
-without recording replacements.
+```sh
+make generate       # Open Catalog/Swift95Catalog.xcworkspace after generation
+make format         # Format Swift sources
+make check          # Lint, test, and build the Catalog on all platforms
+make website-dev    # Preview the website
+make website-build  # Build and validate the complete documentation site
+```
 
-The **CI** workflow publishes the website after every push to `main`, including merged pull
-requests, once all checks pass. To publish manually, run it from `main` with **publish_website**
-selected. Pull requests validate the website without publishing it.
-
-Dependabot checks Swift packages, website npm packages, and GitHub Actions weekly. Minor and
-patch updates are grouped by ecosystem; major updates get separate pull requests.
+Run `make help` for individual checks and simulator overrides. CI validates pull requests and
+publishes the website after checks pass on `main`.

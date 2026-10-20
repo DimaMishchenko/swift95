@@ -262,6 +262,7 @@ public struct Picker95<
                   transaction.disablesAnimations = true
                 }
             }
+            .allowsHitTesting(false)
           }
       #else
         triggerTransform(AnyView(trigger))
