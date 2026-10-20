@@ -31,6 +31,7 @@ jobs:
       - run: make lint test-package
         env:
           SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
+          SWIFTUI_RENDER_BACKEND: CoreGraphics
       - name: Upload snapshot failures
         if: failure()
         uses: actions/upload-artifact@v7
@@ -117,6 +118,7 @@ jobs:
     timeout-minutes: 30
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
+      SWIFTUI_RENDER_BACKEND: CoreGraphics
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

@@ -65,6 +65,8 @@ macOS 15 Intel runners. Platform tests also build and launch the Catalog. Snapsh
 are checked without recording replacements. macOS integration snapshots render at a fixed 2× scale in
 Display P3, independently of the host display. Use the pinned CI environment to compare
 macOS integration references; newer macOS renderers can produce different pixels.
+Offscreen package captures and documentation images use CoreGraphics on CI's Intel VMs,
+which do not provide a usable Metal device.
 
 The **CI** workflow publishes the website after every push to `main`, including merged pull
 requests, once all checks pass. To publish manually, run it from `main` with **publish_website**
