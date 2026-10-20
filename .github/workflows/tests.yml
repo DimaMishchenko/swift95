@@ -24,7 +24,7 @@ env:
 jobs:
   quality:
     name: Quality and package tests
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -42,7 +42,7 @@ jobs:
 
   platform-tests:
     name: ${{ matrix.name }}
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -113,7 +113,7 @@ jobs:
 
   documentation:
     name: Website and API documentation
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 30
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
