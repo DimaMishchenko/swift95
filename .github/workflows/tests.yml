@@ -125,7 +125,6 @@ jobs:
     timeout-minutes: 45
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
-      SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
       TEST_XCODEBUILD_FLAGS: >-
         -parallel-testing-enabled NO
         -test-timeouts-enabled YES
@@ -144,6 +143,8 @@ jobs:
       - uses: jdx/mise-action@v5
       - name: Run minimum macOS package tests and snapshots
         run: make test-package
+        env:
+          SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
 
       - name: Create baseline simulators
         run: |
