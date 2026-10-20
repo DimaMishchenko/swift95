@@ -88,7 +88,16 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertTrue(field.waitForExistence(timeout: 5))
     activate(field)
     field.typeText("HAL")
+    let inputReady = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "value == %@", "HAL"),
+      object: field
+    )
+    let inputResult = XCTWaiter.wait(for: [inputReady], timeout: 5)
+    XCTAssertEqual(
+      inputResult, .completed, "Text field value: \(String(describing: field.value))")
+    XCTAssertEqual(field.value as? String, "HAL")
     assertLabel("Text: HAL", for: "interaction.text.output", in: app)
+    field.typeText("\n")
 
     let slider = element("interaction.slider", in: app)
     XCTAssertTrue(slider.exists)
@@ -427,8 +436,22 @@ final class Swift95CatalogUITests: XCTestCase {
     #else
       let predicate = NSPredicate(format: "label == %@", expected)
     #endif
-    expectation(for: predicate, evaluatedWith: output)
-    waitForExpectations(timeout: 3)
+    let matched = XCTNSPredicateExpectation(predicate: predicate, object: output)
+    let result = XCTWaiter.wait(for: [matched], timeout: 3)
+    if result != .completed {
+      let label = output.label
+      let value = output.value as? String
+      let scalars = label.unicodeScalars.map { String(format: "U+%04X", $0.value) }
+        .joined(separator: " ")
+      let diagnostics =
+        "AX label: \(label.debugDescription); value: \(String(describing: value)); label scalars: \(scalars)"
+      #if os(macOS)
+        XCTAssertEqual(value, expected, diagnostics)
+      #else
+        XCTAssertEqual(label, expected, diagnostics)
+      #endif
+      XCTAssertEqual(result, .completed, diagnostics)
+    }
   }
 
   private func assertLabelChanges(
