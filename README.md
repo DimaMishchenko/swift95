@@ -60,12 +60,19 @@ Run `make help` for the available commands. Use `make format` and `make lint` fo
 the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
 website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
-CI validates pull requests and pushes to `main` using Xcode 16.4 and iOS 18.5 simulators on
-macOS 15 Apple silicon runners. Package and website checks run first, followed by at most two
-Catalog platform test jobs at a time. Snapshot references are checked without recording
-replacements. macOS integration snapshots render at a fixed 2× scale in
-Display P3, independently of the host display. Use the pinned CI environment to compare
-macOS integration references; newer macOS renderers can produce different pixels.
+CI validates pull requests and pushes to `main` on `macos-latest` Apple silicon runners with
+Xcode 26.6. Package tests and documentation run first, followed by at most two Catalog platform
+jobs at a time. Native UI tests run on the latest macOS and iOS 26.5 iPhone 17 Pro and
+13-inch iPad Pro (M5) simulators. Mobile system-font tests also run on these current simulators.
+
+A separate compatibility check then runs all package tests and existing snapshots on macOS 15,
+Xcode 16.4, and iOS 18.5 iPhone 16 Pro and 13-inch iPad Pro (M4) simulators. This preserves
+minimum-platform coverage and the existing golden-image environment without repeating native
+UI journeys. The latest package check excludes only the macOS golden-image suite; its other
+unit and rendering assertions still run. Snapshot references are checked without recording
+replacements. macOS integration snapshots render at a fixed 2× scale in Display P3, independently
+of the host display. Use the compatibility environment to compare intentional rendering changes
+before changing references.
 
 The **CI** workflow publishes the website after every push to `main`, including merged pull
 requests, once all checks pass. To publish manually, run it from `main` with **publish_website**

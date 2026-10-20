@@ -24,7 +24,7 @@ IPAD_OS ?= 18.5
 IPAD_DESTINATION ?= platform=iOS Simulator,name=$(IPAD_SIMULATOR),OS=$(IPAD_OS)
 XCBEAUTIFY ?= $(shell command -v xcbeautify 2>/dev/null)
 ONLY_TESTING ?=
-TEST_SELECTION := $(if $(ONLY_TESTING),-only-testing:$(ONLY_TESTING))
+TEST_SELECTION := $(foreach selection,$(ONLY_TESTING),-only-testing:$(selection))
 SWIFT_TEST_ARGS ?=
 XCODEBUILD_TEST_FLAGS ?=
 XCODEBUILD_FLAGS ?=
@@ -63,6 +63,7 @@ help:
 	@echo "  make test-ios IOS_SIMULATOR='iPhone 16 Pro' IOS_OS=18.5"
 	@echo "  make test-ios IOS_DESTINATION='platform=iOS Simulator,id=<UDID>'"
 	@echo "  make test-ios ONLY_TESTING='Swift95UITests/Swift95CatalogUITests/testName'"
+	@echo "  make test-ios ONLY_TESTING='Swift95UITests Swift95Tests/SystemFonts95Tests'"
 
 generate:
 	tuist generate --path $(CATALOG_PATH) --no-open
