@@ -60,21 +60,18 @@ Run `make help` for the available commands. Use `make format` and `make lint` fo
 the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
 website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
-CI validates pull requests and pushes to `main` with Xcode 26.6. Package, website, iPhone, and iPad
-checks use `macos-latest` Apple silicon runners. The macOS UI check uses `macos-26-intel` to cover
-Intel Macs on the current macOS release. Documentation builds alongside the test pipeline.
-Once package tests pass, at most two Catalog platform jobs run at a time. Native UI tests run
-on macOS 26 and iOS 26.5 iPhone 17 Pro and
-13-inch iPad Pro (M5) simulators. Mobile system-font tests also run on these current simulators.
+CI validates pull requests and pushes to `main` in one `Validation` job on the latest
+macOS Apple silicon runner, using stable Xcode 26.6. It runs all package and snapshot tests,
+macOS Catalog UI tests, and full tests on iOS 26.5 iPhone 17 Pro and 13-inch iPad Pro (M5)
+simulators, then builds and validates the website and API documentation.
 
-A separate compatibility check then runs all package tests and existing snapshots on macOS 15,
-Xcode 16.4, and iOS 18.5 iPhone 16 Pro and 13-inch iPad Pro (M4) simulators. This preserves
-minimum-platform coverage and the existing golden-image environment without repeating native
-UI journeys. The latest package check excludes only the macOS golden-image suite; its other
-unit and rendering assertions still run. Snapshot references are checked without recording
-replacements. macOS integration snapshots render at a fixed 2× scale in Display P3, independently
-of the host display. Use the compatibility environment to compare intentional rendering changes
-before changing references.
+The Catalog workspace is generated once. `make test-mobile` builds one mobile test bundle and
+runs it on both simulators without rebuilding; `make test-catalog` also runs the macOS UI tests.
+Build output and resolved dependencies stay on the same machine throughout validation.
+Snapshot references use macOS 26 and iOS 26.5, with recording disabled in CI. macOS integration
+snapshots render at a fixed 2× scale in Display P3, independently of the host display. Review
+intentional rendering changes on the matching OS before updating references. The package keeps
+Swift 6 language mode and iOS 18/macOS 15 deployment targets; CI exercises the current OS.
 
 The **CI** workflow publishes the website after every push to `main`, including merged pull
 requests, once all checks pass. To publish manually, run it from `main` with **publish_website**

@@ -16,11 +16,13 @@ CATALOG_SCHEME := Swift95Catalog
 IOS_TEST_SCHEME := Swift95
 # Keep macOS UI-test runners outside protected user folders such as Documents.
 DERIVED_DATA ?= $(TMPDIR)swift95-derived-data
-IOS_SIMULATOR ?= iPhone 16 Pro
-IOS_OS ?= 18.5
+IOS_TEST_PRODUCTS := $(DERIVED_DATA)/Swift95-iOS.xctestproducts
+IOS_TEST_RESULTS := $(DERIVED_DATA)/Logs/Test/$(shell uuidgen)
+IOS_SIMULATOR ?= iPhone 17 Pro
+IOS_OS ?= 26.5
 IOS_DESTINATION ?= platform=iOS Simulator,name=$(IOS_SIMULATOR),OS=$(IOS_OS)
-IPAD_SIMULATOR ?= iPad Pro 13-inch (M4)
-IPAD_OS ?= 18.5
+IPAD_SIMULATOR ?= iPad Pro 13-inch (M5)
+IPAD_OS ?= 26.5
 IPAD_DESTINATION ?= platform=iOS Simulator,name=$(IPAD_SIMULATOR),OS=$(IPAD_OS)
 XCBEAUTIFY ?= $(shell command -v xcbeautify 2>/dev/null)
 ONLY_TESTING ?=
@@ -40,7 +42,7 @@ TEST_XCODEBUILD_FLAGS ?= $(XCODEBUILD_FLAGS) -parallel-testing-enabled NO
 .DEFAULT_GOAL := help
 .NOTPARALLEL:
 
-.PHONY: help generate format lint test test-package test-macos test-macos-ui test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos website-dev website-build website-check .website-examples .website-astro .website-docc check
+.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos website-dev website-build website-check .website-examples .website-astro .website-docc check
 
 help:
 	@echo "Swift95 developer commands"
@@ -50,7 +52,9 @@ help:
 	@echo "  make test                 Run macOS, iPhone, and iPad tests"
 	@echo "  make test-macos           Run unit, snapshot, and UI tests on macOS"
 	@echo "  make test-package         Run Swift package tests"
+	@echo "  make test-catalog         Run macOS UI and mobile tests with shared builds"
 	@echo "  make test-macos-ui        Run Catalog UI tests on macOS"
+	@echo "  make test-mobile          Build mobile tests once and run on iPhone and iPad"
 	@echo "  make test-ios             Run unit, snapshot, and UI tests on iPhone"
 	@echo "  make test-ipad            Run unit, snapshot, and UI tests on iPad"
 	@echo "  make build-catalog        Build the Catalog for iOS and macOS"
@@ -60,12 +64,14 @@ help:
 	@echo "  make check                Run formatting checks, tests, and Catalog builds"
 	@echo ""
 	@echo "Override the simulator when needed:"
-	@echo "  make test-ios IOS_SIMULATOR='iPhone 16 Pro' IOS_OS=18.5"
+	@echo "  make test-ios IOS_SIMULATOR='iPhone 17 Pro' IOS_OS=26.5"
 	@echo "  make test-ios IOS_DESTINATION='platform=iOS Simulator,id=<UDID>'"
 	@echo "  make test-ios ONLY_TESTING='Swift95UITests/Swift95CatalogUITests/testName'"
 	@echo "  make test-ios ONLY_TESTING='Swift95UITests Swift95Tests/SystemFonts95Tests'"
 
 generate:
+	mkdir -p $(CATALOG_WORKSPACE)/xcshareddata/swiftpm
+	cp Package.resolved $(CATALOG_WORKSPACE)/xcshareddata/swiftpm/Package.resolved
 	tuist generate --path $(CATALOG_PATH) --no-open
 
 format:
@@ -74,7 +80,9 @@ format:
 lint:
 	swift format lint -r Sources Tests Catalog
 
-test: test-package test-macos-ui test-ios test-ipad
+test: test-package test-catalog
+
+test-catalog: test-macos-ui test-mobile
 
 test-package:
 	swift test $(SWIFT_TEST_ARGS)
@@ -83,6 +91,12 @@ test-macos: test-package test-macos-ui
 
 test-macos-ui: generate
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) $(if $(ONLY_TESTING),$(TEST_SELECTION),-only-testing:Swift95UITests) test $(XCODEBUILD_OUTPUT)
+
+test-mobile: generate
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) -testProductsPath '$(IOS_TEST_PRODUCTS)' build-for-testing $(XCODEBUILD_OUTPUT)
+	mkdir -p '$(DERIVED_DATA)/Logs/Test'
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -testProductsPath '$(IOS_TEST_PRODUCTS)' -destination '$(IOS_DESTINATION)' -resultBundlePath '$(IOS_TEST_RESULTS)-iPhone.xcresult' $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test-without-building $(XCODEBUILD_OUTPUT)
+	xcodebuild $(TEST_XCODEBUILD_FLAGS) -testProductsPath '$(IOS_TEST_PRODUCTS)' -destination '$(IPAD_DESTINATION)' -resultBundlePath '$(IOS_TEST_RESULTS)-iPad.xcresult' $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test-without-building $(XCODEBUILD_OUTPUT)
 
 test-ios: generate
 	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(IOS_TEST_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test $(XCODEBUILD_OUTPUT)

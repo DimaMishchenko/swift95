@@ -22,65 +22,28 @@ env:
   DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 jobs:
-  quality:
-    name: Quality and package tests
+  validation:
+    name: Validation
     runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-      - run: make lint test-package
-        env:
-          SWIFT_TEST_ARGS: --skip MacOSIntegrationSnapshotTests
-          SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
-      - name: Upload snapshot failures
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: swift95-package-snapshot-failures
-          path: ${{ runner.temp }}/snapshot-failures
-          retention-days: 7
-          if-no-files-found: ignore
-
-  platform-tests:
-    name: ${{ matrix.name }}
-    needs: [quality]
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        include:
-          - name: macOS UI tests
-            runner: macos-26-intel
-            make_target: test-macos-ui
-            artifact: macos
-            only_testing: Swift95UITests
-            device_type: ""
-            destination_variable: ""
-          - name: iPhone tests
-            runner: macos-latest
-            make_target: test-ios
-            artifact: iphone
-            only_testing: Swift95UITests Swift95Tests/SystemFonts95Tests
-            device_type: com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
-            destination_variable: IOS_DESTINATION
-          - name: iPad tests
-            runner: macos-latest
-            make_target: test-ipad
-            artifact: ipad
-            only_testing: Swift95UITests Swift95Tests/SystemFonts95Tests
-            device_type: com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB
-            destination_variable: IPAD_DESTINATION
+    timeout-minutes: 60
     env:
-      ONLY_TESTING: ${{ matrix.only_testing }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
+      SNAPSHOT_TESTING_RECORD: never
+      TEST_RUNNER_SNAPSHOT_TESTING_RECORD: never
       TEST_XCODEBUILD_FLAGS: >-
         -parallel-testing-enabled NO
+        -collect-test-diagnostics never
         -test-timeouts-enabled YES
         -default-test-execution-time-allowance 120
         -maximum-test-execution-time-allowance 180
     steps:
       - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Website/package-lock.json
 
       - name: Configure build paths
         run: |
@@ -88,84 +51,32 @@ jobs:
           echo "TUIST_XDG_CACHE_HOME=$RUNNER_TEMP/tuist-cache" >> "$GITHUB_ENV"
           echo "TUIST_XDG_CONFIG_HOME=$RUNNER_TEMP/tuist-config" >> "$GITHUB_ENV"
           echo "TUIST_XDG_STATE_HOME=$RUNNER_TEMP/tuist-state" >> "$GITHUB_ENV"
+          echo "SNAPSHOT_ARTIFACTS=$RUNNER_TEMP/snapshot-failures" >> "$GITHUB_ENV"
 
-      - uses: jdx/mise-action@v5
+      - name: Check formatting and run package tests
+        run: make lint test-package
 
-      - name: Create test simulator
-        if: matrix.device_type != ''
-        env:
-          DEVICE_TYPE: ${{ matrix.device_type }}
-          DESTINATION_VARIABLE: ${{ matrix.destination_variable }}
+      - name: Create test simulators
         run: |
-          udid="$(xcrun simctl create 'Swift95 CI' "$DEVICE_TYPE" com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
-          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
-          echo "$DESTINATION_VARIABLE=platform=iOS Simulator,id=$udid" >> "$GITHUB_ENV"
-
-      - name: Run ${{ matrix.name }}
-        run: make ${{ matrix.make_target }}
-
-      - name: Upload test results
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: swift95-test-results-${{ matrix.artifact }}
-          path: |
-            ${{ runner.temp }}/swift95-derived-data/Logs/Test
-            ${{ runner.temp }}/tuist-state/logs
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Delete test simulator
-        if: always() && env.SIMULATOR_UDID != ''
-        run: |
-          xcrun simctl shutdown "$SIMULATOR_UDID" || true
-          xcrun simctl delete "$SIMULATOR_UDID"
-
-  compatibility:
-    name: Minimum platform compatibility and snapshots
-    needs: [platform-tests]
-    runs-on: macos-15
-    timeout-minutes: 45
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
-      TEST_XCODEBUILD_FLAGS: >-
-        -parallel-testing-enabled NO
-        -test-timeouts-enabled YES
-        -default-test-execution-time-allowance 120
-        -maximum-test-execution-time-allowance 180
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Configure build paths
-        run: |
-          echo "DERIVED_DATA=$RUNNER_TEMP/swift95-derived-data" >> "$GITHUB_ENV"
-          echo "TUIST_XDG_CACHE_HOME=$RUNNER_TEMP/tuist-cache" >> "$GITHUB_ENV"
-          echo "TUIST_XDG_CONFIG_HOME=$RUNNER_TEMP/tuist-config" >> "$GITHUB_ENV"
-          echo "TUIST_XDG_STATE_HOME=$RUNNER_TEMP/tuist-state" >> "$GITHUB_ENV"
-
-      - uses: jdx/mise-action@v5
-      - name: Run minimum macOS package tests and snapshots
-        run: make test-package
-        env:
-          SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
-
-      - name: Create baseline simulators
-        run: |
-          iphone_udid="$(xcrun simctl create 'Swift95 baseline iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro com.apple.CoreSimulator.SimRuntime.iOS-18-5)"
+          iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
           echo "IPHONE_SIMULATOR_UDID=$iphone_udid" >> "$GITHUB_ENV"
           echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
-          ipad_udid="$(xcrun simctl create 'Swift95 baseline iPad' com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB com.apple.CoreSimulator.SimRuntime.iOS-18-5)"
+          ipad_udid="$(xcrun simctl create 'Swift95 CI iPad' com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
           echo "IPAD_SIMULATOR_UDID=$ipad_udid" >> "$GITHUB_ENV"
           echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
 
-      - name: Run minimum iOS package tests and snapshots
-        run: make test-ios test-ipad ONLY_TESTING=Swift95Tests
+      - name: Run macOS, iPhone, and iPad tests
+        run: make test-catalog
 
-      - name: Upload compatibility failures
+      - run: npm --prefix Website ci
+      - name: Build and validate website and API documentation
+        run: make website-build
+
+      - name: Upload validation failures
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: swift95-compatibility-failures
+          name: swift95-validation-failures
           path: |
             ${{ runner.temp }}/snapshot-failures
             ${{ runner.temp }}/swift95-derived-data/Logs/Test
@@ -173,7 +84,13 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Delete baseline simulators
+      - name: Upload website for publication
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: Website/dist
+
+      - name: Delete test simulators
         if: always()
         run: |
           for udid in "${IPHONE_SIMULATOR_UDID:-}" "${IPAD_SIMULATOR_UDID:-}"; do
@@ -183,52 +100,10 @@ jobs:
             fi
           done
 
-  documentation:
-    name: Website and API documentation
-    runs-on: macos-latest
-    timeout-minutes: 30
-    env:
-      SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: Website/package-lock.json
-      - run: npm --prefix Website ci
-      - run: make website-build
-
-      - name: Upload generated documentation images
-        uses: actions/upload-artifact@v7
-        with:
-          name: swift95-documentation-images
-          path: |
-            Website/public/images/radiobutton95-group-macos.png
-            Website/public/images/checkbox95-states-macos.png
-            Website/public/images/textfield95-compact-macos.png
-            Website/public/images/securefield95-compact-macos.png
-            Website/public/images/picker95-compact-macos.png
-            Website/public/images/progressview95-variants-macos.png
-            Website/public/images/text95-states-macos.png
-            Website/public/images/list95-compact-macos.png
-            Website/public/images/tabs95-compact-macos.png
-            Website/public/images/divider95-context-macos.png
-            Website/public/images/image95-symbol-macos.png
-            Assets/README/swift95-readme-hero.png
-          retention-days: 7
-          if-no-files-found: error
-
-      - name: Upload website for publication
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: Website/dist
-
   deploy:
     name: Publish website
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
-    needs: [quality, platform-tests, compatibility, documentation]
+    needs: [validation]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
