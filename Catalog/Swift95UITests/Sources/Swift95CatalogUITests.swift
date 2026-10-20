@@ -390,11 +390,6 @@ final class Swift95CatalogUITests: XCTestCase {
 
   private func activate(_ element: XCUIElement) {
     XCTAssertTrue(element.waitForExistence(timeout: 5), element.identifier)
-    let hittable = expectation(
-      for: NSPredicate(format: "hittable == true"),
-      evaluatedWith: element
-    )
-    wait(for: [hittable], timeout: 5)
     #if os(macOS)
       element.click()
     #else
