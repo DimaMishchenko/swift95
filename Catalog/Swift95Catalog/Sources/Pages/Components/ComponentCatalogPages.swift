@@ -252,28 +252,17 @@ struct SliderCatalogView95: View {
         Slider95(value: $volume, in: 0...100) {
           Text("Volume: \(Int(volume))")
         }
-        .accessibilityIdentifier("catalog.slider.continuous")
       }
 
       CatalogExample95("Stepped") {
         Slider95(value: $brightness, in: 0...10, step: 1) {
           Text("Brightness: \(Int(brightness))")
         }
-        .accessibilityIdentifier("catalog.slider.stepped")
       }
 
       CatalogExample95("Disabled") {
         Slider95(value: $disabledVolume, in: 0...100)
           .disabled(true)
-          .accessibilityIdentifier("catalog.slider.disabled")
-      }
-
-      CatalogExample95("Right-to-left") {
-        Slider95(value: $volume, in: 0...100) {
-          Text("Volume: \(Int(volume))")
-        }
-        .environment(\.layoutDirection, .rightToLeft)
-        .accessibilityIdentifier("catalog.slider.rtl")
       }
     }
   }
@@ -665,23 +654,7 @@ struct PickerCatalogView95: View {
         .disabled(true)
       }
 
-      CatalogExample95("Right-to-left") {
-        Picker95(
-          "Sort by",
-          selection: $sortOrder,
-          options: SortOrder95.options.map { option in
-            option.swiftUI { row in
-              row.accessibilityIdentifier("catalog.picker.rtl.\(option.value.title)")
-            }
-          }
-        )
-        .environment(\.layoutDirection, .rightToLeft)
-        .environment(\.locale, Locale(identifier: "ar"))
-        .accessibilityIdentifier("catalog.picker.rtl")
-      }
-
       Text95("Selection: \(sortOrder.title)")
-        .accessibilityIdentifier("catalog.picker.selection")
     }
   }
 }

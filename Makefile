@@ -123,7 +123,7 @@ website-check:
 
 .website-docc:
 	rm -rf "$(DOCC_BUILD_PATH)" "$(DOCC_OUTPUT_PATH)"
-	mkdir -p "$(DOCC_BUILD_PATH)"
+	mkdir -p "$(DOCC_BUILD_PATH)" "$(DOCC_SITE_PATH)"
 	set -e; \
 	trap 'node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs clean' EXIT; \
 	node $(WEBSITE_PATH)/scripts/prepare-docc-content.mjs prepare; \

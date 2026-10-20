@@ -1,0 +1,16 @@
+// Library-owned interface and accessibility labels.
+// Keep this .strings table compatible with SwiftPM and Xcode builds.
+
+"swift95.scroll.down" = "Scroll down";
+"swift95.scroll.position" = "Scroll position";
+"swift95.scroll.up" = "Scroll up";
+"swift95.state.active" = "Active";
+"swift95.state.collapsed" = "Collapsed";
+"swift95.state.expanded" = "Expanded";
+"swift95.state.minimized" = "Minimized";
+"swift95.window.close" = "Close";
+"swift95.window.maximize" = "Maximize";
+"swift95.window.minimize" = "Minimize";
+"swift95.window.move" = "Move window";
+"swift95.window.resize" = "Resize window";
+"swift95.window.restore" = "Restore";

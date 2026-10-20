@@ -29,6 +29,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: make lint test-package
+        env:
+          SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
+      - name: Upload snapshot failures
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: swift95-package-snapshot-failures
+          path: ${{ runner.temp }}/snapshot-failures
+          retention-days: 7
+          if-no-files-found: ignore
 
   platform-tests:
     name: ${{ matrix.name }}

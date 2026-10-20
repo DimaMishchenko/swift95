@@ -103,7 +103,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   #if os(iOS)
     func testRightToLeftSliderInputFollowsVisualDirection() throws {
-      let app = launch(destination: "slider")
+      let app = launch(destination: "testRTLControls")
       let slider = element("catalog.slider.rtl", in: app)
       XCTAssertTrue(slider.waitForExistence(timeout: 5))
       if !slider.isHittable {
@@ -161,7 +161,7 @@ final class Swift95CatalogUITests: XCTestCase {
   }
 
   func testRightToLeftCatalogPickerSelectsAndDismissesOptions() {
-    let app = launch(destination: "picker")
+    let app = launch(destination: "testRTLControls")
     let picker = element("catalog.picker.rtl", in: app)
     XCTAssertTrue(picker.waitForExistence(timeout: 5))
     activate(picker)
@@ -185,7 +185,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   #if os(macOS)
     func testRightToLeftSliderKeyboardFollowsVisualDirection() throws {
-      let app = launch(destination: "slider")
+      let app = launch(destination: "testRTLControls")
       let slider = element("catalog.slider.rtl", in: app)
       XCTAssertTrue(slider.waitForExistence(timeout: 5))
       activate(slider)

@@ -225,7 +225,7 @@ enum CatalogSection: String, CaseIterable, Identifiable, Hashable, Codable {
   }
 
   var destinations: [CatalogDestination] {
-    CatalogDestination.allCases.filter { $0.section == self }
+    CatalogDestination.allCases.filter { $0.section == self && $0 != .testRTLControls }
   }
 }
 
@@ -256,6 +256,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
   case icons
   case testControls
   case testInteractions
+  case testRTLControls
   case testOverrides
   case testWorkspace
   case testMenu
@@ -270,7 +271,8 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
       .components
     case .bevel, .typography, .colors, .spacing, .metrics, .icons:
       .foundations
-    case .testControls, .testInteractions, .testOverrides, .testWorkspace, .testMenu:
+    case .testControls, .testInteractions, .testRTLControls, .testOverrides, .testWorkspace,
+      .testMenu:
       .testLab
     }
   }
@@ -303,6 +305,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .icons: "Swift95Icons"
     case .testControls: "Accessibility"
     case .testInteractions: "Interactions"
+    case .testRTLControls: "RTL Controls"
     case .testOverrides: "Overrides"
     case .testWorkspace: "Workspace Fixtures"
     case .testMenu: "Menu Fixtures"
@@ -337,6 +340,7 @@ enum CatalogDestination: String, CaseIterable, Identifiable, Hashable, Codable {
     case .icons: .fileIcons
     case .testControls: .accessibility
     case .testInteractions: .hand
+    case .testRTLControls: .sndvol32300
     case .testOverrides: .settings
     case .testWorkspace: .shellDesktop
     case .testMenu: .list
@@ -438,6 +442,8 @@ private struct CatalogDestinationView: View {
       TestLabAccessibilityView95()
     case .testInteractions:
       TestLabInteractionsView95()
+    case .testRTLControls:
+      TestLabRTLControlsView95()
     case .testOverrides:
       TestLabOverridesView95()
     case .testWorkspace:
