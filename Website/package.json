@@ -17,7 +17,7 @@
   "dependencies": {
     "@astrojs/react": "^6.0.6",
     "@astrojs/starlight": "^0.41.11",
-    "@react95/core": "^9.8.7",
+    "@react95/core": "^10.0.2",
     "astro": "^7.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
