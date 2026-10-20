@@ -179,6 +179,7 @@
         .environment(\.locale, Locale(identifier: "en_US_POSIX"))
         .environment(\.colorScheme, .light)
         .environment(\.layoutDirection, .leftToRight)
+        .environment(\.displayScale, 2)
         .transaction { $0.disablesAnimations = true }
       let view = NSHostingView(rootView: root)
       view.frame = CGRect(x: 0, y: 0, width: width, height: height)
