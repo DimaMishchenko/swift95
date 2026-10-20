@@ -189,6 +189,12 @@ final class Swift95CatalogUITests: XCTestCase {
     #else
       activate(name)
       assertLabel("Selection: Name", for: "catalog.picker.selection", in: app)
+      activate(picker)
+      XCTAssertTrue(date.waitForExistence(timeout: 3))
+      app.windows.firstMatch
+        .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)).tap()
+      XCTAssertFalse(date.exists)
+      assertLabel("Selection: Name", for: "catalog.picker.selection", in: app)
     #endif
   }
 
