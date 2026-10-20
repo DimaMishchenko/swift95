@@ -254,7 +254,14 @@ final class Swift95CatalogUITests: XCTestCase {
 
     #if os(macOS)
       activate(fileMenu)
-      activate(element("menu.activate", in: app))
+      let activateItem = element("menu.activate", in: app)
+      XCTAssertTrue(activateItem.waitForExistence(timeout: 5))
+      XCTAssertTrue(activateItem.isEnabled)
+      let commandPoint = CGPoint(x: fileMenu.frame.midX, y: activateItem.frame.midY)
+      XCTAssertTrue(activateItem.frame.contains(commandPoint))
+      fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .withOffset(CGVector(dx: 0, dy: commandPoint.y - fileMenu.frame.midY))
+        .click()
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
