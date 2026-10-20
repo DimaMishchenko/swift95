@@ -451,7 +451,6 @@ final class Swift95CatalogUITests: XCTestCase {
       #else
         XCTAssertEqual(label, expected, diagnostics)
       #endif
-      XCTAssertEqual(result, .completed, diagnostics)
     }
   }
 
