@@ -207,13 +207,16 @@
           window.isReleasedWhenClosed = false
           window.colorSpace = .displayP3
           window.contentView = view
+          window.orderFrontRegardless()
           view.layoutSubtreeIfNeeded()
 
           RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.1))
           view.layoutSubtreeIfNeeded()
+          window.displayIfNeeded()
           image.snapshot(view)
             .run { snapshot in
               window.contentView = nil
+              window.close()
               callback(snapshot)
             }
         }

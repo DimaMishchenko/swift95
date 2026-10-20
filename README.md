@@ -63,7 +63,8 @@ website uses Node.js 22 and dependencies installed with `npm --prefix Website ci
 CI validates pull requests and pushes to `main` using Xcode 16.4 and iOS 18.5 simulators on
 macOS 15. Platform tests also build and launch the Catalog. Snapshot references are checked
 without recording replacements. macOS integration snapshots render at a fixed 2× scale in
-Display P3, independently of the host display.
+Display P3, independently of the host display. Use the pinned CI environment to compare
+macOS integration references; newer macOS renderers can produce different pixels.
 
 The **CI** workflow publishes the website after every push to `main`, including merged pull
 requests, once all checks pass. To publish manually, run it from `main` with **publish_website**
