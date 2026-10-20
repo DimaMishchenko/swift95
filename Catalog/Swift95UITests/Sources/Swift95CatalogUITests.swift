@@ -253,26 +253,8 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertTrue(fileMenu.waitForExistence(timeout: 5))
 
     #if os(macOS)
-      fileMenu.click()
-      let activateItem = element("menu.activate", in: app)
-      XCTAssertTrue(activateItem.waitForExistence(timeout: 5))
-      let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-      let firstItem = activateItem.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-      start.press(forDuration: 0.2, thenDragTo: firstItem)
-
-      // macOS 26 can deliver the drag to the header without delivering the
-      // release to the custom menu gesture. Retry the same visible command
-      // through its native button hit target if the drag did not update state.
-      let output = element("menu.output", in: app)
-      XCTAssertTrue(output.waitForExistence(timeout: 3))
-      if (output.value as? String) != "Menu activation: Activate" {
-        // The failed drag dismisses the menu on macOS 26, so resolve a fresh
-        // item after reopening it instead of clicking the stale element.
-        fileMenu.click()
-        let retryItem = element("menu.activate", in: app)
-        XCTAssertTrue(retryItem.waitForExistence(timeout: 3))
-        retryItem.click()
-      }
+      activate(fileMenu)
+      activate(element("menu.activate", in: app))
     #else
       let start = fileMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
       let firstItem = start.withOffset(CGVector(dx: 30, dy: fileMenu.frame.height + 4))
