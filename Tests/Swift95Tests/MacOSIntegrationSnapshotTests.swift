@@ -187,43 +187,31 @@
     }
 
     private func macImage(size: CGSize) -> Snapshotting<NSView, NSImage> {
-      let image = Snapshotting<NSImage, NSImage>
+      let image = Snapshotting<NSView, NSImage>
         .image(
           precision: 1,
-          perceptualPrecision: 0.98
+          perceptualPrecision: 0.98,
+          size: size
         )
       return Snapshotting(
         pathExtension: image.pathExtension,
         diffing: image.diffing
       ) { view in
         Async { callback in
-          let window = NSWindow(
+          let window = SnapshotWindow95(
             contentRect: view.frame,
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
           )
           window.isReleasedWhenClosed = false
+          window.colorSpace = .displayP3
           window.contentView = view
           view.layoutSubtreeIfNeeded()
 
           RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.1))
           view.layoutSubtreeIfNeeded()
-          let context = CGContext(
-            data: nil,
-            width: Int(size.width * 2),
-            height: Int(size.height * 2),
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: CGColorSpace(name: CGColorSpace.displayP3)!,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-          )!
-          let bitmap = NSBitmapImageRep(cgImage: context.makeImage()!)
-          bitmap.size = size
-          view.cacheDisplay(in: view.bounds, to: bitmap)
-          let renderedImage = NSImage(size: size)
-          renderedImage.addRepresentation(bitmap)
-          image.snapshot(renderedImage)
+          image.snapshot(view)
             .run { snapshot in
               window.contentView = nil
               callback(snapshot)
@@ -256,6 +244,10 @@
         .frame(width: 18, height: 18)
         .bevel95(.raised)
     }
+  }
+
+  private final class SnapshotWindow95: NSWindow {
+    override var backingScaleFactor: CGFloat { 2 }
   }
 
   private enum MacPickerValue: Hashable {
