@@ -55,27 +55,16 @@ Run the `Swift95Catalog` scheme for your preferred destination—or
 
 ## Development
 
-Run `make help` for the available commands. Use `make format` and `make lint` for formatting,
-`make check` for package tests, platform tests, and Catalog builds, and `make website-build` for
-the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
-website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
+Use Xcode 26.6 and the Tuist version in `.tool-versions`. Website development also requires
+Node.js 22.22 or later and `npm --prefix Website ci`.
 
-CI validates pull requests and pushes to `main` in one `Validation` job on the latest
-macOS Apple silicon runner, using stable Xcode 26.6. It runs all package and snapshot tests,
-macOS Catalog UI tests, and full tests on iOS 26.5 iPhone 17 Pro and 13-inch iPad Pro (M5)
-simulators, then builds and validates the website and API documentation.
+```sh
+make generate       # Open Catalog/Swift95Catalog.xcworkspace after generation
+make format         # Format Swift sources
+make check          # Lint, test, and build the Catalog on all platforms
+make website-dev    # Preview the website
+make website-build  # Build and validate the complete documentation site
+```
 
-The Catalog workspace is generated once. `make test-mobile` builds one mobile test bundle and
-runs it on both simulators without rebuilding; `make test-catalog` also runs the macOS UI tests.
-Build output and resolved dependencies stay on the same machine throughout validation.
-Snapshot references use macOS 26 and iOS 26.5, with recording disabled in CI. macOS integration
-snapshots render at a fixed 2× scale in Display P3, independently of the host display. Review
-intentional rendering changes on the matching OS before updating references. The package keeps
-Swift 6 language mode and iOS 18/macOS 15 deployment targets; CI exercises the current OS.
-
-The **CI** workflow publishes the website after every push to `main`, including merged pull
-requests, once all checks pass. To publish manually, run it from `main` with **publish_website**
-selected. Pull requests validate the website without publishing it.
-
-Dependabot checks Swift packages, website npm packages, and GitHub Actions weekly. Minor and
-patch updates are grouped by ecosystem; major updates get separate pull requests.
+Run `make help` for individual checks and simulator overrides. CI validates pull requests and
+publishes the website after checks pass on `main`.
