@@ -199,7 +199,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   func testPickerListAndTabsUpdateSelection() {
     let app = launch(destination: "testInteractions")
-    revealSelectionFixtures(in: app)
+    revealSelectionFixture("interaction.picker", in: app)
 
     let picker = element("interaction.picker", in: app)
     XCTAssertTrue(picker.waitForExistence(timeout: 5))
@@ -210,10 +210,14 @@ final class Swift95CatalogUITests: XCTestCase {
     activate(dateOption)
     assertLabel("Picker: Date modified", for: "interaction.picker.output", in: app)
 
+    revealSelectionFixture("interaction.list.settings", in: app)
     activate(element("interaction.list.settings", in: app))
     assertLabel("List: settings", for: "interaction.list.output", in: app)
 
-    activate(element("interaction.tab.display", in: app))
+    revealSelectionFixture("interaction.tab.display", in: app)
+    let displayTab = element("interaction.tab.display", in: app)
+    activate(displayTab)
+    XCTAssertTrue(displayTab.isSelected)
     assertLabel("Display settings", for: "interaction.tab.content", in: app)
   }
 
@@ -454,12 +458,14 @@ final class Swift95CatalogUITests: XCTestCase {
     waitForExpectations(timeout: 3)
   }
 
-  private func revealSelectionFixtures(in app: XCUIApplication) {
-    let picker = element("interaction.picker", in: app)
+  private func revealSelectionFixture(_ identifier: String, in app: XCUIApplication) {
+    let control = element(identifier, in: app)
     let scrollView = app.scrollViews.firstMatch
     XCTAssertTrue(scrollView.waitForExistence(timeout: 5))
-    for _ in 0..<8 {
-      if picker.isHittable { return }
+    for attempt in 0...8 {
+      let viewport = scrollView.frame.insetBy(dx: 0, dy: 24)
+      if control.isHittable, viewport.contains(control.frame) { return }
+      guard attempt < 8 else { break }
       #if os(macOS)
         scrollView.scroll(byDeltaX: 0, deltaY: -150)
       #else
@@ -470,6 +476,6 @@ final class Swift95CatalogUITests: XCTestCase {
               withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
       #endif
     }
-    XCTAssertTrue(picker.isHittable)
+    XCTFail("Could not reveal \(identifier) in the selection fixture")
   }
 }

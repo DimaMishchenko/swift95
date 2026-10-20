@@ -1,5 +1,4 @@
-SHELL := /bin/bash
-.SHELLFLAGS := -o pipefail -c
+SHELL := /bin/bash -o pipefail
 
 CATALOG_PATH := Catalog
 WEBSITE_PATH := Website
