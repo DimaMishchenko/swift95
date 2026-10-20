@@ -29,12 +29,19 @@ struct SystemFonts95Tests {
   }
 
   @Test func scalableSystemFontMatchesNativeSystemRendering() throws {
-    let scalable = try renderedSize(
-      font: fonts.font(size: 30, weight: .semibold, relativeTo: .body)
-    )
-    let native = try renderedSize(font: .system(size: 30, weight: .semibold))
-
-    #expect(scalable == native)
+    for size: CGFloat in [12, 30] {
+      for weight: Font.Weight in [.regular, .semibold] {
+        let scalable = try renderedImage(
+          font: fonts.font(size: size, weight: weight, relativeTo: .body)
+        )
+        let native = try renderedImage(font: .system(size: size, weight: weight))
+        #expect(scalable.width == native.width)
+        #expect(scalable.height == native.height)
+        let scalablePixels = try #require(scalable.dataProvider?.data) as Data
+        let nativePixels = try #require(native.dataProvider?.data) as Data
+        #expect(scalablePixels == nativePixels)
+      }
+    }
   }
 
   #if compiler(>=6.2)
@@ -81,13 +88,20 @@ struct SystemFonts95Tests {
     font: Font,
     dynamicTypeSize: DynamicTypeSize = .large
   ) throws -> CGSize {
+    let image = try renderedImage(font: font, dynamicTypeSize: dynamicTypeSize)
+    return CGSize(width: image.width, height: image.height)
+  }
+
+  private func renderedImage(
+    font: Font,
+    dynamicTypeSize: DynamicTypeSize = .large
+  ) throws -> CGImage {
     let renderer = ImageRenderer(
       content: Text("System font sample")
         .font(font)
         .environment(\.dynamicTypeSize, dynamicTypeSize)
         .fixedSize()
     )
-    let image = try #require(renderer.cgImage)
-    return CGSize(width: image.width, height: image.height)
+    return try #require(renderer.cgImage)
   }
 }

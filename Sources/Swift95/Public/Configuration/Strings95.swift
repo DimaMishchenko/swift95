@@ -66,19 +66,30 @@ public struct Strings95: Sendable {
 
   /// Labels localized from Swift95's resource bundle.
   public static let localized = Strings95(
-    minimize: LocalizedStringResource("swift95.window.minimize", bundle: .module),
-    maximize: LocalizedStringResource("swift95.window.maximize", bundle: .module),
-    restore: LocalizedStringResource("swift95.window.restore", bundle: .module),
-    close: LocalizedStringResource("swift95.window.close", bundle: .module),
-    scrollPosition: LocalizedStringResource("swift95.scroll.position", bundle: .module),
-    scrollUp: LocalizedStringResource("swift95.scroll.up", bundle: .module),
-    scrollDown: LocalizedStringResource("swift95.scroll.down", bundle: .module),
-    moveWindow: LocalizedStringResource("swift95.window.move", bundle: .module),
-    resizeWindow: LocalizedStringResource("swift95.window.resize", bundle: .module),
-    expanded: LocalizedStringResource("swift95.state.expanded", bundle: .module),
-    collapsed: LocalizedStringResource("swift95.state.collapsed", bundle: .module),
-    active: LocalizedStringResource("swift95.state.active", bundle: .module),
-    minimized: LocalizedStringResource("swift95.state.minimized", bundle: .module)
+    minimize: LocalizedStringResource(
+      "swift95.window.minimize", bundle: .atURL(Bundle.module.bundleURL)),
+    maximize: LocalizedStringResource(
+      "swift95.window.maximize", bundle: .atURL(Bundle.module.bundleURL)),
+    restore: LocalizedStringResource(
+      "swift95.window.restore", bundle: .atURL(Bundle.module.bundleURL)),
+    close: LocalizedStringResource("swift95.window.close", bundle: .atURL(Bundle.module.bundleURL)),
+    scrollPosition: LocalizedStringResource(
+      "swift95.scroll.position", bundle: .atURL(Bundle.module.bundleURL)),
+    scrollUp: LocalizedStringResource("swift95.scroll.up", bundle: .atURL(Bundle.module.bundleURL)),
+    scrollDown: LocalizedStringResource(
+      "swift95.scroll.down", bundle: .atURL(Bundle.module.bundleURL)),
+    moveWindow: LocalizedStringResource(
+      "swift95.window.move", bundle: .atURL(Bundle.module.bundleURL)),
+    resizeWindow: LocalizedStringResource(
+      "swift95.window.resize", bundle: .atURL(Bundle.module.bundleURL)),
+    expanded: LocalizedStringResource(
+      "swift95.state.expanded", bundle: .atURL(Bundle.module.bundleURL)),
+    collapsed: LocalizedStringResource(
+      "swift95.state.collapsed", bundle: .atURL(Bundle.module.bundleURL)),
+    active: LocalizedStringResource(
+      "swift95.state.active", bundle: .atURL(Bundle.module.bundleURL)),
+    minimized: LocalizedStringResource(
+      "swift95.state.minimized", bundle: .atURL(Bundle.module.bundleURL))
   )
 }
 

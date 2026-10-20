@@ -244,6 +244,7 @@ private struct AsyncImageCatalogContent95: View {
 struct SliderCatalogView95: View {
   @State private var volume = 45.0
   @State private var brightness = 6.0
+  @State private var disabledVolume = 35.0
 
   var body: some View {
     CatalogPage95("Slider95") {
@@ -251,17 +252,20 @@ struct SliderCatalogView95: View {
         Slider95(value: $volume, in: 0...100) {
           Text("Volume: \(Int(volume))")
         }
+        .accessibilityIdentifier("catalog.slider.continuous")
       }
 
       CatalogExample95("Stepped") {
         Slider95(value: $brightness, in: 0...10, step: 1) {
           Text("Brightness: \(Int(brightness))")
         }
+        .accessibilityIdentifier("catalog.slider.stepped")
       }
 
       CatalogExample95("Disabled") {
-        Slider95(value: .constant(35.0), in: 0...100)
+        Slider95(value: $disabledVolume, in: 0...100)
           .disabled(true)
+          .accessibilityIdentifier("catalog.slider.disabled")
       }
 
       CatalogExample95("Right-to-left") {
@@ -665,13 +669,19 @@ struct PickerCatalogView95: View {
         Picker95(
           "Sort by",
           selection: $sortOrder,
-          options: SortOrder95.options
+          options: SortOrder95.options.map { option in
+            option.swiftUI { row in
+              row.accessibilityIdentifier("catalog.picker.rtl.\(option.value.title)")
+            }
+          }
         )
         .environment(\.layoutDirection, .rightToLeft)
         .environment(\.locale, Locale(identifier: "ar"))
+        .accessibilityIdentifier("catalog.picker.rtl")
       }
 
       Text95("Selection: \(sortOrder.title)")
+        .accessibilityIdentifier("catalog.picker.selection")
     }
   }
 }

@@ -120,6 +120,80 @@ final class Swift95CatalogUITests: XCTestCase {
         Double(try XCTUnwrap(slider.value as? String).replacingOccurrences(of: "%", with: ""))
       )
       XCTAssertGreaterThan(leftValue, rightValue)
+
+      let right = slider.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5))
+      let left = slider.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5))
+      right.tap()
+      right.press(forDuration: 0.1, thenDragTo: left)
+      XCTAssertGreaterThan(try sliderValue(slider), 95)
+      left.press(forDuration: 0.1, thenDragTo: right)
+      XCTAssertLessThan(try sliderValue(slider), 5)
+
+      let continuous = element("catalog.slider.continuous", in: app)
+      continuous.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5)).tap()
+      XCTAssertLessThan(try sliderValue(continuous), 5)
+      continuous.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
+      XCTAssertGreaterThan(try sliderValue(continuous), 95)
+
+      let disabled = element("catalog.slider.disabled", in: app)
+      XCTAssertFalse(disabled.isEnabled)
+      let disabledValue = disabled.value as? String
+      disabled.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+      XCTAssertEqual(disabled.value as? String, disabledValue)
+
+      let stepped = element("catalog.slider.stepped", in: app)
+      stepped.coordinate(withNormalizedOffset: CGVector(dx: 0.37, dy: 0.5)).tap()
+      let firstStep = try sliderValue(stepped)
+      XCTAssertEqual(firstStep, 4)
+      stepped.coordinate(withNormalizedOffset: CGVector(dx: 0.77, dy: 0.5)).tap()
+      XCTAssertGreaterThan(try sliderValue(stepped), firstStep)
+      XCTAssertEqual(try sliderValue(stepped), 8)
+    }
+
+  #endif
+
+  private func sliderValue(_ slider: XCUIElement) throws -> Double {
+    if let number = slider.value as? NSNumber {
+      return number.doubleValue
+    }
+    return try XCTUnwrap(
+      Double(try XCTUnwrap(slider.value as? String).replacingOccurrences(of: "%", with: "")))
+  }
+
+  func testRightToLeftCatalogPickerSelectsAndDismissesOptions() {
+    let app = launch(destination: "picker")
+    let picker = element("catalog.picker.rtl", in: app)
+    XCTAssertTrue(picker.waitForExistence(timeout: 5))
+    activate(picker)
+    let date = element("catalog.picker.rtl.Date modified", in: app)
+    XCTAssertTrue(date.waitForExistence(timeout: 3))
+    activate(date)
+    assertLabel("Selection: Date modified", for: "catalog.picker.selection", in: app)
+    XCTAssertFalse(date.exists)
+    activate(picker)
+    let name = element("catalog.picker.rtl.Name", in: app)
+    XCTAssertTrue(name.waitForExistence(timeout: 3))
+    #if os(macOS)
+      app.typeKey(.escape, modifierFlags: [])
+      XCTAssertFalse(name.exists)
+      assertLabel("Selection: Date modified", for: "catalog.picker.selection", in: app)
+    #else
+      activate(name)
+      assertLabel("Selection: Name", for: "catalog.picker.selection", in: app)
+    #endif
+  }
+
+  #if os(macOS)
+    func testRightToLeftSliderKeyboardFollowsVisualDirection() throws {
+      let app = launch(destination: "slider")
+      let slider = element("catalog.slider.rtl", in: app)
+      XCTAssertTrue(slider.waitForExistence(timeout: 5))
+      activate(slider)
+      let initial = try sliderValue(slider)
+      app.typeKey(.leftArrow, modifierFlags: [])
+      XCTAssertGreaterThan(try sliderValue(slider), initial)
+      app.typeKey(.rightArrow, modifierFlags: [])
+      XCTAssertEqual(try sliderValue(slider), initial, accuracy: 0.01)
     }
   #endif
 
@@ -381,13 +455,21 @@ final class Swift95CatalogUITests: XCTestCase {
   }
 
   private func revealSelectionFixtures(in app: XCUIApplication) {
-    #if os(macOS)
-      let scrollView = app.scrollViews.firstMatch
-      XCTAssertTrue(scrollView.waitForExistence(timeout: 5))
-      scrollView.scroll(byDeltaX: 0, deltaY: -500)
-    #else
-      app.swipeUp()
-      app.swipeUp()
-    #endif
+    let picker = element("interaction.picker", in: app)
+    let scrollView = app.scrollViews.firstMatch
+    XCTAssertTrue(scrollView.waitForExistence(timeout: 5))
+    for _ in 0..<8 {
+      if picker.isHittable { return }
+      #if os(macOS)
+        scrollView.scroll(byDeltaX: 0, deltaY: -150)
+      #else
+        scrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+          .press(
+            forDuration: 0.05,
+            thenDragTo: scrollView.coordinate(
+              withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
+      #endif
+    }
+    XCTAssertTrue(picker.isHittable)
   }
 }

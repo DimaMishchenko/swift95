@@ -340,6 +340,7 @@ private struct SliderDrawing95: View {
             y: geometry.size.height / 2
           )
       }
+      .environment(\.layoutDirection, .leftToRight)
     }
     .accessibilityHidden(true)
     .allowsHitTesting(false)
