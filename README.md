@@ -61,8 +61,8 @@ the complete documentation site. The Catalog uses the Tuist version in `.tool-ve
 website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
 CI validates pull requests and pushes to `main` on `macos-latest` Apple silicon runners with
-Xcode 26.6. Package tests and documentation run first, followed by at most two Catalog platform
-jobs at a time. Native UI tests run on the latest macOS and iOS 26.5 iPhone 17 Pro and
+Xcode 26.6. Documentation builds alongside the test pipeline. Once package tests pass, at most
+two Catalog platform jobs run at a time. Native UI tests run on the latest macOS and iOS 26.5 iPhone 17 Pro and
 13-inch iPad Pro (M5) simulators. Mobile system-font tests also run on these current simulators.
 
 A separate compatibility check then runs all package tests and existing snapshots on macOS 15,
