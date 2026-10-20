@@ -58,7 +58,7 @@ Run the `Swift95Catalog` scheme for your preferred destination—or
 Run `make help` for the available commands. Use `make format` and `make lint` for formatting,
 `make check` for package tests, platform tests, and Catalog builds, and `make website-build` for
 the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
-website uses Node.js 22 and dependencies installed with `npm --prefix Website ci`.
+website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
 CI validates pull requests and pushes to `main` using Xcode 16.4 and iOS 18.5 simulators on
 macOS 15. Platform tests also build and launch the Catalog. Snapshot references are checked
