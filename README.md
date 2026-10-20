@@ -60,9 +60,11 @@ Run `make help` for the available commands. Use `make format` and `make lint` fo
 the complete documentation site. The Catalog uses the Tuist version in `.tool-versions`; the
 website uses Node.js 22.22.0 or later and dependencies installed with `npm --prefix Website ci`.
 
-CI validates pull requests and pushes to `main` on `macos-latest` Apple silicon runners with
-Xcode 26.6. Documentation builds alongside the test pipeline. Once package tests pass, at most
-two Catalog platform jobs run at a time. Native UI tests run on the latest macOS and iOS 26.5 iPhone 17 Pro and
+CI validates pull requests and pushes to `main` with Xcode 26.6. Package, website, iPhone, and iPad
+checks use `macos-latest` Apple silicon runners. The macOS UI check uses `macos-26-intel` to cover
+Intel Macs on the current macOS release. Documentation builds alongside the test pipeline.
+Once package tests pass, at most two Catalog platform jobs run at a time. Native UI tests run
+on macOS 26 and iOS 26.5 iPhone 17 Pro and
 13-inch iPad Pro (M5) simulators. Mobile system-font tests also run on these current simulators.
 
 A separate compatibility check then runs all package tests and existing snapshots on macOS 15,

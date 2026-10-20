@@ -44,7 +44,7 @@ jobs:
   platform-tests:
     name: ${{ matrix.name }}
     needs: [quality]
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -52,18 +52,21 @@ jobs:
       matrix:
         include:
           - name: macOS UI tests
+            runner: macos-26-intel
             make_target: test-macos-ui
             artifact: macos
             only_testing: Swift95UITests
             device_type: ""
             destination_variable: ""
           - name: iPhone tests
+            runner: macos-latest
             make_target: test-ios
             artifact: iphone
             only_testing: Swift95UITests Swift95Tests/SystemFonts95Tests
             device_type: com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
             destination_variable: IOS_DESTINATION
           - name: iPad tests
+            runner: macos-latest
             make_target: test-ipad
             artifact: ipad
             only_testing: Swift95UITests Swift95Tests/SystemFonts95Tests
