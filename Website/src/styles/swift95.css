@@ -1496,20 +1496,18 @@ body:has(.void-doc95) .main-frame {
 }
 
 .app-examples95 {
-  padding: 0;
-  background: #080b0d;
-  color: #fefefe;
-  font-family: "W95FA", "SFMono-Regular", Consolas, monospace;
+  color: #282828;
+  font-size: 0.88rem;
+  line-height: 1.75;
 }
-.app-example95 h2 { font-size: 2rem; color: inherit; margin: 0 0 1rem; }
-.app-examples95 p { line-height: 1.6; color: #c3c7cb; }
+.app-example95 h2 { font-family: "W95FA", "MS Sans Serif", Tahoma, sans-serif; font-size: clamp(1.35rem, 2.2vw, 1.7rem); line-height: 1.2; color: #000000; margin: 0 0 1rem; padding: 0; border: 0; }
 .app-example95 { display: grid; grid-template-columns: minmax(12rem, 0.65fr) minmax(0, 2fr); gap: 3rem; align-items: center; margin: 0 0 5rem; }
 .app-example95:nth-of-type(even) { grid-template-columns: minmax(0, 2fr) minmax(12rem, 0.65fr); }
 .app-example95:nth-of-type(even) .app-example-copy95 { order: 2; }
-.app-example95 img { display: block; width: 100%; height: auto; margin: 0; box-shadow: 8px 8px 0 #008080; }
-.app-example95 a, .app-example95 a:visited { color: #ffff00; text-underline-offset: 0.3em; }
-.app-example95 a:focus-visible { outline: 2px dashed #ffff00; outline-offset: 5px; }
-.app-examples-footnote95 { font-size: 0.9rem; max-width: 50rem; }
+.app-example95 img { display: block; width: 100%; height: auto; margin: 0; }
+.app-example95 a, .app-example95 a:visited { color: #0000ff; text-underline-offset: 0.25rem; }
+.app-example95 a:focus-visible { outline: 1px dotted #000000; outline-offset: 5px; }
+.app-examples-footnote95 { font-size: 0.75rem; color: #666666; max-width: 50rem; }
 @media (max-width: 950px) {
   .app-example95, .app-example95:nth-of-type(even) { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .app-example95:nth-of-type(even) .app-example-copy95 { order: initial; }
