@@ -39,14 +39,16 @@ const examples = [
           Explore the source ↗
         </a>
       </div>
-      <img
-        src={`/images/examples/${example.slug}.${example.target === "Slack95" ? "png" : "jpg"}`}
-        alt={example.alt}
-        width={example.target === "Slack95" ? 1206 : 2200}
-        height={example.target === "Slack95" ? 2622 : 1520}
-        loading="lazy"
-        decoding="async"
-      />
+      <a class="app-example-image95" href={`https://github.com/DimaMishchenko/swift95/tree/main/Examples/${example.target}`} aria-label={`Explore ${example.name} source`}>
+        <img
+          src={`/images/examples/${example.slug}.${example.target === "Slack95" ? "png" : "jpg"}`}
+          alt={example.alt}
+          width={example.target === "Slack95" ? 1206 : 2200}
+          height={example.target === "Slack95" ? 2622 : 1520}
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
     </article>
   ))}
   <p class="app-examples-footnote95">

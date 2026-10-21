@@ -19,7 +19,7 @@ struct MusicPlayerBar: View {
         if !compact {
           HStack(spacing: 7) {
             Image(systemName: model.volume == 0 ? "speaker.slash" : "speaker.wave.2")
-            Slider95(value: Binding(get: { model.volume }, set: model.setVolume))
+            Slider95(value: Binding(get: { model.volume }, set: { model.setVolume($0) }))
               .accessibilityLabel("Volume")
               .accessibilityIdentifier("music.volume")
           }
@@ -30,7 +30,7 @@ struct MusicPlayerBar: View {
         transport
         HStack(spacing: 8) {
           Image(systemName: "speaker.wave.2")
-          Slider95(value: Binding(get: { model.volume }, set: model.setVolume))
+          Slider95(value: Binding(get: { model.volume }, set: { model.setVolume($0) }))
             .accessibilityLabel("Volume")
             .accessibilityIdentifier("music.volume")
         }
@@ -38,7 +38,7 @@ struct MusicPlayerBar: View {
       HStack(spacing: 9) {
         Text(MusicTrack.timeLabel(model.elapsed)).frame(width: 32)
         Slider95(
-          value: Binding(get: { model.elapsed }, set: model.seek),
+          value: Binding(get: { model.elapsed }, set: { model.seek(to: $0) }),
           in: 0...model.currentTrack.duration
         )
         .accessibilityLabel("Playback position")

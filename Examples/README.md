@@ -4,9 +4,9 @@ Three independent, offline SwiftUI apps show how Swift95 components fit together
 
 | Scheme | Explore |
 | --- | --- |
-| `Spotify95` | Playlists, library and album navigation, favorites, search and a simulated player |
-| `Slack95` | Channels, direct messages, conversation search, local messages and threaded replies |
-| `Finder95` | A demo filesystem, folder history, grid/list views, search, new folders, renaming and file details |
+| [Spotify95](Spotify95/) | Playlists, library and album navigation, favorites, search and a simulated player |
+| [Slack95](Slack95/) | Channels, direct messages, conversation search, local messages and threaded replies |
+| [Finder95](Finder95/) | A demo filesystem, folder history, grid/list views, search, new folders, renaming and file details |
 
 Run `make generate`, open `Swift95.xcworkspace`, and select an app scheme. Each app supports macOS 15, iOS 18 and iPadOS 18 or later. The Catalog remains a separate app in the same workspace.
 
@@ -23,6 +23,6 @@ make test-examples-macos
 make test-examples-ios IOS_DESTINATION='platform=iOS Simulator,id=<UDID>'
 ```
 
-The README and website captures live in `Website/public/images/examples/`; updating these promotional images does not change component snapshot references.
+The README and website captures live in `Website/public/images/examples/`; each app folder also has a README gallery with additional captures in `Screenshots/`. Updating these promotional images does not change component snapshot references.
 
 Slack95 is designed around phone navigation, conversations and threads. Spotify95 and Finder95 use desktop layouts with compact adaptations. Example interactions are verified manually; they do not add UI test targets.

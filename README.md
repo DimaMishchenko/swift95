@@ -16,23 +16,10 @@ accessibility, or platform behavior.
 
 Three runnable app examples, each with its own target in [Examples](Examples/README.md).
 
-### Spotify ’95
-
-Browse playlists and albums, save favorites, and try a simulated music player.
-
-![Spotify ’95 with playlists, original album artwork, tracks and playback controls](Website/public/images/examples/spotify95.jpg)
-
-### Slack ’95
-
-Explore channels and direct messages, send local messages, and follow threaded conversations.
-
-<img src="Website/public/images/examples/slack95.png" alt="Slack ’95 on iPhone with a channel conversation and message composer" width="320">
-
-### Finder ’95
-
-Browse a demo filesystem, switch views, create folders, rename items, and inspect file details.
-
-![Finder ’95 with folders, a file grid and selected file details](Website/public/images/examples/finder95.jpg)
+| [Spotify ’95](Examples/Spotify95/) | [Slack ’95](Examples/Slack95/) | [Finder ’95](Examples/Finder95/) |
+| --- | --- | --- |
+| [<img src="Website/public/images/examples/spotify95.jpg" alt="Spotify ’95 with playlists, album artwork and playback controls" height="220">](Examples/Spotify95/) | [<img src="Website/public/images/examples/slack95.png" alt="Slack ’95 on iPhone with a channel conversation and message composer" height="220">](Examples/Slack95/) | [<img src="Website/public/images/examples/finder95.jpg" alt="Finder ’95 with folders, files and selected file details" height="220">](Examples/Finder95/) |
+| Playlists, albums and a simulated player. | Mobile channels, messages and threads. | Folders, search and file details. |
 
 These independent interface studies use local demo content and connect to no external services.
 
