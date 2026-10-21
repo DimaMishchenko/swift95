@@ -840,7 +840,7 @@ body:has(.void-home95) .main-frame {
 		display: flex;
 		align-items: center;
 		min-height: 36px;
-		padding: 0 0.38rem;
+		padding: 0 0.3rem;
 	}
 
 	.void-nav95 nav a::after {
