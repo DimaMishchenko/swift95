@@ -55,9 +55,6 @@ Run the `Swift95Catalog` scheme for your preferred destination, or
 
 ## Development
 
-Use Xcode 26.6 and the Tuist version in `.tool-versions`. Website development also requires
-Node.js 22.22 or later and `npm --prefix Website ci`.
-
 ```sh
 make generate       # Open Catalog/Swift95Catalog.xcworkspace after generation
 make format         # Format Swift sources
