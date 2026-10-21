@@ -62,7 +62,7 @@ export default defineConfig({
 		starlight({
 			title: 'Swift95',
 			description: 'A Windows 95-inspired SwiftUI component kit for Apple platforms.',
-			favicon: '/favicon.png',
+			favicon: '/favicon-swift95.png',
 			customCss: ['./src/styles/swift95.css'],
 			social: [
 				{

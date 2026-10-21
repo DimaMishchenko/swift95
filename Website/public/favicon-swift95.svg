@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <title>Swift95 pixel bird</title>
+  <path fill="#1b1b1b" d="M0 0h32v32H0z"/>
+  <path fill="#f05138" d="M1 1h30v30H1z"/>
+  <path fill="#ffb38a" d="M1 1h30v1H2v29H1z"/>
+  <path fill="#9e2a1c" d="M30 2h1v29H2v-1h28z"/>
+  <path fill="#fff" d="M20 6h1v1h-1zM20 7h2v1h-2zM10 8h1v1h-1zM21 8h2v1h-2zM11 9h1v1h-1zM21 9h3v1h-3zM8 10h1v1h-1zM12 10h1v1h-1zM21 10h3v1h-3zM9 11h2v1h-2zM13 11h1v1h-1zM21 11h4v1h-4zM10 12h2v1h-2zM14 12h2v1h-2zM21 12h4v1h-4zM11 13h2v1h-2zM14 13h3v1h-3zM21 13h5v1h-5zM12 14h6v1h-6zM21 14h5v1h-5zM12 15h8v1h-8zM21 15h5v1h-5zM13 16h13v1h-13zM14 17h12v1h-12zM16 18h10v1h-10zM5 19h1v1h-1zM17 19h9v1h-9zM6 20h2v1h-2zM17 20h9v1h-9zM6 21h6v1h-6zM13 21h14v1h-14zM8 22h19v1h-19zM9 23h19v1h-19zM11 24h12v1h-12zM26 24h2v1h-2zM13 25h7v1h-7zM27 25h1v1h-1z"/>
+</svg>

@@ -28,3 +28,8 @@ independent, historically inspired compatibility and preservation project.
 
 Swift95 is not affiliated with or endorsed by Microsoft. Rights holders can open a repository issue
 to identify an asset that requires corrected attribution or removal.
+
+## Website Swift bird
+
+The pixel-style website favicon is based on the [Swift logo](https://www.swift.org/).
+Swift and the Swift logo are trademarks of Apple Inc. Swift95 is an independent project.
