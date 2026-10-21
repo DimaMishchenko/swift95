@@ -34,7 +34,7 @@ In Xcode, choose **File → Add Package Dependencies** and enter:
 https://github.com/dimamishchenko/swift95
 ```
 
-Select version **1.0.0** or later, then add the [`Swift95`](/api/documentation/swift95/) library to your target. Add
+Add the [`Swift95`](/api/documentation/swift95/) library to your target. Add
 [`Swift95Icons`](/api/documentation/swift95icons/) as well if your interface
 uses the bundled icon set.
 
@@ -55,7 +55,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/dimamishchenko/swift95",
-      from: "1.0.0"
+      branch: "main"
     )
   ],
   targets: [

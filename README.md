@@ -44,7 +44,7 @@ In Xcode, choose **File → Add Package Dependencies** and enter:
 https://github.com/dimamishchenko/swift95
 ```
 
-Select version **1.0.0** or later. Add the `Swift95` product to your target, then use its components like ordinary SwiftUI views:
+Add the `Swift95` product to your target, then use its components like ordinary SwiftUI views:
 
 ```swift
 import Swift95
