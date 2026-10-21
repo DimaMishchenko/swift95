@@ -27,7 +27,7 @@ env:
 
 jobs:
   validation:
-    name: Validation
+    name: ${{ inputs.swift60_compatibility && 'Swift 6.0 compatibility' || 'Validation' }}
     runs-on: ${{ inputs.swift60_compatibility && 'macos-15' || 'xcode-27' }}
     timeout-minutes: 60
     env:

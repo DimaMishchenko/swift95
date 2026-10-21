@@ -88,14 +88,7 @@ lint:
 	swift format lint -r Sources Tests Catalog Examples Workspace.swift Tuist.swift
 
 check-swift60:
-	swift --version
-	@swift --version | grep -Eq 'Swift version 6\.0([ .]|$$)' || { echo 'Select a Swift 6.0 toolchain before running this check.'; exit 1; }
-	xcrun --sdk macosx --show-sdk-version
-	xcrun --sdk iphonesimulator --show-sdk-version
-	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-macos" --target Swift95
-	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-macos" --target Swift95Icons
-	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-ios" --sdk "$$(xcrun --sdk iphonesimulator --show-sdk-path)" --triple arm64-apple-ios18.0-simulator --target Swift95
-	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-ios" --sdk "$$(xcrun --sdk iphonesimulator --show-sdk-path)" --triple arm64-apple-ios18.0-simulator --target Swift95Icons
+	SWIFT60_BUILD_PATH="$(SWIFT60_BUILD_PATH)" bash .github/scripts/check-swift60.sh
 
 test: test-package test-catalog
 
