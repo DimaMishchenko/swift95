@@ -61,6 +61,7 @@ function seoHead(metadata) {
 		},
 	};
 	const managedTags = [
+		['link[rel="icon"]', '<link rel="icon" type="image/png" href="/favicon-swift95.png">'],
 		['meta[name="description"]', `<meta name="description" content="${escapeHtml(metadata.description)}">`],
 		['meta[name="robots"]', `<meta name="robots" content="${robots}">`],
 		['link[rel="canonical"]', `<link rel="canonical" href="${metadata.canonical}">`],
@@ -105,6 +106,7 @@ function optimizeHtml(html, metadata) {
 	if (html.includes(marker)) return html;
 	const pageTitle = `${metadata.title} | ${metadata.moduleName} API`;
 	let optimized = html.replace('<title>Documentation</title>', `<title>${escapeHtml(pageTitle)}</title>`);
+	optimized = optimized.replace(/<link rel="icon"[^>]*>/g, '');
 	optimized = optimized.replace('</head>', `${seoHead(metadata)}</head>`);
 	if (metadata.indexable) {
 		optimized = optimized.replace(

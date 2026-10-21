@@ -149,6 +149,8 @@ if (!robots.includes(new URL('/sitemap-index.xml', site).href)) {
 }
 
 for (const file of [
+	'favicon-swift95.png',
+	'swift95-touch-icon.png',
 	'fonts/W95FA-OFL.txt',
 	'llms.txt',
 	'llms-small.txt',

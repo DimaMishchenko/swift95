@@ -4,6 +4,8 @@
 
 # Swift95
 
+[![CI](https://img.shields.io/github/actions/workflow/status/DimaMishchenko/swift95/tests.yml?branch=main&style=flat-square&label=CI)](https://github.com/DimaMishchenko/swift95/actions/workflows/tests.yml)
+
 Swift95 is a Windows 95-inspired component kit for SwiftUI. It brings classic controls,
 desktop-style workspaces, themes, and classic icons to native apps without giving up SwiftUI state,
 accessibility, or platform behavior.
