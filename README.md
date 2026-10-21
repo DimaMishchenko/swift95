@@ -20,6 +20,12 @@ In Xcode, choose **File → Add Package Dependencies** and enter:
 https://github.com/dimamishchenko/swift95
 ```
 
+Select version **1.0.0** or later. For a `Package.swift` dependency, use:
+
+```swift
+.package(url: "https://github.com/DimaMishchenko/swift95", from: "1.0.0")
+```
+
 Add the `Swift95` product to your target, then use its components like ordinary SwiftUI views:
 
 ```swift
