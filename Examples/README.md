@@ -14,15 +14,14 @@ The examples use fictional local content. Spotify95 simulates playback without p
 
 ## Structure
 
-Each app owns its entry point in `App/`, feature state and views in `Features/`, and focused logic tests in `Tests/`. Observable models own navigation and changes to demo data; views own temporary presentation. The apps depend on Swift95 and optional Swift95Icons, and do not import one another or the Catalog.
+Each app owns its entry point in `App/`, feature state and views in `Features/`. Observable models own navigation and changes to demo data; views own temporary presentation. The apps depend on Swift95 and optional Swift95Icons, and do not import one another or the Catalog.
 
-`Examples/Project.swift` defines the separate app and test targets. The root `Workspace.swift` connects them with the Catalog. The `Examples` scheme runs all three apps' logic tests.
+`Examples/Project.swift` defines the separate app targets. The root `Workspace.swift` connects them with the Catalog. The `Examples` scheme builds all three apps.
 
 ```sh
-make test-examples-macos
-make test-examples-ios IOS_DESTINATION='platform=iOS Simulator,id=<UDID>'
+make build-examples
 ```
 
 The README and website captures live in `Website/public/images/examples/`; each app folder also has a README gallery with additional captures in `Screenshots/`. Updating these promotional images does not change component snapshot references.
 
-Slack95 is designed around phone navigation, conversations and threads. Spotify95 and Finder95 use desktop layouts with compact adaptations. Example interactions are verified manually; they do not add UI test targets.
+Slack95 is designed around phone navigation, conversations and threads. Spotify95 and Finder95 use desktop layouts with compact adaptations. Example interactions are verified manually; they have no test targets.

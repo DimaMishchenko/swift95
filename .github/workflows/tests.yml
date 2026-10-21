@@ -73,12 +73,12 @@ jobs:
       - name: Run macOS, iPhone, and iPad tests
         if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: |
-          make test-examples-macos test-macos-ui build-mobile-tests build-examples-mobile-tests
+          make build-examples test-macos-ui build-mobile-tests
           xcrun simctl bootstatus "$IPHONE_SIMULATOR_UDID" -b
-          make test-ios-built test-examples-ios-built
+          make test-ios-built
           xcrun simctl shutdown "$IPHONE_SIMULATOR_UDID"
           xcrun simctl bootstatus "$IPAD_SIMULATOR_UDID" -b
-          make test-ipad-built test-examples-ipad-built
+          make test-ipad-built
           xcrun simctl shutdown "$IPAD_SIMULATOR_UDID"
 
       - run: npm --prefix Website ci

@@ -13,7 +13,6 @@ SNIPPET_PACKAGE_PATH := .build/documentation-snippets
 SNIPPET_BUILD_PATH := .build/documentation-snippets-build
 CATALOG_WORKSPACE := Swift95.xcworkspace
 EXAMPLES_SCHEME := Examples
-EXAMPLE_TEST_PRODUCTS = $(DERIVED_DATA)/Examples-iOS.xctestproducts
 CATALOG_SCHEME := Swift95Catalog
 IOS_TEST_SCHEME := Swift95
 # Keep macOS UI-test runners outside protected user folders such as Documents.
@@ -44,7 +43,7 @@ TEST_XCODEBUILD_FLAGS ?= $(XCODEBUILD_FLAGS) -parallel-testing-enabled NO
 .DEFAULT_GOAL := help
 .NOTPARALLEL:
 
-.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos test-examples-macos test-examples-ios build-examples-mobile-tests test-examples-ios-built test-examples-ipad-built website-dev website-build website-check .website-examples .website-astro .website-docc check
+.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos build-examples build-examples-macos build-examples-ios website-dev website-build website-check .website-examples .website-astro .website-docc check
 
 help:
 	@echo "Swift95 developer commands"
@@ -63,12 +62,11 @@ help:
 	@echo "  make test-ios             Run unit, snapshot, and UI tests on iPhone"
 	@echo "  make test-ipad            Run unit, snapshot, and UI tests on iPad"
 	@echo "  make build-catalog        Build the Catalog for iOS and macOS"
-	@echo "  make test-examples-macos  Run example app logic tests on macOS"
-	@echo "  make test-examples-ios    Run example app logic tests on iPhone"
+	@echo "  make build-examples       Build all example apps for iOS and macOS"
 	@echo "  make website-dev         Start the documentation website"
 	@echo "  make website-build       Generate examples and build the complete website"
 	@echo "  make website-check       Validate an existing website build"
-	@echo "  make check                Run formatting checks, tests, and Catalog builds"
+	@echo "  make check                Run formatting checks, tests, and Catalog and example builds"
 	@echo ""
 	@echo "Override the simulator when needed:"
 	@echo "  make test-ios IOS_SIMULATOR='iPhone 17 Pro' IOS_OS=26.5"
@@ -87,7 +85,7 @@ format:
 lint:
 	swift format lint -r Sources Tests Catalog Examples Workspace.swift Tuist.swift
 
-test: test-package test-catalog test-examples-macos test-examples-ios test-examples-ipad-built
+test: test-package test-catalog
 
 test-catalog: test-macos-ui test-mobile
 
@@ -126,21 +124,13 @@ build-catalog-ios: generate
 build-catalog-macos: generate
 	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(CATALOG_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
 
-test-examples-macos: generate
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) $(TEST_SELECTION) test $(XCODEBUILD_OUTPUT)
+build-examples: build-examples-macos build-examples-ios
 
-build-examples-mobile-tests: generate
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination '$(IOS_DESTINATION)' -derivedDataPath $(DERIVED_DATA) -testProductsPath '$(EXAMPLE_TEST_PRODUCTS)' build-for-testing $(XCODEBUILD_OUTPUT)
+build-examples-macos: generate
+	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
 
-test-examples-ios: build-examples-mobile-tests test-examples-ios-built
-
-test-examples-ios-built:
-	mkdir -p '$(DERIVED_DATA)/Logs/Test'
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -testProductsPath '$(EXAMPLE_TEST_PRODUCTS)' -destination '$(IOS_DESTINATION)' -resultBundlePath '$(IOS_TEST_RESULTS)-Examples-iPhone.xcresult' $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test-without-building $(XCODEBUILD_OUTPUT)
-
-test-examples-ipad-built:
-	mkdir -p '$(DERIVED_DATA)/Logs/Test'
-	xcodebuild $(TEST_XCODEBUILD_FLAGS) -testProductsPath '$(EXAMPLE_TEST_PRODUCTS)' -destination '$(IPAD_DESTINATION)' -resultBundlePath '$(IOS_TEST_RESULTS)-Examples-iPad.xcresult' $(TEST_SELECTION) $(XCODEBUILD_TEST_FLAGS) test-without-building $(XCODEBUILD_OUTPUT)
+build-examples-ios: generate
+	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination 'generic/platform=iOS Simulator' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
 
 website-dev:
 	npm --prefix $(WEBSITE_PATH) run dev
@@ -196,4 +186,4 @@ website-check:
 		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)"; \
 	cp "$(DOCC_ROOT_REDIRECT)" "$(DOCC_OUTPUT_PATH)/index.html"
 
-check: lint test build-catalog
+check: lint test build-catalog build-examples

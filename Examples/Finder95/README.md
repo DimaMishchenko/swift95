@@ -21,7 +21,7 @@ Choose the **Finder95** scheme and run on Mac, iPhone or iPad. Requires macOS 15
 
 ## Source
 
-`App/` contains the app entry point, `Features/` contains the UI and local model, and `Tests/` covers model behavior. Run all example model tests on Mac with `make test-examples-macos`.
+`App/` contains the app entry point and `Features/` contains the UI and local model. Run `make build-examples` to compile all examples for macOS and iOS. Explore interactions manually; the examples have no test targets.
 
 An independent interface study using fictional demo content, unaffiliated with the original product.
 

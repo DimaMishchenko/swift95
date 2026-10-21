@@ -20,7 +20,7 @@ In Xcode, choose **File → Add Package Dependencies** and enter:
 https://github.com/dimamishchenko/swift95
 ```
 
-Select version **1.0.0** or later. For a `Package.swift` dependency, use:
+For a `Package.swift` dependency, use:
 
 ```swift
 .package(url: "https://github.com/DimaMishchenko/swift95", from: "1.0.0")
@@ -72,7 +72,7 @@ standalone example apps. For setup,
 ```sh
 make generate       # Open Swift95.xcworkspace after generation
 make format         # Format Swift sources
-make check          # Lint, test, and build the Catalog on all platforms
+make check          # Lint, test, and build the apps
 make website-dev    # Preview the website
 make website-build  # Build and validate the complete documentation site
 ```
