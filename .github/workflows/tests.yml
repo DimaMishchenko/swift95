@@ -72,7 +72,14 @@ jobs:
 
       - name: Run macOS, iPhone, and iPad tests
         if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-        run: make test-catalog
+        run: |
+          make test-macos-ui build-mobile-tests
+          xcrun simctl bootstatus "$IPHONE_SIMULATOR_UDID" -b
+          make test-ios-built
+          xcrun simctl shutdown "$IPHONE_SIMULATOR_UDID"
+          xcrun simctl bootstatus "$IPAD_SIMULATOR_UDID" -b
+          make test-ipad-built
+          xcrun simctl shutdown "$IPAD_SIMULATOR_UDID"
 
       - run: npm --prefix Website ci
       - name: Build and validate website and API documentation
