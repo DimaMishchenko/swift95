@@ -18,9 +18,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
-
 jobs:
   validation:
     name: Validation
@@ -63,6 +60,14 @@ jobs:
           echo "native=$native" >> "$GITHUB_OUTPUT"
           echo "Run native tests: $native" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Ensure Metal compiler is available
+        run: |
+          set -o pipefail
+          if ! xcrun --sdk macosx metal --version; then
+            xcodebuild -downloadComponent MetalToolchain 2>&1 | xcbeautify
+          fi
+          xcrun --sdk macosx metal --version
+
       - name: Configure build paths
         run: |
           echo "DERIVED_DATA=$RUNNER_TEMP/swift95-derived-data" >> "$GITHUB_ENV"
@@ -81,10 +86,19 @@ jobs:
       - name: Create test simulators
         if: steps.scope.outputs.native == 'true'
         run: |
-          iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
+          ios_runtime="$(xcrun simctl list runtimes --json | node -e '
+            const fs = require("node:fs");
+            const runtimes = JSON.parse(fs.readFileSync(0, "utf8")).runtimes
+              .filter(r => r.isAvailable && r.identifier.startsWith("com.apple.CoreSimulator.SimRuntime.iOS-"))
+              .sort((a, b) => b.version.localeCompare(a.version, "en", { numeric: true }));
+            if (!runtimes.length) throw new Error("No available iOS simulator runtime");
+            console.log(runtimes[0].identifier);
+          ')"
+          echo "iOS simulator runtime: $ios_runtime"
+          iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro "$ios_runtime")"
           echo "IPHONE_SIMULATOR_UDID=$iphone_udid" >> "$GITHUB_ENV"
           echo "IOS_DESTINATION=platform=iOS Simulator,id=$iphone_udid" >> "$GITHUB_ENV"
-          ipad_udid="$(xcrun simctl create 'Swift95 CI iPad' com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
+          ipad_udid="$(xcrun simctl create 'Swift95 CI iPad' com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB "$ios_runtime")"
           echo "IPAD_SIMULATOR_UDID=$ipad_udid" >> "$GITHUB_ENV"
           echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
 

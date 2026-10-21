@@ -62,7 +62,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   func testAlertActionRunsAndDismissesPresentation() {
     let app = launch(destination: "testInteractions")
-    revealAlertFixture(in: app)
+    revealInteractionControl("interaction.alert.show", in: app)
 
     activate(element("interaction.alert.show", in: app))
 
@@ -82,7 +82,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   func testAlertPassesSystemAudit() throws {
     let app = launch(destination: "testInteractions")
-    revealAlertFixture(in: app)
+    revealInteractionControl("interaction.alert.show", in: app)
     activate(element("interaction.alert.show", in: app))
     XCTAssertTrue(element("interaction.alert.message", in: app).waitForExistence(timeout: 3))
 
@@ -221,7 +221,7 @@ final class Swift95CatalogUITests: XCTestCase {
 
   func testPickerListAndTabsUpdateSelection() {
     let app = launch(destination: "testInteractions")
-    revealSelectionFixture("interaction.picker", in: app)
+    revealInteractionControl("interaction.picker", in: app)
 
     let picker = element("interaction.picker", in: app)
     XCTAssertTrue(picker.waitForExistence(timeout: 5))
@@ -232,11 +232,11 @@ final class Swift95CatalogUITests: XCTestCase {
     activate(dateOption)
     assertLabel("Picker: Date modified", for: "interaction.picker.output", in: app)
 
-    revealSelectionFixture("interaction.list.settings", in: app)
+    revealInteractionControl("interaction.list.settings", in: app)
     activate(element("interaction.list.settings", in: app))
     assertLabel("List: settings", for: "interaction.list.output", in: app)
 
-    revealSelectionFixture("interaction.tab.display", in: app)
+    revealInteractionControl("interaction.tab.display", in: app)
     let displayTab = element("interaction.tab.display", in: app)
     activate(displayTab)
     XCTAssertTrue(displayTab.isSelected)
@@ -410,28 +410,6 @@ final class Swift95CatalogUITests: XCTestCase {
     #endif
   }
 
-  private func revealAlertFixture(in app: XCUIApplication) {
-    let showAlert = element("interaction.alert.show", in: app)
-    guard !showAlert.waitForExistence(timeout: 1) || !showAlert.isHittable else {
-      return
-    }
-
-    let fixture = element("test-lab.interactions", in: app)
-    #if os(macOS)
-      for _ in 0..<3 where !showAlert.isHittable {
-        fixture.scroll(byDeltaX: 0, deltaY: -500)
-      }
-    #else
-      fixture.swipeUp()
-    #endif
-    XCTAssertTrue(showAlert.waitForExistence(timeout: 3))
-    let hittable = expectation(
-      for: NSPredicate(format: "hittable == true"),
-      evaluatedWith: showAlert
-    )
-    wait(for: [hittable], timeout: 5)
-  }
-
   private func assertLabel(
     _ expected: String,
     for identifier: String,
@@ -477,7 +455,7 @@ final class Swift95CatalogUITests: XCTestCase {
     waitForExpectations(timeout: 3)
   }
 
-  private func revealSelectionFixture(_ identifier: String, in app: XCUIApplication) {
+  private func revealInteractionControl(_ identifier: String, in app: XCUIApplication) {
     let control = element(identifier, in: app)
     let scrollView = app.scrollViews.firstMatch
     XCTAssertTrue(scrollView.waitForExistence(timeout: 5))
@@ -495,6 +473,6 @@ final class Swift95CatalogUITests: XCTestCase {
               withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
       #endif
     }
-    XCTFail("Could not reveal \(identifier) in the selection fixture")
+    XCTFail("Could not reveal \(identifier) in the interaction fixture")
   }
 }
