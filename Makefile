@@ -17,6 +17,7 @@ CATALOG_SCHEME := Swift95Catalog
 IOS_TEST_SCHEME := Swift95
 # Keep macOS UI-test runners outside protected user folders such as Documents.
 DERIVED_DATA ?= $(TMPDIR)swift95-derived-data
+SWIFT60_BUILD_PATH ?= $(DERIVED_DATA)/swift60
 IOS_TEST_PRODUCTS := $(DERIVED_DATA)/Swift95-iOS.xctestproducts
 IOS_TEST_RESULTS := $(DERIVED_DATA)/Logs/Test/$(shell uuidgen)
 IOS_SIMULATOR ?= iPhone 17 Pro
@@ -43,13 +44,14 @@ TEST_XCODEBUILD_FLAGS ?= $(XCODEBUILD_FLAGS) -parallel-testing-enabled NO
 .DEFAULT_GOAL := help
 .NOTPARALLEL:
 
-.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos build-examples build-examples-macos build-examples-ios website-dev website-build website-check .website-examples .website-astro .website-docc check
+.PHONY: help generate format lint check-swift60 test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos build-examples build-examples-macos build-examples-ios website-dev website-build website-check .website-examples .website-astro .website-docc check
 
 help:
 	@echo "Swift95 developer commands"
 	@echo "  make generate             Generate the workspace with Catalog and three example apps"
 	@echo "  make format               Format Swift sources"
 	@echo "  make lint                 Check Swift formatting"
+	@echo "  make check-swift60        Build both library targets for macOS and iOS using Swift 6.0"
 	@echo "  make test                 Run macOS, iPhone, and iPad tests"
 	@echo "  make test-macos           Run unit, snapshot, and UI tests on macOS"
 	@echo "  make test-package         Run Swift package tests"
@@ -84,6 +86,16 @@ format:
 
 lint:
 	swift format lint -r Sources Tests Catalog Examples Workspace.swift Tuist.swift
+
+check-swift60:
+	swift --version
+	@swift --version | grep -Eq 'Swift version 6\.0([ .]|$$)' || { echo 'Select a Swift 6.0 toolchain before running this check.'; exit 1; }
+	xcrun --sdk macosx --show-sdk-version
+	xcrun --sdk iphonesimulator --show-sdk-version
+	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-macos" --target Swift95
+	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-macos" --target Swift95Icons
+	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-ios" --sdk "$$(xcrun --sdk iphonesimulator --show-sdk-path)" --triple arm64-apple-ios18.0-simulator --target Swift95
+	swift build --configuration release --scratch-path "$(SWIFT60_BUILD_PATH)-ios" --sdk "$$(xcrun --sdk iphonesimulator --show-sdk-path)" --triple arm64-apple-ios18.0-simulator --target Swift95Icons
 
 test: test-package test-catalog
 
