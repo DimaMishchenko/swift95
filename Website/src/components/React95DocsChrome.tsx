@@ -39,6 +39,12 @@ const sections = [
 				key: 'start',
 				searchText: authoredPageContent.start,
 			},
+			{
+				label: 'Examples',
+				href: '/examples/',
+				key: 'examples',
+				searchText: 'SwiftUI example apps Spotify95 Slack95 Finder95 music chat files',
+			},
 		],
 	},
 	...apiDocumentationSections.map((section) => ({

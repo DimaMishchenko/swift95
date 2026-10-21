@@ -27,6 +27,7 @@ const excludedClasses = new Set([
 const promotedRoutes = [
   '/',
   '/start/',
+  '/examples/',
   '/components/',
   '/components/button/',
   '/components/checkbox/',

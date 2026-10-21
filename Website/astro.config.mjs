@@ -77,6 +77,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Welcome to Swift95', slug: '' },
 						{ label: 'Get started', slug: 'start' },
+						{ label: 'Examples', slug: 'examples' },
 					],
 				},
 				{
