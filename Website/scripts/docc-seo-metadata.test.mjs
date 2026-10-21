@@ -9,9 +9,11 @@ const collection = {
 };
 
 test('generated link-only collections are excluded while their URLs stay canonical', () => {
-	const metadata = metadataFor(collection, 'swift95/scrollview95/view-implementations', site);
-	assert.equal(metadata.indexable, false);
-	assert.equal(metadata.canonical, 'https://swift95.dimasike.com/api/documentation/swift95/scrollview95/view-implementations/');
+	for (const role of ['collection', 'collectionGroup']) {
+		const metadata = metadataFor({ ...collection, metadata: { ...collection.metadata, role } }, 'swift95/scrollview95/view-implementations', site);
+		assert.equal(metadata.indexable, false);
+		assert.equal(metadata.canonical, 'https://swift95.dimasike.com/api/documentation/swift95/scrollview95/view-implementations/');
+	}
 });
 
 test('collections with descriptions or authored content remain indexable', () => {

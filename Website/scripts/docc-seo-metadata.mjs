@@ -25,4 +25,3 @@ export function metadataFor(document, route, site) {
 		title,
 	};
 }
-
