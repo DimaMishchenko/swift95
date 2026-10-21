@@ -81,7 +81,6 @@ make website-build  # Build and validate the complete documentation site
 
 Run `make help` for individual checks and simulator overrides. CI skips native tests for
 documentation-only changes and publishes the website after checks pass on `main`.
-CI uses Xcode 27.1 / Swift 6.4; the package minimum remains Swift 6.0.
 
 ## Inspiration
 
