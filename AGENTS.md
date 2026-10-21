@@ -6,6 +6,9 @@
 - Keep component changes covered by tests and represented in the Catalog.
 - Do not record or replace snapshot references unless explicitly requested.
 - Preserve support for Swift 6, iOS/iPadOS 18, and macOS 15.
+- `make generate` creates `Swift95.xcworkspace` with the Catalog and standalone example apps.
+- Example apps live in `Examples/`, each with its own target and app-owned feature state. Keep
+  example logic tests focused; validate their UI manually rather than adding UI test targets.
 
 ## Website and documentation
 

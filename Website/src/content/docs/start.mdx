@@ -13,6 +13,13 @@ import VoidDocsShell from '../../components/VoidDocsShell.astro';
 	title="Get started"
 	description="Install Swift95 and render your first control."
 >
+## Run the example apps
+
+Clone the [repository](https://github.com/DimaMishchenko/swift95), run `make generate`, and open
+`Swift95.xcworkspace`. Choose `Spotify95`, `Slack95` or `Finder95` for a standalone app, or
+`Swift95Catalog` to explore individual components. Slack95 focuses on iPhone conversations;
+Spotify95 and Finder95 show desktop layouts. All three use offline demo data.
+
 ## Requirements
 
 - Swift 6
@@ -27,7 +34,7 @@ In Xcode, choose **File → Add Package Dependencies** and enter:
 https://github.com/dimamishchenko/swift95
 ```
 
-Add the [`Swift95`](/api/documentation/swift95/) library to your target. Add
+Select version **1.0.0** or later, then add the [`Swift95`](/api/documentation/swift95/) library to your target. Add
 [`Swift95Icons`](/api/documentation/swift95icons/) as well if your interface
 uses the bundled icon set.
 
@@ -48,7 +55,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/dimamishchenko/swift95",
-      branch: "main"
+      from: "1.0.0"
     )
   ],
   targets: [
