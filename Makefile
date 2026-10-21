@@ -11,7 +11,8 @@ DOCC_DEPLOY_PATH := $(WEBSITE_OUTPUT_PATH)/$(DOCC_HOSTING_BASE_PATH)
 DOCC_ROOT_REDIRECT := $(WEBSITE_PATH)/src/docc-root-redirect.html
 SNIPPET_PACKAGE_PATH := .build/documentation-snippets
 SNIPPET_BUILD_PATH := .build/documentation-snippets-build
-CATALOG_WORKSPACE := $(CATALOG_PATH)/Swift95Catalog.xcworkspace
+CATALOG_WORKSPACE := Swift95.xcworkspace
+EXAMPLES_SCHEME := Examples
 CATALOG_SCHEME := Swift95Catalog
 IOS_TEST_SCHEME := Swift95
 # Keep macOS UI-test runners outside protected user folders such as Documents.
@@ -42,11 +43,11 @@ TEST_XCODEBUILD_FLAGS ?= $(XCODEBUILD_FLAGS) -parallel-testing-enabled NO
 .DEFAULT_GOAL := help
 .NOTPARALLEL:
 
-.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos website-dev website-build website-check .website-examples .website-astro .website-docc check
+.PHONY: help generate format lint test test-package test-catalog test-macos test-macos-ui test-mobile build-mobile-tests test-ios-built test-ipad-built test-ios test-ipad build-catalog build-catalog-ios build-catalog-macos build-examples build-examples-macos build-examples-ios website-dev website-build website-check .website-examples .website-astro .website-docc check
 
 help:
 	@echo "Swift95 developer commands"
-	@echo "  make generate             Generate the Catalog Xcode workspace"
+	@echo "  make generate             Generate the workspace with Catalog and three example apps"
 	@echo "  make format               Format Swift sources"
 	@echo "  make lint                 Check Swift formatting"
 	@echo "  make test                 Run macOS, iPhone, and iPad tests"
@@ -61,10 +62,11 @@ help:
 	@echo "  make test-ios             Run unit, snapshot, and UI tests on iPhone"
 	@echo "  make test-ipad            Run unit, snapshot, and UI tests on iPad"
 	@echo "  make build-catalog        Build the Catalog for iOS and macOS"
+	@echo "  make build-examples       Build all example apps for iOS and macOS"
 	@echo "  make website-dev         Start the documentation website"
 	@echo "  make website-build       Generate examples and build the complete website"
 	@echo "  make website-check       Validate an existing website build"
-	@echo "  make check                Run formatting checks, tests, and Catalog builds"
+	@echo "  make check                Run formatting checks, tests, and Catalog and example builds"
 	@echo ""
 	@echo "Override the simulator when needed:"
 	@echo "  make test-ios IOS_SIMULATOR='iPhone 17 Pro' IOS_OS=26.5"
@@ -75,13 +77,13 @@ help:
 generate:
 	mkdir -p $(CATALOG_WORKSPACE)/xcshareddata/swiftpm
 	cp Package.resolved $(CATALOG_WORKSPACE)/xcshareddata/swiftpm/Package.resolved
-	tuist generate --path $(CATALOG_PATH) --no-open
+	tuist generate --no-open
 
 format:
-	swift format -i -r Sources Tests Catalog
+	swift format -i -r Sources Tests Catalog Examples Workspace.swift Tuist.swift
 
 lint:
-	swift format lint -r Sources Tests Catalog
+	swift format lint -r Sources Tests Catalog Examples Workspace.swift Tuist.swift
 
 test: test-package test-catalog
 
@@ -121,6 +123,14 @@ build-catalog-ios: generate
 
 build-catalog-macos: generate
 	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(CATALOG_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
+
+build-examples: build-examples-macos build-examples-ios
+
+build-examples-macos: generate
+	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination 'platform=macOS' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
+
+build-examples-ios: generate
+	xcodebuild $(XCODEBUILD_FLAGS) -workspace $(CATALOG_WORKSPACE) -scheme $(EXAMPLES_SCHEME) -destination 'generic/platform=iOS Simulator' -derivedDataPath $(DERIVED_DATA) build $(XCODEBUILD_OUTPUT)
 
 website-dev:
 	npm --prefix $(WEBSITE_PATH) run dev
@@ -176,4 +186,4 @@ website-check:
 		--hosting-base-path "$(DOCC_HOSTING_BASE_PATH)"; \
 	cp "$(DOCC_ROOT_REDIRECT)" "$(DOCC_OUTPUT_PATH)/index.html"
 
-check: lint test build-catalog
+check: lint test build-catalog build-examples

@@ -1,0 +1,57 @@
+---
+const examples = [
+  {
+    name: 'Spotify ’95',
+    slug: 'spotify95',
+    target: 'Spotify95',
+    description: 'Your mixtape, on a different desktop. Browse playlists and albums, save favorites, and control an offline demo player.',
+    alt: 'Spotify ’95 music app with playlists, original album artwork, a track list and playback controls',
+  },
+  {
+    name: 'Slack ’95',
+    slug: 'slack95',
+    target: 'Slack95',
+    description: 'Team chat, sized for your pocket. Move between channels, send local messages, and open full-screen threads on iPhone.',
+    alt: 'Slack ’95 on iPhone showing a channel conversation and message composer',
+  },
+  {
+    name: 'Finder ’95',
+    slug: 'finder95',
+    target: 'Finder95',
+    description: 'A familiar place for imaginary files. Explore folders, switch views, search, and inspect file details in a safe demo filesystem.',
+    alt: 'Finder ’95 file browser with a folder sidebar, file grid, toolbar and selected file details',
+  },
+];
+---
+
+<section class="app-examples95" aria-labelledby="app-examples-title95">
+  <div class="app-examples-heading95">
+    <p>THREE APPS. ONE COMPONENT KIT.</p>
+    <h2 id="app-examples-title95">Apps from another timeline.</h2>
+    <p>Runnable SwiftUI examples built with Swift95. Each app has its own target and local demo data.</p>
+  </div>
+  {examples.map((example) => (
+    <article class:list={["app-example95", { "app-example-phone95": example.target === "Slack95" }]}>
+      <div class="app-example-copy95">
+        <h3>{example.name}</h3>
+        <p>{example.description}</p>
+        <a href={`https://github.com/DimaMishchenko/swift95/tree/main/Examples/${example.target}`}>
+          Explore the source ↗
+        </a>
+      </div>
+      <a class="app-example-image95" href={`https://github.com/DimaMishchenko/swift95/tree/main/Examples/${example.target}`} aria-label={`Explore ${example.name} source`}>
+        <img
+          src={`/images/examples/${example.slug}.${example.target === "Slack95" ? "png" : "jpg"}`}
+          alt={example.alt}
+          width={example.target === "Slack95" ? 1206 : 2200}
+          height={example.target === "Slack95" ? 2622 : 1520}
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+    </article>
+  ))}
+  <p class="app-examples-footnote95">
+    Independent interface studies inspired by Spotify, Slack and Finder. No accounts, services or real files are connected.
+  </p>
+</section>
