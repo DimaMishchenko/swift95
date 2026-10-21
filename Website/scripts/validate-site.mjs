@@ -186,6 +186,11 @@ if (requireApi) {
 		'utf8',
 	);
 	if (!inherited.includes('noindex,follow')) throw new Error('Inherited DocC APIs must be noindex.');
+	const collectionRoute = '/api/documentation/swift95/scrollview95/view-implementations/';
+	const collection = await readFile(path.join(outputRoot, collectionRoute, 'index.html'), 'utf8');
+	if (!collection.includes('noindex,follow') || apiUrls.includes(new URL(collectionRoute, site).href)) {
+		throw new Error('Empty generated DocC collections must be noindex and excluded from the sitemap.');
+	}
 }
 
 console.log(

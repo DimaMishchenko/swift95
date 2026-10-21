@@ -38,12 +38,30 @@ jobs:
         -maximum-test-execution-time-allowance 180
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: jdx/mise-action@v5
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: Website/package-lock.json
+
+      - name: Determine native test scope
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node --test .github/scripts/native-test-scope.test.mjs
+          native=true
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            native="$(node .github/scripts/native-test-scope.mjs "$BASE_SHA" "$HEAD_SHA")"
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
+            native=false
+          fi
+          echo "native=$native" >> "$GITHUB_OUTPUT"
+          echo "Run native tests: $native" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Configure build paths
         run: |
@@ -57,11 +75,11 @@ jobs:
         run: make lint
 
       - name: Run package tests
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        if: steps.scope.outputs.native == 'true'
         run: make test-package
 
       - name: Create test simulators
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        if: steps.scope.outputs.native == 'true'
         run: |
           iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
           echo "IPHONE_SIMULATOR_UDID=$iphone_udid" >> "$GITHUB_ENV"
@@ -71,7 +89,7 @@ jobs:
           echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
 
       - name: Run macOS, iPhone, and iPad tests
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        if: steps.scope.outputs.native == 'true'
         run: |
           make build-examples test-macos-ui build-mobile-tests
           xcrun simctl bootstatus "$IPHONE_SIMULATOR_UDID" -b

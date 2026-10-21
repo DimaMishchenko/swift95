@@ -77,5 +77,10 @@ make website-dev    # Preview the website
 make website-build  # Build and validate the complete documentation site
 ```
 
-Run `make help` for individual checks and simulator overrides. CI validates pull requests and
-publishes the website after checks pass on `main`.
+Run `make help` for individual checks and simulator overrides. CI skips native tests for
+documentation-only changes and publishes the website after checks pass on `main`.
+
+## Inspiration
+
+- [ClassicKit](https://github.com/Baddaboo/ClassicKit)
+- [React95](https://github.com/React95/React95)

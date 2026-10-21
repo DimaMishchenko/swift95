@@ -1,6 +1,7 @@
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { installDocCSEO } from './docc-seo-runtime.mjs';
+import { metadataFor } from './docc-seo-metadata.mjs';
 import { fileURLToPath } from 'node:url';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -24,14 +25,6 @@ async function filesBelow(directory) {
 	return nested.flat();
 }
 
-function textFromInline(items) {
-	return (items ?? [])
-		.map((item) => item.text ?? item.code ?? textFromInline(item.inlineContent ?? item.children))
-		.join('')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
 function escapeHtml(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
@@ -46,23 +39,6 @@ function xmlEscape(value) {
 
 function relativeRoute(filePath) {
 	return path.relative(dataRoot, filePath).split(path.sep).join('/').replace(/\.json$/, '');
-}
-
-function metadataFor(document, route) {
-	const title = document.metadata?.title ?? document.metadata?.navigatorTitle?.[0]?.text ?? 'Swift95 API';
-	const moduleName = document.metadata?.modules?.[0]?.name ?? 'Swift95';
-	const role = document.metadata?.roleHeading ?? 'API Reference';
-	const abstract = textFromInline(document.abstract);
-	const description = abstract || `${title} ${role.toLowerCase()} reference for ${moduleName}.`;
-	const pathname = `/api/documentation/${route}/`.replace('/documentation//', '/documentation/');
-	return {
-		canonical: new URL(pathname, site).href,
-		description,
-		indexable: !document.metadata?.extendedModule,
-		moduleName,
-		role,
-		title,
-	};
 }
 
 function seoHead(metadata) {
@@ -152,7 +128,7 @@ const dataFiles = [
 	...(await filesBelow(dataRoot)).filter((file) => file.endsWith('.json')),
 ];
 const indexableUrls = [];
-let inheritedCount = 0;
+let noindexCount = 0;
 
 let nextIndex = 0;
 async function optimizeNextDocument() {
@@ -165,11 +141,11 @@ async function optimizeNextDocument() {
 			throw new Error(`Missing DocC HTML for ${route}.`);
 		}
 		const document = JSON.parse(await readFile(dataPath, 'utf8'));
-		const metadata = metadataFor(document, route);
+		const metadata = metadataFor(document, route, site);
 		const html = await readFile(htmlPath, 'utf8');
 		await writeFile(htmlPath, optimizeHtml(html, metadata));
 		if (metadata.indexable) indexableUrls.push(metadata.canonical);
-		else inheritedCount += 1;
+		else noindexCount += 1;
 	}
 }
 
@@ -197,5 +173,5 @@ if (!sitemapIndex.includes(apiSitemapUrl)) {
 }
 
 console.log(
-	`Optimized ${indexableUrls.length} first-party DocC pages; marked ${inheritedCount} inherited API pages noindex.`,
+	`Optimized ${indexableUrls.length} first-party DocC pages; marked ${noindexCount} inherited or empty collection pages noindex.`,
 );
