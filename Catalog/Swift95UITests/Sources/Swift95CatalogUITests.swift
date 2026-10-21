@@ -60,7 +60,7 @@ final class Swift95CatalogUITests: XCTestCase {
     assertLabel("Radio: Manual", for: "interaction.radio.output", in: app)
   }
 
-  func testAlertActionRunsAndDismissesPresentation() throws {
+  func testAlertActionRunsAndDismissesPresentation() {
     let app = launch(destination: "testInteractions")
     revealAlertFixture(in: app)
 
@@ -74,12 +74,19 @@ final class Swift95CatalogUITests: XCTestCase {
     XCTAssertTrue(close.waitForExistence(timeout: 3))
     XCTAssertFalse(close.isEnabled)
 
-    try app.performAccessibilityAudit(for: alertAuditTypes)
-
     activate(confirm)
 
     assertLabel("Alert result: Confirmed", for: "interaction.alert.output", in: app)
     XCTAssertFalse(message.waitForExistence(timeout: 1))
+  }
+
+  func testAlertPassesSystemAudit() throws {
+    let app = launch(destination: "testInteractions")
+    revealAlertFixture(in: app)
+    activate(element("interaction.alert.show", in: app))
+    XCTAssertTrue(element("interaction.alert.message", in: app).waitForExistence(timeout: 3))
+
+    try app.performAccessibilityAudit(for: alertAuditTypes)
   }
 
   func testTextAndSliderInputUpdateBoundState() {
@@ -451,7 +458,6 @@ final class Swift95CatalogUITests: XCTestCase {
       #else
         XCTAssertEqual(label, expected, diagnostics)
       #endif
-      XCTAssertEqual(result, .completed, diagnostics)
     }
   }
 

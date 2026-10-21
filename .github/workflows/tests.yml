@@ -53,10 +53,15 @@ jobs:
           echo "TUIST_XDG_STATE_HOME=$RUNNER_TEMP/tuist-state" >> "$GITHUB_ENV"
           echo "SNAPSHOT_ARTIFACTS=$RUNNER_TEMP/snapshot-failures" >> "$GITHUB_ENV"
 
-      - name: Check formatting and run package tests
-        run: make lint test-package
+      - name: Check formatting
+        run: make lint
+
+      - name: Run package tests
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        run: make test-package
 
       - name: Create test simulators
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: |
           iphone_udid="$(xcrun simctl create 'Swift95 CI iPhone' com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)"
           echo "IPHONE_SIMULATOR_UDID=$iphone_udid" >> "$GITHUB_ENV"
@@ -66,7 +71,15 @@ jobs:
           echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_udid" >> "$GITHUB_ENV"
 
       - name: Run macOS, iPhone, and iPad tests
-        run: make test-catalog
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        run: |
+          make test-macos-ui build-mobile-tests
+          xcrun simctl bootstatus "$IPHONE_SIMULATOR_UDID" -b
+          make test-ios-built
+          xcrun simctl shutdown "$IPHONE_SIMULATOR_UDID"
+          xcrun simctl bootstatus "$IPAD_SIMULATOR_UDID" -b
+          make test-ipad-built
+          xcrun simctl shutdown "$IPAD_SIMULATOR_UDID"
 
       - run: npm --prefix Website ci
       - name: Build and validate website and API documentation
