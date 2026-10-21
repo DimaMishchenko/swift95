@@ -12,18 +12,7 @@ accessibility, or platform behavior.
 **[🧩 Components](https://swift95.dimasike.com/components/)** ·
 **[🔎 API reference](https://swift95.dimasike.com/api/documentation/)**
 
-## What you can build
-
-Three runnable app examples, each with its own target in [Examples](Examples/README.md).
-
-| [Spotify ’95](Examples/Spotify95/) | [Slack ’95](Examples/Slack95/) | [Finder ’95](Examples/Finder95/) |
-| --- | --- | --- |
-| [<img src="Website/public/images/examples/spotify95.jpg" alt="Spotify ’95 with playlists, album artwork and playback controls" height="220">](Examples/Spotify95/) | [<img src="Website/public/images/examples/slack95.png" alt="Slack ’95 on iPhone with a channel conversation and message composer" height="220">](Examples/Slack95/) | [<img src="Website/public/images/examples/finder95.jpg" alt="Finder ’95 with folders, files and selected file details" height="220">](Examples/Finder95/) |
-| Playlists, albums and a simulated player. | Mobile channels, messages and threads. | Folders, search and file details. |
-
-These independent interface studies use local demo content and connect to no external services.
-
-## Try it
+## Usage
 
 In Xcode, choose **File → Add Package Dependencies** and enter:
 
@@ -51,6 +40,13 @@ struct SaveButton: View {
 Add the optional `Swift95Icons` product when you want the bundled classic icon set.
 
 Swift95 requires Swift 6 and supports iOS and iPadOS 18 or later and macOS 15 or later.
+
+## Examples
+
+| [Spotify ’95](Examples/Spotify95/) | [Slack ’95](Examples/Slack95/) | [Finder ’95](Examples/Finder95/) |
+| :---: | :---: | :---: |
+| [<img src="Website/public/images/examples/spotify95.jpg" alt="Spotify ’95 with playlists, album artwork and playback controls" height="220">](Examples/Spotify95/) | [<img src="Website/public/images/examples/slack95.png" alt="Slack ’95 on iPhone with a channel conversation and message composer" height="220">](Examples/Slack95/) | [<img src="Website/public/images/examples/finder95.jpg" alt="Finder ’95 with folders, files and selected file details" height="220">](Examples/Finder95/) |
+| Playlists, albums and a simulated player. | Mobile channels, messages and threads. | Folders, search and file details. |
 
 ## Run the catalog
 
