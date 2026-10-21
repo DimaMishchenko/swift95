@@ -10,10 +10,6 @@ on:
         description: Publish the validated website from main
         type: boolean
         default: false
-      swift60_compatibility:
-        description: Build package products with the Swift 6.0 compiler
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -23,12 +19,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DEVELOPER_DIR: ${{ inputs.swift60_compatibility && '/Applications/Xcode_16.2.app/Contents/Developer' || '/Applications/Xcode_27.1.app/Contents/Developer' }}
+  DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
 
 jobs:
   validation:
-    name: ${{ inputs.swift60_compatibility && 'Swift 6.0 compatibility' || 'Validation' }}
-    runs-on: ${{ inputs.swift60_compatibility && 'macos-15' || 'xcode-27' }}
+    name: Validation
+    runs-on: xcode-27
     timeout-minutes: 60
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://swift95.dimasike.com' }}
@@ -45,9 +41,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: jdx/mise-action@v5
-        if: ${{ !inputs.swift60_compatibility }}
       - uses: actions/setup-node@v7
-        if: ${{ !inputs.swift60_compatibility }}
         with:
           node-version: 22
           cache: npm
@@ -58,36 +52,18 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          SWIFT60_COMPATIBILITY: ${{ inputs.swift60_compatibility || false }}
         run: |
+          node --test .github/scripts/native-test-scope.test.mjs
           native=true
-          if [[ "$SWIFT60_COMPATIBILITY" == "true" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            native="$(node .github/scripts/native-test-scope.mjs "$BASE_SHA" "$HEAD_SHA")"
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
             native=false
-          else
-            node --test .github/scripts/native-test-scope.test.mjs
-            if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-              native="$(node .github/scripts/native-test-scope.mjs "$BASE_SHA" "$HEAD_SHA")"
-            elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" ]]; then
-              native=false
-            fi
           fi
           echo "native=$native" >> "$GITHUB_OUTPUT"
           echo "Run native tests: $native" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Verify Swift compiler
-        env:
-          EXPECTED_XCODE_VERSION: ${{ inputs.swift60_compatibility && '16.2' || '27.1' }}
-          EXPECTED_SWIFT_VERSION: ${{ inputs.swift60_compatibility && '6.0' || '6.4' }}
-        run: |
-          xcode_version="$(xcodebuild -version)"
-          echo "$xcode_version"
-          [[ "$xcode_version" == "Xcode $EXPECTED_XCODE_VERSION"$'\n'* ]]
-          swift_version="$(swift --version)"
-          echo "$swift_version"
-          [[ "$swift_version" == *"Swift version $EXPECTED_SWIFT_VERSION."* || "$swift_version" == *"Swift version $EXPECTED_SWIFT_VERSION "* ]]
-
       - name: Ensure Metal compiler is available
-        if: ${{ !inputs.swift60_compatibility }}
         run: |
           set -o pipefail
           if ! xcrun --sdk macosx metal --version; then
@@ -103,12 +79,7 @@ jobs:
           echo "TUIST_XDG_STATE_HOME=$RUNNER_TEMP/tuist-state" >> "$GITHUB_ENV"
           echo "SNAPSHOT_ARTIFACTS=$RUNNER_TEMP/snapshot-failures" >> "$GITHUB_ENV"
 
-      - name: Check Swift 6.0 compatibility
-        if: inputs.swift60_compatibility
-        run: make check-swift60
-
       - name: Check formatting
-        if: ${{ !inputs.swift60_compatibility }}
         run: make lint
 
       - name: Run package tests
@@ -137,9 +108,7 @@ jobs:
           xcrun simctl shutdown "$IPAD_SIMULATOR_UDID"
 
       - run: npm --prefix Website ci
-        if: ${{ !inputs.swift60_compatibility }}
       - name: Build and validate website and API documentation
-        if: ${{ !inputs.swift60_compatibility }}
         run: make website-build
 
       - name: Upload validation failures
@@ -155,7 +124,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload website for publication
-        if: ${{ !inputs.swift60_compatibility && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website)) }}
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
         uses: actions/upload-pages-artifact@v5
         with:
           path: Website/dist
@@ -172,7 +141,7 @@ jobs:
 
   deploy:
     name: Publish website
-    if: ${{ !inputs.swift60_compatibility && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website)) }}
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_website))
     needs: [validation]
     runs-on: ubuntu-latest
     timeout-minutes: 15
