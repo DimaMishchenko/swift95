@@ -41,3 +41,7 @@ in the 7.x line so its selector parser receives the CPU exhaustion fix from
 This keeps the current Starlight release and PostCSS 8 API. The nesting plugin's
 [7.0 changes](https://github.com/postcss/postcss-nested/blob/main/CHANGELOG.md#700)
 affect comment placement and require Node 18 or later, which the Astro toolchain already exceeds.
+
+## Analytics
+
+Production pages at `swift95.dimasike.com`, including the generated DocC API pages, use cookie-free Cloudflare Web Analytics. The shared `dimasike.com` analytics site separates traffic by request hostname. Local development and builds for other hostnames omit the beacon.

@@ -114,6 +114,9 @@ function optimizeHtml(html, metadata) {
 			`<h1 class="noscript-title">${escapeHtml(metadata.title)}</h1><p>${escapeHtml(metadata.description)}</p>`,
 		);
 	}
+	if (site.hostname === 'swift95.dimasike.com') {
+		optimized = optimized.replace('</body>', `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1cf62b2ecce54a9b823d2ba2fb72686b"}'></script></body>`);
+	}
 	return optimized;
 }
 

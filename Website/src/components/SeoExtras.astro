@@ -94,3 +94,7 @@ const schema = {
 <meta name="twitter:image" content={socialImage.href} />
 <meta name="twitter:image:alt" content="Swift95 documentation homepage with an animated ASCII void" />
 <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+{import.meta.env.PROD && site.hostname === 'swift95.dimasike.com' && (
+	<script is:inline type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"1cf62b2ecce54a9b823d2ba2fb72686b"}' />
+)}
