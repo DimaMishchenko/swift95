@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.22.0"
+    "node": ">=22.23.4"
   },
   "scripts": {
     "dev": "astro dev",
@@ -18,16 +18,16 @@
     "test": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
-    "@astrojs/react": "^7.1.0",
-    "@astrojs/starlight": "^0.42.6",
-    "@react95/core": "^10.0.5",
-    "astro": "^7.4.1",
+    "@astrojs/react": "^7.1.1",
+    "@astrojs/starlight": "^0.42.7",
+    "@react95/core": "^10.0.6",
+    "astro": "^7.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.11",
+    "@astrojs/check": "^0.9.12",
     "esbuild": "^0.28.2",
     "hast-util-select": "^6.0.4",
     "rehype-parse": "^9.0.1",
