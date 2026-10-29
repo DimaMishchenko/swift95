@@ -42,10 +42,6 @@ let package = Package(
         .copy("Resources/Icons")
       ]
     ),
-    .executableTarget(
-      name: "DocumentationImageGenerator",
-      dependencies: ["Swift95"]
-    ),
     .testTarget(
       name: "Swift95Tests",
       dependencies: [
